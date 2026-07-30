@@ -14,6 +14,10 @@
         "record_work",
         "calculate_salary",
         "check_overdue_reminders",
-        "create_salary_reminder"
+        "create_salary_reminder",
+        "get_weather_safety_advisory",
+        "post_question",
+        "get_questions",
+        "get_question_detail"
     ]
 }

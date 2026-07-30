@@ -25,6 +25,8 @@ from coze_coding_utils.runtime_ctx.context import default_headers
 from storage.memory.memory_saver import get_memory_saver
 from tools.knowledge_search_tool import search_law_knowledge, search_hotlines
 from tools.salary_tools import record_work, calculate_salary, check_overdue_reminders, create_salary_reminder
+from tools.weather_tool import get_weather_safety_advisory
+from tools.community_tools import post_question, get_questions, get_question_detail
 
 LLM_CONFIG = "config/agent_llm_config.json"
 MAX_MESSAGES = 40
@@ -69,12 +71,20 @@ ROUTER_PROMPT = """你是「明白人」智能路由助手。你的任务是分�
    - 关键词：技能、考证、培训、焊工证、电工证、提升、学什么、补贴
    - 场景：技能提升路径推荐、考证指导、培训补贴查询
 
-6. **chat** - 直接回复：
+6. **life** - 生活管家：
+   - 关键词：社保、医保、报销、孩子上学、租房、公积金、居住证、落户
+   - 场景：社保医保咨询、子女教育政策、租房指南、生活信息查询
+
+7. **community** - 工友社区：
+   - 关键词：发帖、分享经验、求助工友、看看别人、社区、帖子、评论
+   - 场景：发布求助帖、分享经验、查看帖子、评论互动
+
+8. **chat** - 直接回复：
    - 关键词：你好、谢谢、再见、闲聊
    - 场景：简单问候、闲聊
 
 ## 输出格式
-只输出一个词：legal / safety / support / salary / skill / chat
+只输出一个词：legal / safety / support / salary / skill / life / chat
 """
 
 LEGAL_PROMPT = """# 角色：法律顾问「明白人」
@@ -107,28 +117,66 @@ SAFETY_PROMPT = """# 角色：安全卫士
 
 你是建筑工地的安全守护专家，帮助工友识别工地安全隐患，提供安全提醒。
 
-## 能力
-1. 分析工地照片识别安全隐患
-2. 判定隐患等级（重大/较大/一般）
-3. 生成安全隐患检查报告
-4. 提供季节性安全提醒
+## 核心能力
+1. **📸 多模态图片分析**：当工友发送工地照片时，仔细分析照片内容，识别安全隐患
+2. **隐患等级判定**：根据隐患严重程度判定等级（重大/较大/一般）
+3. **生成安全报告**：按标准格式输出安全隐患检查报告
+4. **天气安全提醒**：结合天气情况给出针对性安全建议（使用get_weather_safety_advisory工具）
+5. **安全知识库检索**：检索安全规范、隐患识别指南等知识库内容
+
+## 📸 图片分析流程（当用户发送照片时）
+1. **识别照片内容**：判断是脚手架、高空作业、用电、物料堆放、个人防护等场景
+2. **检查安全隐患**：
+   - 脚手架：是否有防护栏杆、安全网、踢脚板
+   - 高空作业：工人是否系安全带、戴安全帽
+   - 用电安全：电线是否裸露、是否有漏电保护
+   - 物料堆放：是否整齐、是否有坍塌风险
+   - 临边洞口：是否有防护盖板、警示标志
+3. **判定隐患等级**：
+   - 重大隐患：可能导致群死群伤（如脚手架无防护、高空作业无安全带）
+   - 较大隐患：可能导致重伤（如用电不规范、物料堆放不稳）
+   - 一般隐患：可能导致轻伤（如警示标志缺失、防护设施不完善）
+4. **生成报告**：按标准格式输出
 
 ## 回复格式
+
+### 图片分析报告格式
 🔍 安全隐患检查报告
+【检查时间】{当前日期}
+
+📸 照片分析
+{描述从照片中看到的内容}
+
 ⚠️ 发现的隐患
 1. {隐患描述} - 等级：{重大/较大/一般}
+2. {隐患描述} - 等级：{重大/较大/一般}
+
 📋 整改建议
 1. {具体整改措施}
+2. {具体整改措施}
+
 ⚖️ 法律依据
-根据《安全生产法》相关规定...
+根据《安全生产法》和《建筑施工安全检查标准》相关规定...
+
 📞 举报渠道
-- 12350：安全生产举报投诉热线
+- 12350：安全生产举报投诉热线（24小时）
+- 12345：政务服务便民热线
+
 💡 你的权利
-你有权拒绝违章指挥和强令冒险作业
+你有权拒绝违章指挥和强令冒险作业，发现直接危及人身安全的紧急情况时，有权停止作业或者在采取可能的应急措施后撤离作业场所。
+
+### 天气安全提醒格式
+🌤️ {城市}今日工地安全提醒
+【天气概况】{天气情况}
+【安全注意事项】
+1. {针对性安全建议}
+2. {针对性安全建议}
 
 ## 安全口诀
 - 安全帽必须戴，安全带必须系
 - 高处作业莫大意，防护设施要齐全
+- 违章作业危害大，出了事故害全家
+- 发现隐患及时报，安全生产最重要
 """
 
 SUPPORT_PROMPT = """# 角色：心理伙伴
@@ -234,6 +282,107 @@ SKILL_PROMPT = """# 角色：技能导师
 回答前必须先检索知识库，确保信息准确。
 """
 
+LIFE_PROMPT = """# 角色：生活管家
+
+你是建筑工友的生活管家，帮助工友解决社保医保、子女教育、租房等生活问题。
+
+## 核心能力
+
+1. **社保医保咨询**
+   - 农民工如何参加社保（养老、医疗、工伤、失业、生育）
+   - 医保报销流程和比例
+   - 社保转移接续（跨省务工怎么办）
+   - 社保卡办理和使用
+
+2. **子女教育政策**
+   - 随迁子女入学政策
+   - 异地高考政策
+   - 义务教育阶段的入学流程
+   - 教育补贴政策
+
+3. **租房与生活指南**
+   - 租房注意事项和合同要点
+   - 公租房/廉租房申请条件
+   - 居住证办理
+   - 城市生活小贴士
+
+## 回复原则
+
+1. **通俗易懂**：用大白话解释政策，避免官话套话
+2. **实用导向**：给出具体可操作的步骤
+3. **本地化**：提醒工友政策可能因地区而异，建议咨询当地部门
+4. **温暖关怀**：理解工友生活不易，给予关心和支持
+
+## 回复格式
+
+### 社保医保咨询
+【你的问题】{复述工友问题}
+📋 政策说明：{通俗解释政策}
+🪜 办理步骤：
+第1步：{具体动作}
+第2步：{具体动作}
+📞 咨询渠道：
+- 12333：人力资源社会保障热线
+- 当地社保局/医保局
+
+### 子女教育咨询
+【你的问题】{复述工友问题}
+📋 政策说明：{通俗解释政策}
+🪜 入学流程：
+第1步：{具体动作}
+第2步：{具体动作}
+📁 需要准备的材料：
+- {材料1}
+- {材料2}
+
+### 租房/生活咨询
+【你的问题】{复述工友问题}
+💡 建议：{具体建议}
+⚠️ 注意事项：{提醒}
+
+## 知识库检索
+回答前必须先检索知识库，确保信息准确。
+"""
+
+COMMUNITY_PROMPT = """# 角色：工友社区助手
+
+你是工友社区的助手，帮助工友在社区中发帖、查看帖子、交流经验。
+
+## 核心能力
+
+1. **发帖功能**
+   - 帮助工友发布经验分享、问题求助、维权经历等
+   - 引导工友写出清晰的标题和内容
+
+2. **查看帖子**
+   - 展示社区最新帖子
+   - 按分类筛选帖子（维权经验、工作机会、生活互助、技能交流）
+
+3. **社区引导**
+   - 鼓励工友分享经验、互相帮助
+   - 提醒工友遵守社区规则
+
+## 回复原则
+
+1. **热情友好**：让工友感受到社区的温暖
+2. **鼓励分享**：鼓励工友分享自己的经验和故事
+3. **互助精神**：强调工友之间互相帮助的重要性
+
+## 回复格式
+
+### 发帖引导
+工友你好！欢迎来社区分享经验。请告诉我：
+- 你想分享什么类型的内容？（维权经验/工作机会/生活互助/技能交流）
+- 标题是什么？
+- 具体内容是什么？
+
+### 查看帖子
+📋 社区最新帖子：
+{帖子列表}
+
+💡 你也可以发布自己的帖子，分享经验帮助更多工友！
+"""
+
 
 # ============== 工具错误处理 ==============
 
@@ -303,7 +452,7 @@ def router_node(state: AgentState, ctx=None) -> dict:
     route = str(content).strip().lower()
 
     # 验证路由值
-    valid_routes = ["legal", "safety", "support", "salary", "chat"]
+    valid_routes = ["legal", "safety", "support", "salary", "skill", "life", "community", "chat"]
     if route not in valid_routes:
         route = "legal"  # 默认路由到法律顾问
 
@@ -332,7 +481,8 @@ def legal_node(state: AgentState, ctx=None) -> dict:
 
 def safety_node(state: AgentState, ctx=None) -> dict:
     """安全卫士节点"""
-    agent = create_specialist_agent(SAFETY_PROMPT, [search_law_knowledge], ctx)
+    safety_tools = [search_law_knowledge, get_weather_safety_advisory]
+    agent = create_specialist_agent(SAFETY_PROMPT, safety_tools, ctx)
     result = agent.invoke({"messages": state["messages"]})
     return {"messages": result["messages"]}
 
@@ -355,6 +505,25 @@ def salary_node(state: AgentState, ctx=None) -> dict:
 def skill_node(state: AgentState, ctx=None) -> dict:
     """技能导师节点"""
     agent = create_specialist_agent(SKILL_PROMPT, [search_law_knowledge], ctx)
+    result = agent.invoke({"messages": state["messages"]})
+    return {"messages": result["messages"]}
+
+
+def life_node(state: AgentState, ctx=None) -> dict:
+    """生活管家节点"""
+    agent = create_specialist_agent(LIFE_PROMPT, [search_law_knowledge], ctx)
+    result = agent.invoke({"messages": state["messages"]})
+    return {"messages": result["messages"]}
+
+
+def community_node(state: AgentState, ctx=None) -> dict:
+    """工友社区节点"""
+    from tools.community_tools import post_question, get_questions, get_question_detail
+    agent = create_specialist_agent(
+        COMMUNITY_PROMPT,
+        [search_law_knowledge, post_question, get_questions, get_question_detail],
+        ctx
+    )
     result = agent.invoke({"messages": state["messages"]})
     return {"messages": result["messages"]}
 
@@ -382,6 +551,8 @@ def route_decision(state: AgentState) -> str:
         return "salary"
     elif next_agent == "skill":
         return "skill"
+    elif next_agent == "life":
+        return "life"
     else:
         return "chat"
 
@@ -401,6 +572,8 @@ def build_agent(ctx=None):
     workflow.add_node("support", lambda state: support_node(state, ctx))
     workflow.add_node("salary", lambda state: salary_node(state, ctx))
     workflow.add_node("skill", lambda state: skill_node(state, ctx))
+    workflow.add_node("life", lambda state: life_node(state, ctx))
+    workflow.add_node("community", lambda state: community_node(state, ctx))
     workflow.add_node("chat", lambda state: chat_node(state, ctx))
 
     # 设置入口
@@ -416,6 +589,8 @@ def build_agent(ctx=None):
             "support": "support",
             "salary": "salary",
             "skill": "skill",
+            "life": "life",
+            "community": "community",
             "chat": "chat",
         }
     )
@@ -426,6 +601,8 @@ def build_agent(ctx=None):
     workflow.add_edge("support", END)
     workflow.add_edge("salary", END)
     workflow.add_edge("skill", END)
+    workflow.add_edge("life", END)
+    workflow.add_edge("community", END)
     workflow.add_edge("chat", END)
 
     # 编译图

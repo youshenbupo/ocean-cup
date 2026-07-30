@@ -64,6 +64,44 @@ class SalaryReminder(Base):
     )
 
 
+class CommunityPost(Base):
+    """工友社区帖子表"""
+    __tablename__ = 'community_posts'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    author_name: Mapped[str] = mapped_column(String(100), nullable=False, comment="发帖人姓名")
+    title: Mapped[str] = mapped_column(String(200), nullable=False, comment="帖子标题")
+    content: Mapped[str] = mapped_column(Text, nullable=False, comment="帖子内容")
+    category: Mapped[str] = mapped_column(String(50), nullable=False, server_default="general", comment="分类: salary/safety/skill/life/general")
+    view_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False, server_default="0", comment="浏览次数")
+    like_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False, server_default="0", comment="点赞数")
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
+
+    __table_args__ = (
+        Index("community_posts_author_idx", "author_name"),
+        Index("community_posts_category_idx", "category"),
+        Index("community_posts_created_at_idx", "created_at"),
+    )
+
+
+class CommunityComment(Base):
+    """工友社区评论表"""
+    __tablename__ = 'community_comments'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    post_id: Mapped[int] = mapped_column(Integer, nullable=False, comment="帖子ID")
+    author_name: Mapped[str] = mapped_column(String(100), nullable=False, comment="评论人姓名")
+    content: Mapped[str] = mapped_column(Text, nullable=False, comment="评论内容")
+    like_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False, server_default="0", comment="点赞数")
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    __table_args__ = (
+        Index("community_comments_post_id_idx", "post_id"),
+        Index("community_comments_author_idx", "author_name"),
+    )
+
+
 t_pg_stat_statements = Table(
     'pg_stat_statements', Base.metadata,
     Column('userid', OID),
