@@ -813,8 +813,17 @@
         </div>
     </footer>
     
+        <!-- 引入 Coze Web SDK 官方 CDN -->
+    <script src="https://lf-cdn.coze.cn/obj/unpkg/latest/coze/web-sdk/dist/js-umd/index.min.js"></script>
     <script>
-        // 发送消息
+        // 初始化 Web SDK
+        cozeWebSDK.init({
+            projectId: '7668109916292284459',
+            // 支持同步和异步刷新 token
+            refreshToken: () => Promise.resolve('<YOUR_TOKEN>'),
+        });
+        
+        // 发送消息到扣子Bot
         function sendMessage() {
             const input = document.getElementById('userInput');
             const message = input.value.trim();
@@ -823,11 +832,15 @@
                 addMessage(message, 'user');
                 input.value = '';
                 
-                // 模拟回复
-                setTimeout(() => {
-                    const reply = getReply(message);
-                    addMessage(reply, 'bot');
-                }, 1000);
+                // 调用扣子WebSDK发送消息
+                cozeWebSDK.chat.sendMessage({
+                    message: message,
+                    stream: false
+                }).then(response => {
+                    addMessage(response.content, 'bot');
+                }).catch(error => {
+                    addMessage('抱歉，服务暂时不可用，请稍后再试。', 'bot');
+                });
             }
         }
         
@@ -835,10 +848,15 @@
         function askQuestion(question) {
             addMessage(question, 'user');
             
-            setTimeout(() => {
-                const reply = getReply(question);
-                addMessage(reply, 'bot');
-            }, 1000);
+            // 调用扣子WebSDK发送消息
+            cozeWebSDK.chat.sendMessage({
+                message: question,
+                stream: false
+            }).then(response => {
+                addMessage(response.content, 'bot');
+            }).catch(error => {
+                addMessage('抱歉，服务暂时不可用，请稍后再试。', 'bot');
+            });
             
             // 滚动到聊天区域
             document.getElementById('chat').scrollIntoView({ behavior: 'smooth' });
@@ -859,20 +877,6 @@
             if (event.key === 'Enter') {
                 sendMessage();
             }
-        }
-        
-        // 获取回复（模拟）
-        function getReply(question) {
-            const replies = {
-                '老板拖欠工资怎么办？': '根据《保障农民工工资支付条例》，您有权要求老板立即支付工资。建议您：1️⃣ 先收集证据（考勤表、工资条、聊天记录）2️ 与老板协商 3️⃣ 协商不成去劳动监察大队投诉 4️ 必要时申请劳动仲裁。需要我帮您生成投诉信吗？',
-                '工地上受伤了怎么取证？': '工伤取证很重要！请拍摄：1️⃣ 受伤部位照片 2️⃣ 事故现场照片 3️ 就医记录 4️⃣ 工友证言。记得在30天内要求单位申请工伤认定，单位不申请的话，您自己可以在1年内申请。',
-                '工地有安全隐患怎么办？': '发现安全隐患，您有权拒绝违章作业！建议：1️⃣ 立即向安全员报告 2️⃣ 拍照留存证据 3️⃣ 如拒不整改，拨打12350安全生产举报热线。安全第一，平安回家！',
-                '帮我记工时算工资': '好的，请告诉我：1️⃣ 您的姓名 2️⃣ 工作日期 3️⃣ 工作时长 4️ 日薪标准 5️⃣ 是否有加班。我会帮您记录并核算工资。',
-                '想学技术提升技能': '根据您的经验，推荐您：1️⃣ 考取高级技能证书（如焊工、电工）2️ 学习装配式建筑技术 3️ 学习BIM建模。很多培训是免费的，考过还有补贴！',
-                '心里烦，想找人聊聊': '师傅，我特别理解您的感受。出来打工不容易，有什么烦心事都可以跟我说。如果情绪很低落，也可以拨打心理援助热线：400-161-9995（24小时免费）。我会一直在这里陪您。'
-            };
-            
-            return replies[question] || '收到您的问题，我正在为您查询相关信息。请稍等，我会给您详细的解答。';
         }
         
         // 平滑滚动
