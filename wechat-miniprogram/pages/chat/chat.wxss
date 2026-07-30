@@ -1,0 +1,133 @@
+/* pages/chat/chat.wxss */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f5f5f5;
+}
+
+/* 消息列表 */
+.message-list {
+  flex: 1;
+  padding: 20rpx;
+  overflow-y: auto;
+}
+
+.message-item {
+  display: flex;
+  margin-bottom: 30rpx;
+  align-items: flex-start;
+}
+
+.user-message {
+  flex-direction: row-reverse;
+}
+
+.avatar {
+  width: 70rpx;
+  height: 70rpx;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.message-content {
+  max-width: 70%;
+  margin: 0 20rpx;
+  padding: 20rpx 30rpx;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+.user-message .message-content {
+  background: #1890ff;
+  color: #fff;
+  border-top-right-radius: 5rpx;
+}
+
+.bot-message .message-content {
+  background: #fff;
+  color: #333;
+  border-top-left-radius: 5rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.message-text {
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 20rpx;
+  color: #999;
+  font-size: 24rpx;
+}
+
+/* 输入区域 */
+.input-area {
+  display: flex;
+  padding: 20rpx;
+  background: #fff;
+  border-top: 1rpx solid #e8e8e8;
+  align-items: flex-end;
+}
+
+.input-wrapper {
+  flex: 1;
+  background: #f5f5f5;
+  border-radius: 20rpx;
+  padding: 15rpx 20rpx;
+}
+
+.message-input {
+  width: 100%;
+  min-height: 40rpx;
+  max-height: 200rpx;
+  font-size: 28rpx;
+}
+
+.send-btn {
+  margin-left: 20rpx;
+  padding: 15rpx 30rpx;
+  background: #ccc;
+  color: #fff;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+}
+
+.send-btn.active {
+  background: #1890ff;
+}
+
+/* 快捷问题 */
+.quick-questions {
+  padding: 20rpx;
+  background: #fff;
+  border-top: 1rpx solid #e8e8e8;
+}
+
+.quick-title {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 15rpx;
+}
+
+.quick-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15rpx;
+}
+
+.quick-item {
+  padding: 15rpx 25rpx;
+  background: #f0f7ff;
+  color: #1890ff;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+}

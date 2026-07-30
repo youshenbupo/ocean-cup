@@ -1,0 +1,56 @@
+<!--pages/community/community.wxml-->
+<view class="community-container">
+  <!-- 顶部标签 -->
+  <view class="tab-bar">
+    <view class="tab-item {{currentTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">全部</view>
+    <view class="tab-item {{currentTab === 'salary' ? 'active' : ''}}" bindtap="switchTab" data-tab="salary">欠薪</view>
+    <view class="tab-item {{currentTab === 'safety' ? 'active' : ''}}" bindtap="switchTab" data-tab="safety">安全</view>
+    <view class="tab-item {{currentTab === 'skill' ? 'active' : ''}}" bindtap="switchTab" data-tab="skill">技能</view>
+    <view class="tab-item {{currentTab === 'life' ? 'active' : ''}}" bindtap="switchTab" data-tab="life">生活</view>
+  </view>
+
+  <!-- 帖子列表 -->
+  <scroll-view class="post-list" scroll-y bindscrolltolower="loadMore">
+    <view class="post-item" wx:for="{{posts}}" wx:key="id" bindtap="viewPost" data-id="{{item.id}}">
+      <view class="post-header">
+        <view class="user-info">
+          <view class="user-avatar">{{item.author_name[0]}}</view>
+          <view class="user-name">{{item.author_name}}</view>
+        </view>
+        <view class="post-time">{{item.created_at}}</view>
+      </view>
+      <view class="post-title">{{item.title}}</view>
+      <view class="post-content">{{item.content}}</view>
+      <view class="post-tags" wx:if="{{item.tags}}">
+        <view class="tag" wx:for="{{item.tags}}" wx:key="*this">{{item}}</view>
+      </view>
+      <view class="post-stats">
+        <view class="stat-item">
+          <text class="icon">👁️</text>
+          <text>{{item.view_count || 0}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="icon">💬</text>
+          <text>{{item.comment_count || 0}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="icon">👍</text>
+          <text>{{item.like_count || 0}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="loading-more" wx:if="{{isLoading}}">
+      <text>加载中...</text>
+    </view>
+    
+    <view class="no-more" wx:if="{{noMore && posts.length > 0}}">
+      <text>没有更多了</text>
+    </view>
+  </scroll-view>
+
+  <!-- 发帖按钮 -->
+  <view class="fab-btn" bindtap="createPost">
+    <text class="fab-icon">+</text>
+  </view>
+</view>

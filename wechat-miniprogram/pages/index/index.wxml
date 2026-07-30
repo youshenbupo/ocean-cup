@@ -1,0 +1,64 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 欢迎区域 -->
+  <view class="welcome-section">
+    <image class="logo" src="/images/logo.png" mode="aspectFit"></image>
+    <text class="title">工友权益明白人</text>
+    <text class="subtitle">您的权益保障法律顾问</text>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="feature-grid">
+    <view class="feature-item" bindtap="goToChat" data-type="legal">
+      <view class="feature-icon legal">⚖️</view>
+      <text class="feature-text">法律顾问</text>
+      <text class="feature-desc">欠薪/工伤/合同</text>
+    </view>
+    
+    <view class="feature-item" bindtap="goToChat" data-type="safety">
+      <view class="feature-icon safety">🦺</view>
+      <text class="feature-text">安全守护</text>
+      <text class="feature-desc">隐患识别/天气提醒</text>
+    </view>
+    
+    <view class="feature-item" bindtap="goToChat" data-type="salary">
+      <view class="feature-icon salary">💰</view>
+      <text class="feature-text">薪资管家</text>
+      <text class="feature-desc">记工时/算工资</text>
+    </view>
+    
+    <view class="feature-item" bindtap="goToChat" data-type="skill">
+      <view class="feature-icon skill">📚</view>
+      <text class="feature-text">技能导师</text>
+      <text class="feature-desc">考证/培训/补贴</text>
+    </view>
+    
+    <view class="feature-item" bindtap="goToChat" data-type="life">
+      <view class="feature-icon life">🏠</view>
+      <text class="feature-text">生活管家</text>
+      <text class="feature-desc">社保/子女教育</text>
+    </view>
+    
+    <view class="feature-item" bindtap="goToCommunity">
+      <view class="feature-icon community">💬</view>
+      <text class="feature-text">工友社区</text>
+      <text class="feature-desc">互助/经验分享</text>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="quick-actions">
+    <text class="section-title">快捷功能</text>
+    <view class="action-list">
+      <view class="action-item" bindtap="quickAction" data-action="weather">
+        <text>🌤️ 今日安全提醒</text>
+      </view>
+      <view class="action-item" bindtap="quickAction" data-action="record">
+        <text>📝 记录今日工时</text>
+      </view>
+      <view class="action-item" bindtap="quickAction" data-action="hotline">
+        <text>📞 维权热线</text>
+      </view>
+    </view>
+  </view>
+</view>
