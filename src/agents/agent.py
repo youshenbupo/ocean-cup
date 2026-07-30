@@ -1,3 +1,16 @@
+"""
+工友权益明白人 - 智能体主逻辑
+
+采用单Agent多功能架构，通过Prompt工程实现多角色切换：
+- 法律顾问：权益问答、维权指引、证据清单
+- 安全卫士：安全隐患识别、安全提醒
+- 心理伙伴：情绪疏导、危机干预、陪伴
+- 薪资管家：工时记录、工资核算、欠条生成
+- 工伤取证：多模态图片分析、取证建议
+
+所有功能共享知识库和工具，通过Prompt指导Agent根据场景切换角色。
+"""
+
 import os
 import json
 from typing import Annotated
@@ -39,6 +52,23 @@ def handle_tool_errors(request, handler):
 
 
 def build_agent(ctx=None):
+    """
+    构建「工友权益明白人」智能体
+    
+    功能模块：
+    1. 法律顾问 - 权益问答、维权指引、证据清单、渠道查询、文书模板
+    2. 安全卫士 - 安全隐患识别、安全报告生成、季节性安全提醒
+    3. 心理伙伴 - 情绪识别、共情安抚、危机干预、日常陪伴
+    4. 薪资管家 - 工时记录指导、工资核算、工资欠条生成、欠薪预警
+    5. 工伤取证 - 多模态图片分析、取证建议、证据清单
+    
+    架构设计：
+    - 单Agent多功能架构，通过Prompt工程实现角色切换
+    - 共享知识库（20+文档：法律法规、政策解读、典型案例、维权渠道、
+      工伤取证、心理援助、安全守护、薪资管家）
+    - 工具：知识库检索（search_law_knowledge, search_hotlines）
+    - 短期记忆：滑动窗口20轮对话
+    """
     workspace_path = os.getenv("COZE_WORKSPACE_PATH", "/workspace/projects")
     config_path = os.path.join(workspace_path, LLM_CONFIG)
 
