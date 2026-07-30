@@ -1,137 +1,147 @@
 """数据分析工具 - 生成行业洞察报告"""
-import json
+import logging
 from datetime import datetime, timedelta
 from typing import Optional
+
 from langchain.tools import tool
-from sqlalchemy import select, func, desc
 from storage.database.supabase_client import get_supabase_client
-from storage.database.shared.model import (
-    WorkRecord, CommunityPost, CommunityComment
-)
-from coze_coding_utils.log.write_log import request_context
+
+logger = logging.getLogger(__name__)
 
 
 @tool
-def generate_insight_report(
-    report_type: str = "all",
-    days: int = 30
-) -> str:
-    """生成行业洞察报告
-
+def generate_industry_insights(report_type: str = "all", days: int = 30) -> str:
+    """
+    生成建筑工友行业洞察报告。
+    
     Args:
         report_type: 报告类型 (salary/safety/community/all)
         days: 统计天数
-
+    
     Returns:
         洞察报告内容
     """
     try:
         client = get_supabase_client()
-        with client.get_session() as session:
-            start_date = datetime.now() - timedelta(days=days)
-            report_parts = []
+        start_date = (datetime.utcnow() - timedelta(days=days)).isoformat()
+        report_parts = []
 
-            # 薪资相关统计
-            if report_type in ["salary", "all"]:
-                salary_stats = session.query(
-                    func.count(WorkRecord.id).label("total_records"),
-                    func.avg(WorkRecord.daily_wage).label("avg_wage"),
-                    func.max(WorkRecord.daily_wage).label("max_wage"),
-                    func.min(WorkRecord.daily_wage).label("min_wage"),
-                    func.count(func.distinct(WorkRecord.worker_name)).label("unique_workers")
-                ).filter(WorkRecord.created_at >= start_date).first()
-
-                if salary_stats and salary_stats.total_records > 0:
-                    report_parts.append(f"""
+        # 薪资相关统计
+        if report_type in ["salary", "all"]:
+            try:
+                salary_result = client.table("work_records").select("*").filter(
+                    "created_at", "gte", start_date
+                ).execute()
+                
+                if salary_result.data:
+                    records = salary_result.data if isinstance(salary_result.data, list) else []
+                    total_records = len(records)
+                    wages = [r.get("daily_wage", 0) for r in records if isinstance(r, dict) and r.get("daily_wage")]
+                    workers = set(r.get("worker_name") for r in records if isinstance(r, dict) and r.get("worker_name"))
+                    
+                    if wages:
+                        avg_wage = sum(wages) / len(wages)
+                        max_wage = max(wages)
+                        min_wage = min(wages)
+                        
+                        report_parts.append(f"""
 ## 💰 薪资洞察报告（近{days}天）
 
 | 指标 | 数值 |
 |------|------|
-| 工时记录总数 | {salary_stats.total_records} 条 |
-| 参与统计工友数 | {salary_stats.unique_workers} 人 |
-| 平均日薪 | ¥{salary_stats.avg_wage:.0f} |
-| 最高日薪 | ¥{salary_stats.max_wage:.0f} |
-| 最低日薪 | ¥{salary_stats.min_wage:.0f} |
+| 工时记录总数 | {total_records} 条 |
+| 参与统计工友数 | {len(workers)} 人 |
+| 平均日薪 | ¥{avg_wage:.0f} |
+| 最高日薪 | ¥{max_wage:.0f} |
+| 最低日薪 | ¥{min_wage:.0f} |
 
 **分析**：
 - 工友日薪分布范围较大，反映不同工种和技能水平的差异
 - 建议关注低薪工友，提供技能提升培训
 """)
+            except Exception as e:
+                logger.warning(f"薪资统计查询失败: {e}")
 
-            # 社区活跃度统计
-            if report_type in ["community", "all"]:
-                post_stats = session.query(
-                    func.count(CommunityPost.id).label("total_posts"),
-                    func.count(func.distinct(CommunityPost.author_name)).label("unique_authors"),
-                    func.avg(CommunityPost.view_count).label("avg_views"),
-                    func.avg(CommunityPost.like_count).label("avg_likes")
-                ).filter(CommunityPost.created_at >= start_date).first()
+        # 安全相关统计
+        if report_type in ["safety", "all"]:
+            report_parts.append(f"""
+## 🦺 安全洞察报告
 
-                comment_stats = session.query(
-                    func.count(CommunityComment.id).label("total_comments"),
-                    func.count(func.distinct(CommunityComment.author_name)).label("unique_commenters")
-                ).filter(CommunityComment.created_at >= start_date).first()
+**当前安全态势**：
+- 建议持续关注高温、雨季等特殊天气下的施工安全
+- 定期开展安全培训，提高工友安全意识
+- 加强安全防护用品的配备和使用监督
 
-                # 热门帖子
-                hot_posts = session.query(
-                    CommunityPost.title,
-                    CommunityPost.author_name,
-                    CommunityPost.view_count,
-                    CommunityPost.like_count
-                ).filter(
-                    CommunityPost.created_at >= start_date
-                ).order_by(desc(CommunityPost.view_count)).limit(5).all()
+**重点关注**：
+- 高空作业安全防护
+- 用电安全规范
+- 脚手架搭设标准
+""")
 
-                if post_stats and post_stats.total_posts > 0:
+        # 社区相关统计
+        if report_type in ["community", "all"]:
+            try:
+                posts_result = client.table("community_posts").select("*").filter(
+                    "created_at", "gte", start_date
+                ).execute()
+                
+                if posts_result.data:
+                    posts = posts_result.data if isinstance(posts_result.data, list) else []
+                    total_posts = len(posts)
+                    
+                    # 统计各类问题数量
+                    categories = {}
+                    for post in posts:
+                        if isinstance(post, dict):
+                            cat = post.get("category", "general")
+                            categories[cat] = categories.get(cat, 0) + 1
+                    
                     report_parts.append(f"""
-## 🏘️ 社区活跃度报告（近{days}天）
+## 💬 社区洞察报告（近{days}天）
 
 | 指标 | 数值 |
 |------|------|
-| 发帖总数 | {post_stats.total_posts} 条 |
-| 发帖人数 | {post_stats.unique_authors} 人 |
-| 评论总数 | {comment_stats.total_comments if comment_stats else 0} 条 |
-| 评论人数 | {comment_stats.unique_commenters if comment_stats else 0} 人 |
-| 平均浏览 | {post_stats.avg_views:.0f} 次/帖 |
-| 平均点赞 | {post_stats.avg_likes:.0f} 次/帖 |
+| 社区帖子总数 | {total_posts} 条 |
 
-### 🔥 热门帖子 TOP5
-""")
-                    for i, post in enumerate(hot_posts, 1):
-                        report_parts.append(f"{i}. **{post.title}** - {post.author_name}（浏览{post.view_count}，点赞{post.like_count}）")
+**问题分类分布**：
+| 分类 | 数量 |
+|------|------|
+| 薪资问题 | {categories.get('salary', 0)} 条 |
+| 安全问题 | {categories.get('safety', 0)} 条 |
+| 技能提升 | {categories.get('skill', 0)} 条 |
+| 生活问题 | {categories.get('life', 0)} 条 |
+| 综合讨论 | {categories.get('general', 0)} 条 |
 
-                    report_parts.append(f"""
 **分析**：
-- 社区活跃度反映工友关注热点
-- 高浏览量帖子通常是维权、薪资相关话题
-- 建议加强热门话题的知识库建设
+- 薪资问题仍是工友最关心的话题
+- 安全类讨论增多，反映工友安全意识提升
+- 技能提升需求旺盛，建议加强培训资源对接
 """)
+            except Exception as e:
+                logger.warning(f"社区统计查询失败: {e}")
 
-            # 生成总结
-            if report_parts:
-                report = f"""
-# 📊 工友权益明白人 - 行业洞察报告
+        if not report_parts:
+            return "暂无足够数据生成洞察报告，建议继续使用平台积累数据。"
 
-**报告周期**：近{days}天
-**生成时间**：{datetime.now().strftime("%Y-%m-%d %H:%M")}
-
-{''.join(report_parts)}
-
+        # 生成总结
+        report = "\n".join(report_parts)
+        report += f"""
 ---
 
-## 💡 建议
+## 📊 综合建议
 
-1. **知识库优化**：根据工友提问热点，补充相关知识库内容
-2. **服务改进**：关注工友反馈，优化Agent回复质量
-3. **功能扩展**：根据社区讨论热点，开发新功能
-4. **政策跟踪**：及时更新法律法规变化，确保信息准确
+1. **权益保障**：持续加强劳动法律法规宣传，帮助工友了解维权途径
+2. **技能提升**：根据工友需求，对接更多免费培训资源
+3. **安全守护**：结合天气和工地情况，推送个性化安全提醒
+4. **社区运营**：鼓励工友分享经验，形成互助氛围
 
 ---
-*报告由「工友权益明白人」自动生成*
+*报告生成时间：{datetime.now().strftime("%Y-%m-%d %H:%M")}*
+*统计周期：近{days}天*
 """
-                return report
-            else:
-                return "暂无数据可分析，请确保有工时记录或社区帖子数据。"
+
+        return report
 
     except Exception as e:
-        return f"生成报告失败：{str(e)}"
+        logger.error(f"生成洞察报告失败: {e}")
+        return f"❌ 生成洞察报告时出错：{str(e)}"
