@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工友权益明白人 - 建筑工友权益保障法律顾问</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 头部 */
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .header .tagline {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        /* 功能卡片 */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* 聊天区域 */
+        .chat-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .chat-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .chat-header .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        
+        .chat-header .info h3 {
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .chat-header .info p {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .chat-messages {
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+        
+        .message.bot {
+            justify-content: flex-start;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .chat-input input:focus {
+            border-color: #667eea;
+        }
+        
+        .chat-input button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        
+        .chat-input button:hover {
+            opacity: 0.9;
+        }
+        
+        /* 快捷问题 */
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .quick-question {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        .quick-question:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        /* 统计信息 */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            padding: 20px;
+            font-size: 14px;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1>🏗️ 工友权益明白人</h1>
+            <p class="subtitle">建筑工友权益保障法律顾问 · 7个专业Agent为您服务</p>
+            <p class="tagline">为人民建好房 · 为工友谋幸福</p>
+        </div>
+        
+        <!-- 统计信息 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">32</div>
+                <div class="stat-label">知识库文档</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">7</div>
+                <div class="stat-label">专业Agent</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">14</div>
+                <div class="stat-label">实用工具</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">24h</div>
+                <div class="stat-label">全天候服务</div>
+            </div>
+        </div>
+        
+        <!-- 功能卡片 -->
+        <div class="features">
+            <div class="feature-card" onclick="askQuestion('老板拖欠工资怎么办？')">
+                <div class="feature-icon">💼</div>
+                <h3>法律顾问</h3>
+                <p>权益问答、维权指引、证据清单、文书模板，帮您解决欠薪、工伤、合同等问题</p>
+            </div>
+            <div class="feature-card" onclick="askQuestion('工地有安全隐患怎么办？')">
+                <div class="feature-icon">🦺</div>
+                <h3>安全守护</h3>
+                <p>识别工地安全隐患，提供天气安全提醒，保障您的施工安全</p>
+            </div>
+            <div class="feature-card" onclick="askQuestion('心里烦，想找人聊聊')">
+                <div class="feature-icon">💬</div>
+                <h3>心理陪伴</h3>
+                <p>情绪疏导、危机干预、日常陪伴，做您的贴心树洞</p>
+            </div>
+            <div class="feature-card" onclick="askQuestion('帮我记工时算工资')">
+                <div class="feature-icon">💰</div>
+                <h3>薪资管家</h3>
+                <p>工时记录、工资核算、欠条生成、欠薪预警，守护您的血汗钱</p>
+            </div>
+            <div class="feature-card" onclick="askQuestion('想学技术提升技能')">
+                <div class="feature-icon">📚</div>
+                <h3>技能导师</h3>
+                <p>技能提升路径、考证指导、培训补贴查询，助力职业发展</p>
+            </div>
+            <div class="feature-card" onclick="askQuestion('孩子在外地上学需要什么手续？')">
+                <div class="feature-icon"></div>
+                <h3>生活管家</h3>
+                <p>社保医保、子女教育、租房指南，解决生活后顾之忧</p>
+            </div>
+        </div>
+        
+        <!-- 聊天区域 -->
+        <div class="chat-section">
+            <div class="chat-header">
+                <div class="avatar">🤖</div>
+                <div class="info">
+                    <h3>明白人</h3>
+                    <p>在线 · 随时为您服务</p>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="message-content">
+                        你好，我是「明白人」，专门帮咱建筑工友搞清楚自己该得啥、怎么要。<br><br>
+                        💼 权益保障：欠薪、工伤、合同、辞退...<br>
+                        📸 工伤取证：发张照片，我帮你看看怎么取证<br>
+                        🦺 安全守护：工地有隐患？拍照给我看看<br>
+                        💰 薪资管家：记工时、算工资、写欠条<br>
+                        📚 技能提升：学什么技术、怎么考证、培训补贴<br>
+                        🏠 生活帮助：社保医保、孩子上学、租房<br>
+                        💬 心里话：烦了累了，也可以找我聊聊<br><br>
+                        把你的情况跟我说说，我帮你理一理。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="输入您的问题..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">发送</button>
+            </div>
+            
+            <div class="quick-questions">
+                <div class="quick-question" onclick="askQuestion('老板拖欠工资怎么办？')">老板拖欠工资怎么办？</div>
+                <div class="quick-question" onclick="askQuestion('工地上受伤了怎么取证？')">工地上受伤了怎么取证？</div>
+                <div class="quick-question" onclick="askQuestion('工地有安全隐患怎么办？')">工地有安全隐患怎么办？</div>
+                <div class="quick-question" onclick="askQuestion('帮我记工时算工资')">帮我记工时算工资</div>
+                <div class="quick-question" onclick="askQuestion('想学技术提升技能')">想学技术提升技能</div>
+                <div class="quick-question" onclick="askQuestion('心里烦，想找人聊聊')">心里烦，想找人聊聊</div>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <div class="footer">
+            <p>© 2024 工友权益明白人 · 为人民建好房 · 为工友谋幸福</p>
+            <p>中国建筑国际集团 · 第一届"海之子"杯 AI 智能体挑战计划</p>
+        </div>
+    </div>
+    
+    <script>
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage(message, 'user');
+                input.value = '';
+                
+                // 模拟回复（实际应该调用API）
+                setTimeout(() => {
+                    const reply = getReply(message);
+                    addMessage(reply, 'bot');
+                }, 1000);
+            }
+        }
+        
+        // 快捷提问
+        function askQuestion(question) {
+            addMessage(question, 'user');
+            
+            setTimeout(() => {
+                const reply = getReply(question);
+                addMessage(reply, 'bot');
+            }, 1000);
+        }
+        
+        // 添加消息
+        function addMessage(content, type) {
+            const messages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // 处理回车键
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        // 获取回复（模拟）
+        function getReply(question) {
+            const replies = {
+                '老板拖欠工资怎么办？': '根据《保障农民工工资支付条例》，您有权要求老板立即支付工资。建议您：1️ 先收集证据（考勤表、工资条、聊天记录）2️⃣ 与老板协商 3️ 协商不成去劳动监察大队投诉 4️⃣ 必要时申请劳动仲裁。需要我帮您生成投诉信吗？',
+                '工地上受伤了怎么取证？': '工伤取证很重要！请拍摄：1️ 受伤部位照片 2️ 事故现场照片 3️⃣ 就医记录 4️⃣ 工友证言。记得在30天内要求单位申请工伤认定，单位不申请的话，您自己可以在1年内申请。',
+                '工地有安全隐患怎么办？': '发现安全隐患，您有权拒绝违章作业！建议：1️⃣ 立即向安全员报告 2️⃣ 拍照留存证据 3️⃣ 如拒不整改，拨打12350安全生产举报热线。安全第一，平安回家！',
+                '帮我记工时算工资': '好的，请告诉我：1️⃣ 您的姓名 2️ 工作日期 3️⃣ 工作时长 4️⃣ 日薪标准 5️⃣ 是否有加班。我会帮您记录并核算工资。',
+                '想学技术提升技能': '根据您的经验，推荐您：1️⃣ 考取高级技能证书（如焊工、电工）2️⃣ 学习装配式建筑技术 3️⃣ 学习BIM建模。很多培训是免费的，考过还有补贴！',
+                '心里烦，想找人聊聊': '师傅，我特别理解您的感受。出来打工不容易，有什么烦心事都可以跟我说。如果情绪很低落，也可以拨打心理援助热线：400-161-9995（24小时免费）。我会一直在这里陪您。'
+            };
+            
+            return replies[question] || '收到您的问题，我正在为您查询相关信息。请稍等，我会给您详细的解答。';
+        }
+    </script>
+</body>
+</html>
