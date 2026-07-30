@@ -65,12 +65,16 @@ ROUTER_PROMPT = """你是「明白人」智能路由助手。你的任务是分�
    - 关键词：工时、加班、算工资、记工、欠条、日薪、计件
    - 场景：工时记录、工资核算、工资欠条生成
 
-5. **chat** - 直接回复：
+5. **skill** - 技能导师：
+   - 关键词：技能、考证、培训、焊工证、电工证、提升、学什么、补贴
+   - 场景：技能提升路径推荐、考证指导、培训补贴查询
+
+6. **chat** - 直接回复：
    - 关键词：你好、谢谢、再见、闲聊
    - 场景：简单问候、闲聊
 
 ## 输出格式
-只输出一个词：legal / safety / support / salary / chat
+只输出一个词：legal / safety / support / salary / skill / chat
 """
 
 LEGAL_PROMPT = """# 角色：法律顾问「明白人」
@@ -178,6 +182,56 @@ SALARY_PROMPT = """# 角色：薪资管家
 - 老板开始找借口拖延
 - 老板换联系方式或躲避
 - 提醒维权时效：劳动仲裁1年、劳动监察2年
+"""
+
+SKILL_PROMPT = """# 角色：技能导师
+
+你是建筑工友的技能导师，帮助工友规划职业发展路径、指导考证、查询培训补贴。
+
+## 核心能力
+
+1. **技能提升路径推荐**
+   - 根据工友当前工种和经验，推荐适合的提升方向
+   - 普工→技工→高级技工→管理岗的成长路径
+
+2. **考证指导**
+   - 特种作业证（焊工、电工、架子工、塔吊司机）
+   - 职业技能等级证（初级、中级、高级）
+   - 八大员证（施工员、安全员等）
+   - 二级建造师
+
+3. **培训补贴查询**
+   - 国家职业技能培训补贴（800-3000元）
+   - 技能鉴定补贴
+   - 参保职工技能提升补贴
+   - 地方专项补贴
+
+## 回复原则
+
+1. **通俗易懂**：用大白话解释，避免专业术语
+2. **实用导向**：给出具体可操作的建议
+3. **引用政策**：说明补贴金额和申请条件
+4. **提醒防骗**：提醒工友不要相信"包过""买证"
+
+## 回复格式
+
+### 技能提升咨询
+【你的情况】{复述工友情况}
+🎯 推荐方向：{推荐工种/证书}
+📈 收入预期：{日薪/月薪范围}
+📚 学习路径：{如何学习}
+💰 补贴政策：{补贴金额和申请方式}
+
+### 考证咨询
+【想考的证书】{证书名称}
+📋 报考条件：{条件}
+📖 考试内容：{理论+实操}
+⏱️ 培训周期：{时间}
+💵 费用参考：{培训费+考试费}
+⚠️ 防骗提醒：{注意事项}
+
+## 知识库检索
+回答前必须先检索知识库，确保信息准确。
 """
 
 
@@ -298,6 +352,13 @@ def salary_node(state: AgentState, ctx=None) -> dict:
     return {"messages": result["messages"]}
 
 
+def skill_node(state: AgentState, ctx=None) -> dict:
+    """技能导师节点"""
+    agent = create_specialist_agent(SKILL_PROMPT, [search_law_knowledge], ctx)
+    result = agent.invoke({"messages": state["messages"]})
+    return {"messages": result["messages"]}
+
+
 def chat_node(state: AgentState, ctx=None) -> dict:
     """闲聊节点：直接回复"""
     llm = get_llm(ctx)
@@ -319,6 +380,8 @@ def route_decision(state: AgentState) -> str:
         return "support"
     elif next_agent == "salary":
         return "salary"
+    elif next_agent == "skill":
+        return "skill"
     else:
         return "chat"
 
@@ -337,6 +400,7 @@ def build_agent(ctx=None):
     workflow.add_node("safety", lambda state: safety_node(state, ctx))
     workflow.add_node("support", lambda state: support_node(state, ctx))
     workflow.add_node("salary", lambda state: salary_node(state, ctx))
+    workflow.add_node("skill", lambda state: skill_node(state, ctx))
     workflow.add_node("chat", lambda state: chat_node(state, ctx))
 
     # 设置入口
@@ -351,6 +415,7 @@ def build_agent(ctx=None):
             "safety": "safety",
             "support": "support",
             "salary": "salary",
+            "skill": "skill",
             "chat": "chat",
         }
     )
@@ -360,6 +425,7 @@ def build_agent(ctx=None):
     workflow.add_edge("safety", END)
     workflow.add_edge("support", END)
     workflow.add_edge("salary", END)
+    workflow.add_edge("skill", END)
     workflow.add_edge("chat", END)
 
     # 编译图
