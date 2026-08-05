@@ -530,9 +530,18 @@ def community_node(state: AgentState, ctx=None) -> dict:
 
 def chat_node(state: AgentState, ctx=None) -> dict:
     """闲聊节点：直接回复"""
+    # 加载系统提示词
+    workspace_path = os.getenv("COZE_WORKSPACE_PATH", "/workspace/projects")
+    config_path = os.path.join(workspace_path, LLM_CONFIG)
+    with open(config_path, 'r', encoding='utf-8') as f:
+        cfg = json.load(f)
+    
     llm = get_llm(ctx)
     messages = state["messages"]
-    response = llm.invoke(messages)
+    
+    # 添加系统提示词
+    chat_messages = [SystemMessage(content=cfg.get("sp", ""))] + messages
+    response = llm.invoke(chat_messages)
     return {"messages": [response]}
 
 
