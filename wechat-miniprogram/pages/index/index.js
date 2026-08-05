@@ -83,6 +83,10 @@ Page({
         message = '没签劳动合同怎么办？'
         type = 'legal'
         break
+      case 'contract-review':
+        message = '帮我审查一下劳动合同，看看有没有问题'
+        type = 'legal'
+        break
       case 'injury':
         message = '工伤认定流程是什么？'
         type = 'legal'
@@ -90,6 +94,22 @@ Page({
       case 'social':
         message = '我想了解社保怎么交'
         type = 'life'
+        break
+      case 'iou':
+        message = '我要写一份欠条'
+        type = 'legal'
+        break
+      case 'wage-slip':
+        message = '帮我生成一份工资条'
+        type = 'salary'
+        break
+      case 'cert':
+        message = '我要记录我的证书信息'
+        type = 'skill'
+        break
+      case 'expense':
+        message = '我要记一笔开支'
+        type = 'salary'
         break
     }
     

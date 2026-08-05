@@ -75,33 +75,33 @@
     </view>
     
     <view class="tools-grid">
-      <view class="tool-item" bindtap="quickAction" data-action="record">
+      <view class="tool-item" bindtap="quickAction" data-action="iou">
         <text class="tool-icon">📝</text>
+        <text class="tool-name">写欠条</text>
+      </view>
+      <view class="tool-item" bindtap="quickAction" data-action="wage-slip">
+        <text class="tool-icon">💰</text>
+        <text class="tool-name">工资条</text>
+      </view>
+      <view class="tool-item" bindtap="quickAction" data-action="contract-review">
+        <text class="tool-icon">🔍</text>
+        <text class="tool-name">审合同</text>
+      </view>
+      <view class="tool-item" bindtap="quickAction" data-action="record">
+        <text class="tool-icon">📊</text>
         <text class="tool-name">记工时</text>
       </view>
-      <view class="tool-item" bindtap="quickAction" data-action="overtime">
-        <text class="tool-icon">🧮</text>
-        <text class="tool-name">算加班费</text>
+      <view class="tool-item" bindtap="quickAction" data-action="cert">
+        <text class="tool-icon">🎓</text>
+        <text class="tool-name">证书记录</text>
+      </view>
+      <view class="tool-item" bindtap="quickAction" data-action="expense">
+        <text class="tool-icon">📒</text>
+        <text class="tool-name">记开支</text>
       </view>
       <view class="tool-item" bindtap="quickAction" data-action="weather">
         <text class="tool-icon">🌤️</text>
         <text class="tool-name">安全提醒</text>
-      </view>
-      <view class="tool-item" bindtap="quickAction" data-action="contract">
-        <text class="tool-icon">📄</text>
-        <text class="tool-name">合同咨询</text>
-      </view>
-      <view class="tool-item" bindtap="quickAction" data-action="injury">
-        <text class="tool-icon">🏥</text>
-        <text class="tool-name">工伤认定</text>
-      </view>
-      <view class="tool-item" bindtap="quickAction" data-action="social">
-        <text class="tool-icon">🏦</text>
-        <text class="tool-name">社保查询</text>
-      </view>
-      <view class="tool-item" bindtap="goToKnowledge">
-        <text class="tool-icon">📖</text>
-        <text class="tool-name">知识库</text>
       </view>
       <view class="tool-item" bindtap="goToCommunity">
         <text class="tool-icon">💬</text>

@@ -239,3 +239,98 @@
   border-radius: 12rpx;
   margin-bottom: 10rpx;
 }
+
+/* 工具按钮 */
+.tools-btn {
+  padding: 10rpx 15rpx;
+  margin-left: 10rpx;
+  font-size: 36rpx;
+  transition: all 0.3s;
+}
+
+.tools-btn:active {
+  transform: scale(0.9);
+}
+
+/* 工具面板 */
+.tool-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.1);
+  padding: 30rpx;
+  padding-bottom: 60rpx;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  z-index: 100;
+}
+
+.tool-panel.show {
+  transform: translateY(0);
+}
+
+.tool-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.tool-panel-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.tool-panel-close {
+  width: 50rpx;
+  height: 50rpx;
+  background: #f0f0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20rpx;
+}
+
+.tool-item {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 16rpx;
+  padding: 25rpx 15rpx;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.tool-item:active {
+  transform: scale(0.95);
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+}
+
+.tool-icon {
+  font-size: 48rpx;
+  margin-bottom: 10rpx;
+}
+
+.tool-name {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 5rpx;
+}
+
+.tool-desc {
+  display: block;
+  font-size: 20rpx;
+  color: #999;
+}

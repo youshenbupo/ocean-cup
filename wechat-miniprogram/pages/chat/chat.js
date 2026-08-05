@@ -11,7 +11,8 @@ Page({
     selectedImage: '',  // 选中的图片临时路径
     isRecording: false,  // 是否正在录音
     recorderManager: null,  // 录音管理器
-    lastProcessedType: ''  // 上次处理的类型，避免重复触发
+    lastProcessedType: '',  // 上次处理的类型，避免重复触发
+    showToolPanel: false  // 工具面板是否显示
   },
 
   onLoad: function(options) {
@@ -320,5 +321,34 @@ Page({
         wx.showToast({ title: '网络问题，请手动输入', icon: 'none' })
       }
     })
+  },
+
+  // 切换工具面板显示
+  toggleToolPanel: function() {
+    this.setData({
+      showToolPanel: !this.data.showToolPanel
+    })
+  },
+
+  // 使用工具
+  useTool: function(e) {
+    const tool = e.currentTarget.dataset.tool
+    this.setData({ showToolPanel: false })
+    
+    // 根据工具类型发送对应的指令消息
+    const toolMessages = {
+      'iou': '我要写一份欠条',
+      'wage-slip': '我要生成工资条',
+      'contract': '帮我审查一下劳动合同',
+      'arbitration': '我要申请劳动仲裁，帮我写申请书',
+      'cert': '我要记录我的证书信息',
+      'expense': '我要记一笔开支'
+    }
+    
+    const message = toolMessages[tool] || ''
+    if (message) {
+      this.setData({ inputValue: message })
+      this.sendMessage()
+    }
   }
 })

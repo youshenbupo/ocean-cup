@@ -52,9 +52,52 @@
       <view class="voice-btn {{isRecording ? 'recording' : ''}}" bindtap="toggleVoiceInput">
         <text>{{isRecording ? '🔴' : '🎤'}}</text>
       </view>
+      <view class="tools-btn" bindtap="toggleToolPanel">
+        <text>🔧</text>
+      </view>
     </view>
     <view class="send-btn {{inputValue || selectedImage ? 'active' : ''}}" bindtap="sendMessage">
       <text>发送</text>
+    </view>
+  </view>
+
+  <!-- 工具面板 -->
+  <view class="tool-panel {{showToolPanel ? 'show' : ''}}">
+    <view class="tool-panel-header">
+      <text class="tool-panel-title">🔧 实用工具</text>
+      <view class="tool-panel-close" bindtap="toggleToolPanel">✕</view>
+    </view>
+    <view class="tool-grid">
+      <view class="tool-item" bindtap="useTool" data-tool="iou">
+        <view class="tool-icon">📝</view>
+        <text class="tool-name">写欠条</text>
+        <text class="tool-desc">生成标准欠条</text>
+      </view>
+      <view class="tool-item" bindtap="useTool" data-tool="wage-slip">
+        <view class="tool-icon">💰</view>
+        <text class="tool-name">工资条</text>
+        <text class="tool-desc">生成工资凭证</text>
+      </view>
+      <view class="tool-item" bindtap="useTool" data-tool="contract">
+        <view class="tool-icon">📋</view>
+        <text class="tool-name">审合同</text>
+        <text class="tool-desc">AI审查合同</text>
+      </view>
+      <view class="tool-item" bindtap="useTool" data-tool="arbitration">
+        <view class="tool-icon">⚖️</view>
+        <text class="tool-name">仲裁申请</text>
+        <text class="tool-desc">生成申请书</text>
+      </view>
+      <view class="tool-item" bindtap="useTool" data-tool="cert">
+        <view class="tool-icon">🎓</view>
+        <text class="tool-name">证书记录</text>
+        <text class="tool-desc">到期提醒</text>
+      </view>
+      <view class="tool-item" bindtap="useTool" data-tool="expense">
+        <view class="tool-icon">📒</view>
+        <text class="tool-name">记开支</text>
+        <text class="tool-desc">记账汇总</text>
+      </view>
     </view>
   </view>
 
