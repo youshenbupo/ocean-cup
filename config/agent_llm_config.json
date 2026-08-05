@@ -15,9 +15,14 @@
         "calculate_salary",
         "check_overdue_reminders",
         "create_salary_reminder",
+        "mark_reminder_paid",
+        "get_my_reminders",
+        "set_my_name",
+        "who_am_i",
         "get_weather_safety_advisory",
         "post_question",
         "get_questions",
-        "get_question_detail"
+        "get_question_detail",
+        "add_comment"
     ]
 }

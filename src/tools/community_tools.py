@@ -151,7 +151,7 @@ def get_question_detail(post_id: int) -> str:
         if comments:
             for i, comment in enumerate(comments, 1):
                 comment_dict = dict(comment) if not isinstance(comment, dict) else comment
-                commenter = comment_dict.get("commenter_name", "匿名")
+                commenter = comment_dict.get("author_name", "匿名")
                 content = comment_dict.get("content", "")
                 lines.append(f"  {i}. {commenter}：{content}")
         else:
@@ -188,7 +188,7 @@ def add_comment(post_id: int, commenter_name: str, content: str) -> str:
         now = datetime.now(timezone.utc).isoformat()
         data = {
             "post_id": post_id,
-            "commenter_name": commenter_name,
+            "author_name": commenter_name,
             "content": content,
             "created_at": now
         }

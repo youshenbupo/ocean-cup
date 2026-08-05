@@ -47,7 +47,7 @@ def record_work(
             record_id = existing.data.get('id')
             update_data = {
                 'daily_wage': daily_wage,
-                'hours_worked': hours_worked,
+                'work_hours': hours_worked,
                 'is_overtime': is_overtime,
                 'overtime_type': overtime_type,
                 'notes': notes,
@@ -63,7 +63,7 @@ def record_work(
                 'worker_name': worker_name,
                 'work_date': work_date,
                 'daily_wage': daily_wage,
-                'hours_worked': hours_worked,
+                'work_hours': hours_worked,
                 'is_overtime': is_overtime,
                 'overtime_type': overtime_type,
                 'notes': notes
@@ -89,7 +89,7 @@ def calculate_salary(worker_name: str, start_date: str, end_date: str) -> str:
     
     try:
         response = client.table('work_records').select(
-            'work_date,daily_wage,hours_worked,is_overtime,overtime_type'
+            'work_date,daily_wage,work_hours,is_overtime,overtime_type'
         ).eq('worker_name', worker_name).gte(
             'work_date', start_date
         ).lte('work_date', end_date).order('work_date').execute()
@@ -105,7 +105,7 @@ def calculate_salary(worker_name: str, start_date: str, end_date: str) -> str:
             if not isinstance(r, dict):
                 continue
             daily_wage = Decimal(str(r.get('daily_wage', 0)))
-            hours = Decimal(str(r.get('hours_worked', 8)))
+            hours = Decimal(str(r.get('work_hours', 8)))
             base_hours = Decimal('8')
             
             is_overtime = r.get('is_overtime', False)
@@ -162,8 +162,8 @@ def check_overdue_reminders() -> str:
     try:
         today = date.today().isoformat()
         response = client.table('salary_reminders').select(
-            'worker_name,employer_name,amount_due,payment_due_date,status,reminder_sent'
-        ).eq('status', 'pending').lte('payment_due_date', today).execute()
+            'worker_name,employer_name,expected_amount,expected_pay_date,status,reminder_sent'
+        ).eq('status', 'pending').lte('expected_pay_date', today).execute()
         
         reminders = response.data
         if not reminders or not isinstance(reminders, list):
@@ -173,12 +173,12 @@ def check_overdue_reminders() -> str:
         for r in reminders:
             if not isinstance(r, dict):
                 continue
-            due_date_str = r.get('payment_due_date', '')
+            due_date_str = r.get('expected_pay_date', '')
             if due_date_str:
                 days_overdue = (date.today() - date.fromisoformat(due_date_str)).days
             else:
                 days_overdue = 0
-            result += f"- {r.get('worker_name', '')} 被 {r.get('employer_name', '')} 欠薪 {r.get('amount_due', 0)}元\n"
+            result += f"- {r.get('worker_name', '')} 被 {r.get('employer_name', '')} 欠薪 {r.get('expected_amount', 0)}元\n"
             result += f"  约定发薪日：{due_date_str}，已逾期 {days_overdue} 天\n\n"
         
         result += "💡 建议：超过约定发薪日7天未发，建议尽快与雇主沟通；超过15天，建议向劳动监察部门投诉。"
@@ -192,10 +192,9 @@ def check_overdue_reminders() -> str:
 def create_salary_reminder(
     worker_name: str,
     employer_name: str,
-    amount_due: float,
-    payment_due_date: str,
-    work_period_start: str,
-    work_period_end: str
+    expected_amount: float,
+    expected_pay_date: str,
+    notes: Optional[str] = None
 ) -> str:
     """
     创建薪资发放提醒。
@@ -203,10 +202,9 @@ def create_salary_reminder(
     Args:
         worker_name: 工友姓名
         employer_name: 雇主/公司名称
-        amount_due: 应发金额（元）
-        payment_due_date: 约定发薪日期，格式 YYYY-MM-DD
-        work_period_start: 工作期间开始，格式 YYYY-MM-DD
-        work_period_end: 工作期间结束，格式 YYYY-MM-DD
+        expected_amount: 应发金额（元）
+        expected_pay_date: 约定发薪日期，格式 YYYY-MM-DD
+        notes: 备注（如工作期间等补充信息）
     """
     ctx = request_context.get() or new_context(method="create_salary_reminder")
     client = get_supabase_client(ctx)
@@ -215,14 +213,78 @@ def create_salary_reminder(
         insert_data = {
             'worker_name': worker_name,
             'employer_name': employer_name,
-            'amount_due': amount_due,
-            'payment_due_date': payment_due_date,
-            'work_period_start': work_period_start,
-            'work_period_end': work_period_end,
-            'status': 'pending'
+            'expected_amount': expected_amount,
+            'expected_pay_date': expected_pay_date,
+            'status': 'pending',
+            'reminder_sent': False,
+            'notes': notes
         }
         response = client.table('salary_reminders').insert(insert_data).execute()
         
-        return f"已创建薪资提醒：{employer_name} 应于 {payment_due_date} 前支付 {amount_due}元 给 {worker_name}。到期未发我会提醒你。"
+        return f"已创建薪资提醒：{employer_name} 应于 {expected_pay_date} 前支付 {expected_amount}元 给 {worker_name}。到期未发我会提醒你。"
     except APIError as e:
         return f"创建提醒失败：{e.message}"
+
+
+@tool
+def mark_reminder_paid(reminder_id: int) -> str:
+    """
+    将薪资提醒标记为已支付。
+    
+    Args:
+        reminder_id: 提醒记录的ID
+    """
+    ctx = request_context.get() or new_context(method="mark_reminder_paid")
+    client = get_supabase_client(ctx)
+    
+    try:
+        update_data = {
+            'status': 'paid',
+            'reminder_sent': True,
+            'updated_at': datetime.utcnow().isoformat()
+        }
+        response = client.table('salary_reminders').update(update_data).eq(
+            'id', reminder_id
+        ).execute()
+        
+        if response.data:
+            return f"已将提醒 #{reminder_id} 标记为已支付 ✅"
+        else:
+            return f"未找到ID为 {reminder_id} 的提醒记录"
+    except APIError as e:
+        return f"更新提醒状态失败：{e.message}"
+
+
+@tool
+def get_my_reminders(worker_name: str) -> str:
+    """
+    查询某位工友的所有薪资提醒记录。
+    
+    Args:
+        worker_name: 工友姓名
+    """
+    ctx = request_context.get() or new_context(method="get_my_reminders")
+    client = get_supabase_client(ctx)
+    
+    try:
+        response = client.table('salary_reminders').select(
+            'id,worker_name,employer_name,expected_amount,expected_pay_date,status,reminder_sent,created_at'
+        ).eq('worker_name', worker_name).order('created_at', desc=True).execute()
+        
+        reminders = response.data
+        if not reminders or not isinstance(reminders, list):
+            return f"未找到 {worker_name} 的薪资提醒记录"
+        
+        result = f"【{worker_name} 的薪资提醒】共 {len(reminders)} 条：\n\n"
+        for r in reminders:
+            if not isinstance(r, dict):
+                continue
+            status_emoji = {'pending': '⏳', 'paid': '✅', 'overdue': '❗'}.get(r.get('status', ''), '❓')
+            result += f"{status_emoji} #{r.get('id')} | {r.get('employer_name', '')} | "
+            result += f"{r.get('expected_amount', 0)}元 | "
+            result += f"约定发薪日：{r.get('expected_pay_date', '')} | "
+            result += f"状态：{r.get('status', '')}\n"
+        
+        return result
+    except APIError as e:
+        return f"查询提醒失败：{e.message}"

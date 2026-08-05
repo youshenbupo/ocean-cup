@@ -26,9 +26,10 @@ from langchain_core.messages import AnyMessage, ToolMessage, SystemMessage, AIMe
 from coze_coding_utils.runtime_ctx.context import default_headers
 from storage.memory.memory_saver import get_memory_saver
 from tools.knowledge_search_tool import search_law_knowledge, search_hotlines
-from tools.salary_tools import record_work, calculate_salary, check_overdue_reminders, create_salary_reminder
+from tools.salary_tools import record_work, calculate_salary, check_overdue_reminders, create_salary_reminder, mark_reminder_paid, get_my_reminders
 from tools.weather_tool import get_weather_safety_advisory
-from tools.community_tools import post_question, get_questions, get_question_detail
+from tools.community_tools import post_question, get_questions, get_question_detail, add_comment
+from tools.user_identity_tool import set_my_name, who_am_i
 
 logger = logging.getLogger(__name__)
 
@@ -447,7 +448,45 @@ def _get_last_user_message(messages):
     return messages[-1] if messages else None
 
 
+def _get_recent_messages(messages, max_messages=6):
+    """提取最近的对话窗口（用户+助手交替），支持专业Agent多轮追问。
+    
+    策略：从后往前取最近的 max_messages 条消息，保证上下文连贯。
+    """
+    if len(messages) <= max_messages:
+        return messages
+    return messages[-max_messages:]
+
+
 # ============== Router节点 ==============
+
+# 关键词快速路由映射（避免不必要的LLM调用）
+_KEYWORD_ROUTE_MAP = {
+    "legal": ["欠薪", "拖欠", "工资不给", "工伤", "合同", "辞退", "开除", "维权", "仲裁", "劳动法",
+              "欠条", "赔偿", "解雇", "裁员", "用工", "劳动", "法律", "官司", "诉讼"],
+    "safety": ["安全", "隐患", "安全帽", "安全带", "脚手架", "高空", "坠落", "触电", "漏电",
+              "危险", "防护", "事故", "违章", "举报安全", "工地安全", "安全检查"],
+    "salary": ["记工时", "算工资", "工资核算", "工时记录", "加班费", "日薪", "发薪", "薪资",
+              "记工", "记账", "考勤", "出勤"],
+    "skill": ["培训", "考证", "技能", "电工证", "焊工", "架子工", "塔吊", "学徒", "提升",
+              "证书", "资格证", "学技术"],
+    "life": ["社保", "医保", "公积金", "住房", "子女", "上学", "教育", "落户", "居住证",
+             "新农合", "养老保险", "医疗保险"],
+    "community": ["社区", "帖子", "发帖", "工友经验", "交流", "互助", "分享", "讨论"],
+    "support": ["心理", "心情", "压力", "焦虑", "抑郁", "烦", "累", "苦", "难受", "想家",
+               "情绪", "陪伴", "倾诉", "不开心"],
+}
+
+
+def _keyword_route(text: str) -> str | None:
+    """基于关键词的快速路由，命中则直接返回，未命中返回None走LLM路由"""
+    text_lower = text.lower()
+    for route, keywords in _KEYWORD_ROUTE_MAP.items():
+        for kw in keywords:
+            if kw in text_lower:
+                return route
+    return None
+
 
 def _parse_route(content: str) -> str:
     """从LLM输出中健壮地提取路由值"""
@@ -469,8 +508,8 @@ def _parse_route(content: str) -> str:
 
 
 def router_node(state: AgentState, ctx=None) -> dict:
-    """路由节点：分析用户意图，决定路由到哪个Agent"""
-    llm = get_llm(ctx)
+    """路由节点：分析用户意图，决定路由到哪个Agent。
+    优先使用关键词快速路由，未命中时再调用LLM。"""
     messages = state["messages"]
 
     # 获取最后一条用户消息
@@ -478,7 +517,25 @@ def router_node(state: AgentState, ctx=None) -> dict:
     if not last_message:
         return {"next_agent": "legal"}
 
-    # 使用LLM分析意图
+    # 提取用户消息文本
+    user_text = ""
+    if isinstance(last_message, HumanMessage):
+        content = last_message.content
+        if isinstance(content, str):
+            user_text = content
+        elif isinstance(content, list):
+            user_text = " ".join(
+                item.get("text", "") for item in content if isinstance(item, dict) and item.get("type") == "text"
+            )
+
+    # 快速路径：关键词匹配（避免LLM调用，降低延迟）
+    keyword_result = _keyword_route(user_text)
+    if keyword_result:
+        logger.info(f"Router关键词快速路由: '{user_text[:30]}...' -> {keyword_result}")
+        return {"next_agent": keyword_result}
+
+    # 慢路径：LLM意图分析
+    llm = get_llm(ctx)
     router_messages = [
         SystemMessage(content=ROUTER_PROMPT),
         last_message
@@ -509,8 +566,8 @@ def create_specialist_agent(system_prompt: str, tools: list, ctx=None):
 def legal_node(state: AgentState, ctx=None) -> dict:
     """法律顾问节点"""
     agent = create_specialist_agent(LEGAL_PROMPT, [search_law_knowledge, search_hotlines], ctx)
-    last_msg = _get_last_user_message(state["messages"])
-    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
+    recent = _get_recent_messages(state["messages"])
+    result = agent.invoke({"messages": recent})
     return {"messages": result["messages"]}
 
 
@@ -518,41 +575,41 @@ def safety_node(state: AgentState, ctx=None) -> dict:
     """安全卫士节点"""
     safety_tools = [search_law_knowledge, get_weather_safety_advisory]
     agent = create_specialist_agent(SAFETY_PROMPT, safety_tools, ctx)
-    last_msg = _get_last_user_message(state["messages"])
-    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
+    recent = _get_recent_messages(state["messages"])
+    result = agent.invoke({"messages": recent})
     return {"messages": result["messages"]}
 
 
 def support_node(state: AgentState, ctx=None) -> dict:
     """心理伙伴节点"""
     agent = create_specialist_agent(SUPPORT_PROMPT, [search_law_knowledge], ctx)
-    last_msg = _get_last_user_message(state["messages"])
-    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
+    recent = _get_recent_messages(state["messages"])
+    result = agent.invoke({"messages": recent})
     return {"messages": result["messages"]}
 
 
 def salary_node(state: AgentState, ctx=None) -> dict:
     """薪资管家节点"""
-    salary_tools = [search_law_knowledge, record_work, calculate_salary, check_overdue_reminders, create_salary_reminder]
+    salary_tools = [search_law_knowledge, record_work, calculate_salary, check_overdue_reminders, create_salary_reminder, mark_reminder_paid, get_my_reminders, set_my_name, who_am_i]
     agent = create_specialist_agent(SALARY_PROMPT, salary_tools, ctx)
-    last_msg = _get_last_user_message(state["messages"])
-    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
+    recent = _get_recent_messages(state["messages"])
+    result = agent.invoke({"messages": recent})
     return {"messages": result["messages"]}
 
 
 def skill_node(state: AgentState, ctx=None) -> dict:
     """技能导师节点"""
     agent = create_specialist_agent(SKILL_PROMPT, [search_law_knowledge], ctx)
-    last_msg = _get_last_user_message(state["messages"])
-    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
+    recent = _get_recent_messages(state["messages"])
+    result = agent.invoke({"messages": recent})
     return {"messages": result["messages"]}
 
 
 def life_node(state: AgentState, ctx=None) -> dict:
     """生活管家节点"""
     agent = create_specialist_agent(LIFE_PROMPT, [search_law_knowledge], ctx)
-    last_msg = _get_last_user_message(state["messages"])
-    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
+    recent = _get_recent_messages(state["messages"])
+    result = agent.invoke({"messages": recent})
     return {"messages": result["messages"]}
 
 
@@ -560,11 +617,11 @@ def community_node(state: AgentState, ctx=None) -> dict:
     """工友社区节点"""
     agent = create_specialist_agent(
         COMMUNITY_PROMPT,
-        [search_law_knowledge, post_question, get_questions, get_question_detail],
+        [search_law_knowledge, post_question, get_questions, get_question_detail, add_comment],
         ctx
     )
-    last_msg = _get_last_user_message(state["messages"])
-    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
+    recent = _get_recent_messages(state["messages"])
+    result = agent.invoke({"messages": recent})
     return {"messages": result["messages"]}
 
 
