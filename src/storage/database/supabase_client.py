@@ -1,8 +1,11 @@
 import os
+import logging
 from typing import Optional
 
 import httpx
 from supabase import create_client, Client, ClientOptions
+
+logger = logging.getLogger(__name__)
 
 _env_loaded = False
 
@@ -73,12 +76,12 @@ def get_supabase_client(token: Optional[str] = None) -> Client:
         from coze_coding_dev_sdk.report import get_report_buffer, InstrumentedTransport
 
         buffer = get_report_buffer()
-        print(f"[report] supabase-client: buffer = {bool(buffer)}")
+        logger.debug(f"[report] supabase-client: buffer = {bool(buffer)}")
         if buffer:
             transport = InstrumentedTransport(transport, buffer, source="supabase")
-            print("[report] supabase-client: InstrumentedTransport injected")
+            logger.debug("[report] supabase-client: InstrumentedTransport injected")
     except Exception as e:
-        print(f"[report] supabase-client: setup failed: {e}")
+        logger.debug(f"[report] supabase-client: setup failed: {e}")
 
     http_client = httpx.Client(
         transport=transport,

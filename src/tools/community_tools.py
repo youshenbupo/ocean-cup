@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from langchain.tools import tool
+from coze_coding_utils.log.write_log import request_context
+from coze_coding_utils.runtime_ctx.context import new_context
 from storage.database.supabase_client import get_supabase_client
 
 logger = logging.getLogger(__name__)
@@ -23,8 +25,9 @@ def post_question(author_name: str, title: str, content: str, category: str = "g
     Returns:
         发布结果信息
     """
+    ctx = request_context.get() or new_context(method="post_question")
     try:
-        client = get_supabase_client()
+        client = get_supabase_client(ctx)
         
         now = datetime.now(timezone.utc).isoformat()
         data = {
@@ -59,8 +62,9 @@ def get_questions(category: Optional[str] = None, limit: int = 10) -> str:
     Returns:
         帖子列表
     """
+    ctx = request_context.get() or new_context(method="get_questions")
     try:
-        client = get_supabase_client()
+        client = get_supabase_client(ctx)
         
         query = client.table("community_posts").select("*").order("created_at", desc=True).limit(limit)
         
@@ -107,8 +111,9 @@ def get_question_detail(post_id: int) -> str:
     Returns:
         帖子详情和评论
     """
+    ctx = request_context.get() or new_context(method="get_question_detail")
     try:
-        client = get_supabase_client()
+        client = get_supabase_client(ctx)
         
         # 获取帖子详情
         post_result = client.table("community_posts").select("*").eq("id", post_id).execute()
@@ -171,8 +176,9 @@ def add_comment(post_id: int, commenter_name: str, content: str) -> str:
     Returns:
         评论结果
     """
+    ctx = request_context.get() or new_context(method="add_comment")
     try:
-        client = get_supabase_client()
+        client = get_supabase_client(ctx)
         
         # 检查帖子是否存在
         post_result = client.table("community_posts").select("id").eq("id", post_id).execute()

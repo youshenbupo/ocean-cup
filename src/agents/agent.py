@@ -12,7 +12,9 @@
 """
 
 import os
+import re
 import json
+import logging
 from typing import Annotated, Literal
 from langchain.agents import create_agent
 from langchain.agents.middleware import wrap_tool_call
@@ -20,13 +22,15 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import MessagesState, StateGraph, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
-from langchain_core.messages import AnyMessage, ToolMessage, SystemMessage, AIMessage
+from langchain_core.messages import AnyMessage, ToolMessage, SystemMessage, AIMessage, HumanMessage
 from coze_coding_utils.runtime_ctx.context import default_headers
 from storage.memory.memory_saver import get_memory_saver
 from tools.knowledge_search_tool import search_law_knowledge, search_hotlines
 from tools.salary_tools import record_work, calculate_salary, check_overdue_reminders, create_salary_reminder
 from tools.weather_tool import get_weather_safety_advisory
 from tools.community_tools import post_question, get_questions, get_question_detail
+
+logger = logging.getLogger(__name__)
 
 LLM_CONFIG = "config/agent_llm_config.json"
 MAX_MESSAGES = 40
@@ -400,8 +404,14 @@ def handle_tool_errors(request, handler):
 
 # ============== LLM初始化 ==============
 
-def get_llm(ctx=None):
-    """获取LLM实例"""
+_llm_cache = {}
+
+def get_llm(ctx=None, temperature_override=None):
+    """获取LLM实例（带缓存，避免重复创建）"""
+    cache_key = f"{temperature_override}"
+    if cache_key in _llm_cache:
+        return _llm_cache[cache_key]
+
     workspace_path = os.getenv("COZE_WORKSPACE_PATH", "/workspace/projects")
     config_path = os.path.join(workspace_path, LLM_CONFIG)
 
@@ -411,11 +421,11 @@ def get_llm(ctx=None):
     api_key = os.getenv("COZE_WORKLOAD_IDENTITY_API_KEY")
     base_url = os.getenv("COZE_INTEGRATION_MODEL_BASE_URL")
 
-    return ChatOpenAI(
+    llm = ChatOpenAI(
         model=cfg['config'].get("model"),
         api_key=api_key,
         base_url=base_url,
-        temperature=cfg['config'].get('temperature', 0.7),
+        temperature=temperature_override if temperature_override is not None else cfg['config'].get('temperature', 0.7),
         streaming=True,
         timeout=cfg['config'].get('timeout', 600),
         extra_body={
@@ -425,9 +435,38 @@ def get_llm(ctx=None):
         },
         default_headers=default_headers(ctx) if ctx else {}
     )
+    _llm_cache[cache_key] = llm
+    return llm
+
+
+def _get_last_user_message(messages):
+    """提取最后一条用户消息，避免将完整历史传给专业Agent"""
+    for msg in reversed(messages):
+        if isinstance(msg, HumanMessage):
+            return msg
+    return messages[-1] if messages else None
 
 
 # ============== Router节点 ==============
+
+def _parse_route(content: str) -> str:
+    """从LLM输出中健壮地提取路由值"""
+    text = str(content).strip().lower()
+    valid_routes = ["legal", "safety", "support", "salary", "skill", "life", "community", "chat"]
+
+    # 1. 精确匹配
+    if text in valid_routes:
+        return text
+
+    # 2. 正则提取：从文本中查找第一个匹配的有效路由词
+    for route in valid_routes:
+        if re.search(rf'\b{route}\b', text):
+            return route
+
+    # 3. 兜底：默认路由到法律顾问
+    logger.warning(f"Router无法识别意图: '{content[:100]}', 默认路由到legal")
+    return "legal"
+
 
 def router_node(state: AgentState, ctx=None) -> dict:
     """路由节点：分析用户意图，决定路由到哪个Agent"""
@@ -449,13 +488,8 @@ def router_node(state: AgentState, ctx=None) -> dict:
     content = response.content
     if isinstance(content, list):
         content = " ".join(str(item) for item in content)
-    route = str(content).strip().lower()
 
-    # 验证路由值
-    valid_routes = ["legal", "safety", "support", "salary", "skill", "life", "community", "chat"]
-    if route not in valid_routes:
-        route = "legal"  # 默认路由到法律顾问
-
+    route = _parse_route(content)
     return {"next_agent": route}
 
 
@@ -475,7 +509,8 @@ def create_specialist_agent(system_prompt: str, tools: list, ctx=None):
 def legal_node(state: AgentState, ctx=None) -> dict:
     """法律顾问节点"""
     agent = create_specialist_agent(LEGAL_PROMPT, [search_law_knowledge, search_hotlines], ctx)
-    result = agent.invoke({"messages": state["messages"]})
+    last_msg = _get_last_user_message(state["messages"])
+    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
     return {"messages": result["messages"]}
 
 
@@ -483,14 +518,16 @@ def safety_node(state: AgentState, ctx=None) -> dict:
     """安全卫士节点"""
     safety_tools = [search_law_knowledge, get_weather_safety_advisory]
     agent = create_specialist_agent(SAFETY_PROMPT, safety_tools, ctx)
-    result = agent.invoke({"messages": state["messages"]})
+    last_msg = _get_last_user_message(state["messages"])
+    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
     return {"messages": result["messages"]}
 
 
 def support_node(state: AgentState, ctx=None) -> dict:
     """心理伙伴节点"""
     agent = create_specialist_agent(SUPPORT_PROMPT, [search_law_knowledge], ctx)
-    result = agent.invoke({"messages": state["messages"]})
+    last_msg = _get_last_user_message(state["messages"])
+    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
     return {"messages": result["messages"]}
 
 
@@ -498,33 +535,36 @@ def salary_node(state: AgentState, ctx=None) -> dict:
     """薪资管家节点"""
     salary_tools = [search_law_knowledge, record_work, calculate_salary, check_overdue_reminders, create_salary_reminder]
     agent = create_specialist_agent(SALARY_PROMPT, salary_tools, ctx)
-    result = agent.invoke({"messages": state["messages"]})
+    last_msg = _get_last_user_message(state["messages"])
+    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
     return {"messages": result["messages"]}
 
 
 def skill_node(state: AgentState, ctx=None) -> dict:
     """技能导师节点"""
     agent = create_specialist_agent(SKILL_PROMPT, [search_law_knowledge], ctx)
-    result = agent.invoke({"messages": state["messages"]})
+    last_msg = _get_last_user_message(state["messages"])
+    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
     return {"messages": result["messages"]}
 
 
 def life_node(state: AgentState, ctx=None) -> dict:
     """生活管家节点"""
     agent = create_specialist_agent(LIFE_PROMPT, [search_law_knowledge], ctx)
-    result = agent.invoke({"messages": state["messages"]})
+    last_msg = _get_last_user_message(state["messages"])
+    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
     return {"messages": result["messages"]}
 
 
 def community_node(state: AgentState, ctx=None) -> dict:
     """工友社区节点"""
-    from tools.community_tools import post_question, get_questions, get_question_detail
     agent = create_specialist_agent(
         COMMUNITY_PROMPT,
         [search_law_knowledge, post_question, get_questions, get_question_detail],
         ctx
     )
-    result = agent.invoke({"messages": state["messages"]})
+    last_msg = _get_last_user_message(state["messages"])
+    result = agent.invoke({"messages": [last_msg] if last_msg else state["messages"]})
     return {"messages": result["messages"]}
 
 
@@ -550,20 +590,10 @@ def chat_node(state: AgentState, ctx=None) -> dict:
 def route_decision(state: AgentState) -> str:
     """根据路由结果决定下一个节点"""
     next_agent = state.get("next_agent", "legal")
-    if next_agent == "legal":
-        return "legal"
-    elif next_agent == "safety":
-        return "safety"
-    elif next_agent == "support":
-        return "support"
-    elif next_agent == "salary":
-        return "salary"
-    elif next_agent == "skill":
-        return "skill"
-    elif next_agent == "life":
-        return "life"
-    else:
-        return "chat"
+    valid_routes = {"legal", "safety", "support", "salary", "skill", "life", "community", "chat"}
+    if next_agent in valid_routes:
+        return next_agent
+    return "legal"  # 未知路由值默认回到法律顾问
 
 
 # ============== 构建多Agent图 ==============
@@ -619,5 +649,5 @@ def build_agent(ctx=None):
     workflow.add_edge("community", END)
     workflow.add_edge("chat", END)
 
-    # 返回包装对象（平台通过builder属性访问workflow）
+    # 返回包装对象（平台通过builder属性访问StateGraph并自行compile+注入checkpointer）
     return AgentBuilder(workflow)
