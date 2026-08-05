@@ -46,9 +46,22 @@
     </view>
   </view>
 
-  <!-- 快捷功能 -->
+  <!-- 紧急求助 -->
+  <view class="quick-actions urgent">
+    <text class="section-title">🚨 紧急求助</text>
+    <view class="action-list">
+      <view class="action-item urgent-item" bindtap="quickAction" data-action="hotline">
+        <text>📞 维权热线 12333</text>
+      </view>
+      <view class="action-item urgent-item" bindtap="quickAction" data-action="injury">
+        <text>🏥 工伤认定流程</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 常用功能 -->
   <view class="quick-actions">
-    <text class="section-title">快捷功能</text>
+    <text class="section-title">📋 常用功能</text>
     <view class="action-list">
       <view class="action-item" bindtap="quickAction" data-action="weather">
         <text>🌤️ 今日安全提醒</text>
@@ -56,8 +69,11 @@
       <view class="action-item" bindtap="quickAction" data-action="record">
         <text>📝 记录今日工时</text>
       </view>
-      <view class="action-item" bindtap="quickAction" data-action="hotline">
-        <text>📞 维权热线</text>
+      <view class="action-item" bindtap="quickAction" data-action="overtime">
+        <text>💰 加班费怎么算</text>
+      </view>
+      <view class="action-item" bindtap="quickAction" data-action="contract">
+        <text>📄 没签合同怎么办</text>
       </view>
     </view>
   </view>

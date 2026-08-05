@@ -4,7 +4,10 @@ App({
     // 后端API地址，部署后替换为实际域名
     apiBaseUrl: 'https://your-api-domain.com',
     sessionId: '',
-    userInfo: null
+    userInfo: null,
+    // 页面间导航参数
+    chatType: '',       // 聊天类型：legal/safety/salary/skill/life/general
+    chatMessage: ''     // 预设消息内容
   },
 
   onLaunch: function() {

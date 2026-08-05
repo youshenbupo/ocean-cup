@@ -1,0 +1,30 @@
+<!--pages/create-post/create-post.wxml-->
+<view class="container">
+  <view class="form-section">
+    <text class="label">帖子分类</text>
+    <picker mode="selector" range="{{categories}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+      <view class="picker">
+        {{categories[categoryIndex]}}
+      </view>
+    </picker>
+  </view>
+
+  <view class="form-section">
+    <text class="label">标题</text>
+    <input class="input" placeholder="简单描述你的问题" value="{{title}}" bindinput="onTitleInput" maxlength="50" />
+    <text class="char-count">{{title.length}}/50</text>
+  </view>
+
+  <view class="form-section">
+    <text class="label">详细内容</text>
+    <textarea class="textarea" placeholder="详细描述你的情况，这样其他工友才能更好地帮助你..." value="{{content}}" bindinput="onContentInput" maxlength="500" />
+    <text class="char-count">{{content.length}}/500</text>
+  </view>
+
+  <view class="form-section">
+    <text class="label">你的称呼</text>
+    <input class="input" placeholder="怎么称呼你" value="{{authorName}}" bindinput="onAuthorInput" />
+  </view>
+
+  <button class="submit-btn" bindtap="submitPost" loading="{{submitting}}">发布帖子</button>
+</view>

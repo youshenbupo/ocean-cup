@@ -1,0 +1,129 @@
+/* pages/post-detail/post-detail.wxss */
+.container {
+  padding: 20rpx;
+  padding-bottom: 140rpx;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.post-header {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.post-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.post-author, .post-time, .post-category {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.post-category {
+  background: #e6f7ff;
+  color: #1890ff;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+}
+
+.post-content {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.8;
+}
+
+.comment-section {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.comment-item {
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.comment-author {
+  font-size: 26rpx;
+  color: #1890ff;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.comment-content {
+  font-size: 28rpx;
+  color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.comment-time {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.empty-comments {
+  text-align: center;
+  padding: 40rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.comment-input-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+}
+
+.comment-input {
+  flex: 1;
+  height: 72rpx;
+  background: #f5f5f5;
+  border-radius: 36rpx;
+  padding: 0 30rpx;
+  font-size: 28rpx;
+}
+
+.comment-btn {
+  height: 72rpx;
+  line-height: 72rpx;
+  padding: 0 30rpx;
+  background: #1890ff;
+  color: #fff;
+  border-radius: 36rpx;
+  font-size: 28rpx;
+}

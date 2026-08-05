@@ -8,15 +8,13 @@ Page({
     isLoading: false,
     scrollToView: '',
     agentType: 'general',  // general, legal, safety, salary, skill, life
-    selectedImage: ''  // 选中的图片临时路径
+    selectedImage: '',  // 选中的图片临时路径
     isRecording: false,  // 是否正在录音
-    recorderManager: null  // 录音管理器
+    recorderManager: null,  // 录音管理器
+    lastProcessedType: ''  // 上次处理的类型，避免重复触发
   },
 
   onLoad: function(options) {
-    const type = options.type || 'general'
-    const message = options.message ? decodeURIComponent(options.message) : ''
-    
     // 初始化录音管理器
     this.recorderManager = wx.getRecorderManager()
     this.recorderManager.onStop((res) => {
@@ -28,19 +26,49 @@ Page({
       wx.showToast({ title: '录音失败，请重试', icon: 'none' })
     })
     
-    this.setData({ agentType: type })
+    // 从 globalData 或 URL 参数读取（兼容两种方式）
+    this.processNavigationParams(options)
+  },
+
+  onShow: function() {
+    // switchTab 不会触发 onLoad，但会触发 onShow
+    // 检查是否有新的导航参数
+    this.processNavigationParams()
+  },
+
+  // 处理导航参数（支持 globalData 和 URL 两种方式）
+  processNavigationParams: function(options) {
+    const type = (app.globalData.chatType) || (options && options.type) || 'general'
+    const message = app.globalData.chatMessage || 
+                    (options && options.message ? decodeURIComponent(options.message)) : ''
     
-    // 初始化欢迎消息
-    const welcomeMsg = this.getWelcomeMessage(type)
-    this.setData({
-      messages: [{ role: 'assistant', content: welcomeMsg }]
-    })
-    
-    // 如果有预设消息，自动发送
-    if (message) {
-      this.setData({ inputValue: message })
-      setTimeout(() => this.sendMessage(), 500)
+    // 避免重复处理相同的导航参数
+    const paramKey = `${type}_${message}`
+    if (this.data.lastProcessedType === paramKey && this.data.messages.length > 1) {
+      return
     }
+    
+    // 如果类型变了，重置对话
+    if (type !== this.data.agentType || this.data.messages.length === 0) {
+      this.setData({ agentType: type })
+      
+      // 初始化欢迎消息
+      const welcomeMsg = this.getWelcomeMessage(type)
+      this.setData({
+        messages: [{ role: 'assistant', content: welcomeMsg }],
+        lastProcessedType: paramKey
+      })
+      
+      // 如果有预设消息，自动发送
+      if (message) {
+        this.setData({ inputValue: message })
+        setTimeout(() => this.sendMessage(), 500)
+      }
+    }
+    
+    // 清除 globalData 中的参数，避免下次 onShow 重复处理
+    app.globalData.chatType = ''
+    app.globalData.chatMessage = ''
   },
 
   getWelcomeMessage: function(type) {

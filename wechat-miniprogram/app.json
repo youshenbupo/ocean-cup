@@ -2,7 +2,9 @@
   "pages": [
     "pages/index/index",
     "pages/chat/chat",
-    "pages/community/community"
+    "pages/community/community",
+    "pages/post-detail/post-detail",
+    "pages/create-post/create-post"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -11,8 +13,10 @@
     "navigationBarTextStyle": "white"
   },
   "tabBar": {
-    "color": "#999",
+    "color": "#666",
     "selectedColor": "#1890ff",
+    "backgroundColor": "#fff",
+    "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",
@@ -22,7 +26,7 @@
       },
       {
         "pagePath": "pages/chat/chat",
-        "text": "咨询",
+        "text": "智能咨询",
         "iconPath": "images/chat.png",
         "selectedIconPath": "images/chat-active.png"
       },

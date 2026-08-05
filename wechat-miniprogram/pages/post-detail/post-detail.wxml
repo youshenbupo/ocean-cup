@@ -1,0 +1,38 @@
+<!--pages/post-detail/post-detail.wxml-->
+<view class="container">
+  <view class="post-header">
+    <text class="post-title">{{post.title}}</text>
+    <view class="post-meta">
+      <text class="post-author">{{post.author_name}}</text>
+      <text class="post-time">{{post.created_at}}</text>
+      <text class="post-category">{{post.category}}</text>
+    </view>
+  </view>
+  
+  <view class="post-content">
+    <text>{{post.content}}</text>
+  </view>
+
+  <!-- 评论区 -->
+  <view class="comment-section">
+    <text class="section-title">评论 ({{comments.length}})</text>
+    
+    <view class="comment-list" wx:if="{{comments.length > 0}}">
+      <view class="comment-item" wx:for="{{comments}}" wx:key="id">
+        <text class="comment-author">{{item.author_name}}</text>
+        <text class="comment-content">{{item.content}}</text>
+        <text class="comment-time">{{item.created_at}}</text>
+      </view>
+    </view>
+    
+    <view class="empty-comments" wx:else>
+      <text>暂无评论，快来抢沙发吧~</text>
+    </view>
+  </view>
+
+  <!-- 评论输入 -->
+  <view class="comment-input-area">
+    <input class="comment-input" placeholder="写评论..." value="{{commentInput}}" bindinput="onCommentInput" />
+    <button class="comment-btn" bindtap="submitComment">发送</button>
+  </view>
+</view>
