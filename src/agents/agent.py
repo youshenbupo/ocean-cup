@@ -559,6 +559,11 @@ def route_decision(state: AgentState) -> str:
 
 # ============== 构建多Agent图 ==============
 
+class AgentBuilder:
+    """Agent构建器包装类，提供builder属性以兼容平台接口"""
+    def __init__(self, workflow):
+        self.builder = workflow
+
 def build_agent(ctx=None):
     """构建多Agent协作图"""
 
@@ -605,7 +610,5 @@ def build_agent(ctx=None):
     workflow.add_edge("community", END)
     workflow.add_edge("chat", END)
 
-    # 编译图
-    graph = workflow.compile(checkpointer=get_memory_saver())
-
-    return graph
+    # 返回包装对象（平台通过builder属性访问workflow）
+    return AgentBuilder(workflow)
