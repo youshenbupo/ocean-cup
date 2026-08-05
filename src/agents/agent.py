@@ -30,6 +30,9 @@ from tools.salary_tools import record_work, calculate_salary, check_overdue_remi
 from tools.weather_tool import get_weather_safety_advisory
 from tools.community_tools import post_question, get_questions, get_question_detail, add_comment
 from tools.user_identity_tool import set_my_name, who_am_i
+from tools.legal_doc_tool import generate_arbitration_application, generate_wage_complaint, generate_iou, generate_wage_slip
+from tools.cert_tool import record_cert, check_cert_expiry, get_cert_renewal_guide
+from tools.expense_tool import record_expense, get_expense_summary, get_expense_list
 from utils.sensitive_mask import mask_sensitive_info
 
 logger = logging.getLogger(__name__)
@@ -582,7 +585,9 @@ def create_specialist_agent(system_prompt: str, tools: list, ctx=None):
 
 def legal_node(state: AgentState, ctx=None) -> dict:
     """法律顾问节点"""
-    agent = create_specialist_agent(LEGAL_PROMPT, [search_law_knowledge, search_hotlines], ctx)
+    tools = [search_law_knowledge, search_hotlines, 
+             generate_arbitration_application, generate_wage_complaint, generate_iou]
+    agent = create_specialist_agent(LEGAL_PROMPT, tools, ctx)
     recent = _get_recent_messages(state["messages"])
     result = agent.invoke({"messages": recent})
     return {"messages": result["messages"]}
@@ -607,7 +612,10 @@ def support_node(state: AgentState, ctx=None) -> dict:
 
 def salary_node(state: AgentState, ctx=None) -> dict:
     """薪资管家节点"""
-    salary_tools = [search_law_knowledge, record_work, calculate_salary, check_overdue_reminders, create_salary_reminder, mark_reminder_paid, get_my_reminders, set_my_name, who_am_i]
+    salary_tools = [search_law_knowledge, record_work, calculate_salary, 
+                    check_overdue_reminders, create_salary_reminder, mark_reminder_paid, get_my_reminders,
+                    generate_wage_slip, record_expense, get_expense_summary, get_expense_list,
+                    set_my_name, who_am_i]
     agent = create_specialist_agent(SALARY_PROMPT, salary_tools, ctx)
     recent = _get_recent_messages(state["messages"])
     result = agent.invoke({"messages": recent})
@@ -616,7 +624,8 @@ def salary_node(state: AgentState, ctx=None) -> dict:
 
 def skill_node(state: AgentState, ctx=None) -> dict:
     """技能导师节点"""
-    agent = create_specialist_agent(SKILL_PROMPT, [search_law_knowledge], ctx)
+    tools = [search_law_knowledge, record_cert, check_cert_expiry, get_cert_renewal_guide]
+    agent = create_specialist_agent(SKILL_PROMPT, tools, ctx)
     recent = _get_recent_messages(state["messages"])
     result = agent.invoke({"messages": recent})
     return {"messages": result["messages"]}

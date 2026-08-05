@@ -23,6 +23,16 @@
         "post_question",
         "get_questions",
         "get_question_detail",
-        "add_comment"
+        "add_comment",
+        "generate_arbitration_application",
+        "generate_wage_complaint",
+        "generate_iou",
+        "generate_wage_slip",
+        "record_cert",
+        "check_cert_expiry",
+        "get_cert_renewal_guide",
+        "record_expense",
+        "get_expense_summary",
+        "get_expense_list"
     ]
 }
