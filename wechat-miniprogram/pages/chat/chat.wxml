@@ -1,5 +1,16 @@
 <!--pages/chat/chat.wxml-->
 <view class="chat-container">
+  <!-- 顶部导航栏 -->
+  <view class="nav-bar">
+    <view class="nav-title">
+      <text class="nav-icon">🏗️</text>
+      <text class="nav-text">工友权益明白人</text>
+    </view>
+    <view class="nav-btn" bindtap="newConversation">
+      <text>＋新对话</text>
+    </view>
+  </view>
+
   <!-- 消息列表 -->
   <scroll-view class="message-list" scroll-y="true" scroll-into-view="{{scrollToView}}">
     <view class="message-item {{item.role === 'user' ? 'user-message' : 'bot-message'}}" 
@@ -11,6 +22,7 @@
         <text wx:else>🤖</text>
       </view>
       <view class="message-content">
+        <image wx:if="{{item.image}}" class="message-image" src="{{item.image}}" mode="widthFix" bindtap="previewImage" data-src="{{item.image}}"/>
         <text class="message-text">{{item.content}}</text>
       </view>
     </view>
@@ -21,29 +33,47 @@
 
   <!-- 输入区域 -->
   <view class="input-area">
+    <!-- 图片预览 -->
+    <view class="image-preview" wx:if="{{selectedImage}}">
+      <image class="preview-img" src="{{selectedImage}}" mode="aspectFill"/>
+      <view class="remove-img" bindtap="removeImage">✕</view>
+    </view>
     <view class="input-wrapper">
+      <view class="camera-btn" bindtap="chooseImage">
+        <text>📷</text>
+      </view>
       <textarea class="message-input" 
-                placeholder="说说你的情况，我来帮你..." 
+                placeholder="{{isRecording ? '正在录音...' : '说说你的情况，我来帮你...'}}" 
                 value="{{inputValue}}"
                 bindinput="onInput"
                 bindconfirm="sendMessage"
                 auto-height
                 maxlength="500"/>
+      <view class="voice-btn {{isRecording ? 'recording' : ''}}" bindtap="toggleVoiceInput">
+        <text>{{isRecording ? '🔴' : '🎤'}}</text>
+      </view>
     </view>
-    <view class="send-btn {{inputValue ? 'active' : ''}}" bindtap="sendMessage">
+    <view class="send-btn {{inputValue || selectedImage ? 'active' : ''}}" bindtap="sendMessage">
       <text>发送</text>
     </view>
   </view>
 
   <!-- 快捷问题 -->
   <view class="quick-questions" wx:if="{{messages.length <= 1}}">
-    <text class="quick-title">常见问题</text>
+    <text class="quick-title">🔥 常见问题</text>
     <view class="quick-list">
-      <view class="quick-item" bindtap="askQuick" data-q="老板拖欠工资怎么办？">老板拖欠工资怎么办？</view>
-      <view class="quick-item" bindtap="askQuick" data-q="工地上受伤了算工伤吗？">工地上受伤了算工伤吗？</view>
-      <view class="quick-item" bindtap="askQuick" data-q="没签合同能要回工资吗？">没签合同能要回工资吗？</view>
-      <view class="quick-item" bindtap="askQuick" data-q="帮我记录今天的工时">帮我记录今天的工时</view>
-      <view class="quick-item" bindtap="askQuick" data-q="今天天气怎么样？">今天安全提醒</view>
+      <view class="quick-item urgent" bindtap="askQuick" data-q="老板拖欠工资怎么办？">💰 欠薪维权</view>
+      <view class="quick-item urgent" bindtap="askQuick" data-q="工地上受伤了算工伤吗？">🏥 工伤认定</view>
+      <view class="quick-item" bindtap="askQuick" data-q="没签合同能要回工资吗？">📝 没签合同</view>
+      <view class="quick-item" bindtap="askQuick" data-q="帮我记录今天的工时">📊 记工时</view>
+      <view class="quick-item" bindtap="askQuick" data-q="今天工地安全提醒">⛑️ 安全提醒</view>
+    </view>
+    <text class="quick-title" style="margin-top: 20rpx;">📚 更多帮助</text>
+    <view class="quick-list">
+      <view class="quick-item secondary" bindtap="askQuick" data-q="怎么考建筑工种证书？">🎓 考证指导</view>
+      <view class="quick-item secondary" bindtap="askQuick" data-q="农民工怎么交社保？">🏦 社保医保</view>
+      <view class="quick-item secondary" bindtap="askQuick" data-q="被辞退了应该给哪些补偿？">📋 辞退补偿</view>
+      <view class="quick-item secondary" bindtap="askQuick" data-q="我想在社区发个帖子">💬 工友社区</view>
     </view>
   </view>
 </view>

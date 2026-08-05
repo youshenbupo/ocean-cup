@@ -30,6 +30,7 @@ from tools.salary_tools import record_work, calculate_salary, check_overdue_remi
 from tools.weather_tool import get_weather_safety_advisory
 from tools.community_tools import post_question, get_questions, get_question_detail, add_comment
 from tools.user_identity_tool import set_my_name, who_am_i
+from utils.sensitive_mask import mask_sensitive_info
 
 logger = logging.getLogger(__name__)
 
@@ -528,10 +529,15 @@ def router_node(state: AgentState, ctx=None) -> dict:
                 item.get("text", "") for item in content if isinstance(item, dict) and item.get("type") == "text"
             )
 
+    # 敏感信息脱敏（记录日志前）
+    masked_text = mask_sensitive_info(user_text)
+    if masked_text != user_text:
+        logger.info("用户消息包含敏感信息，已脱敏处理")
+
     # 快速路径：关键词匹配（避免LLM调用，降低延迟）
     keyword_result = _keyword_route(user_text)
     if keyword_result:
-        logger.info(f"Router关键词快速路由: '{user_text[:30]}...' -> {keyword_result}")
+        logger.info(f"[ROUTE_MONITOR] method=keyword text='{user_text[:50]}' route={keyword_result}")
         return {"next_agent": keyword_result}
 
     # 慢路径：LLM意图分析
@@ -547,20 +553,31 @@ def router_node(state: AgentState, ctx=None) -> dict:
         content = " ".join(str(item) for item in content)
 
     route = _parse_route(content)
+    logger.info(f"[ROUTE_MONITOR] method=llm text='{user_text[:50]}' route={route} raw='{content[:30]}'")
     return {"next_agent": route}
 
 
 # ============== 专业Agent节点 ==============
 
+# 缓存专业Agent实例，避免每次请求都重新创建
+_specialist_cache = {}
+
 def create_specialist_agent(system_prompt: str, tools: list, ctx=None):
-    """创建专业Agent"""
+    """创建专业Agent（带缓存和记忆持久化）"""
+    cache_key = id(system_prompt)
+    if cache_key in _specialist_cache:
+        return _specialist_cache[cache_key]
+    
     llm = get_llm(ctx)
-    return create_agent(
+    agent = create_agent(
         model=llm,
         system_prompt=system_prompt,
         tools=tools,
         middleware=[handle_tool_errors],
+        checkpointer=get_memory_saver(),
     )
+    _specialist_cache[cache_key] = agent
+    return agent
 
 
 def legal_node(state: AgentState, ctx=None) -> dict:
