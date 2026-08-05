@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import json
+import os
 import threading
 import traceback
 import logging
@@ -11,7 +12,8 @@ import cozeloop
 import uvicorn
 import time
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, END
 from langgraph.graph.state import CompiledStateGraph
@@ -285,6 +287,21 @@ async def lifespan(app: FastAPI):
         await async_runtime.shutdown()
 
 app = FastAPI(lifespan=lifespan)
+
+# 挂载静态文件目录
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+
+@app.get("/")
+async def root():
+    """根路径返回 Web 聊天界面"""
+    index_path = os.path.join(static_dir, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return JSONResponse({"message": "工友权益明白人 API 服务运行中", "status": "ok"})
+
 
 # OpenAI 兼容接口处理器
 openai_handler = OpenAIChatHandler(service)
