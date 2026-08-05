@@ -1,0 +1,76 @@
+<!--pages/service-flow/service-flow.wxml-->
+<view class="container">
+  <!-- 顶部说明 -->
+  <view class="intro-card">
+    <text class="intro-title">🤖 智能体服务流程</text>
+    <text class="intro-desc">了解"工友权益明白人"如何为你提供帮助</text>
+  </view>
+
+  <!-- 流程图 -->
+  <view class="flow-section">
+    <text class="section-title">📋 服务流程</text>
+    <view class="flow-steps">
+      <view class="flow-step" wx:for="{{flowSteps}}" wx:key="index">
+        <view class="step-number">{{index + 1}}</view>
+        <view class="step-content">
+          <text class="step-title">{{item.title}}</text>
+          <text class="step-desc">{{item.desc}}</text>
+        </view>
+        <view class="step-arrow" wx:if="{{index < flowSteps.length - 1}}">↓</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 智能体介绍 -->
+  <view class="agents-section">
+    <text class="section-title">🧠 专业智能体团队</text>
+    <view class="agent-cards">
+      <view class="agent-card" wx:for="{{agents}}" wx:key="name" bindtap="tryAgent" data-type="{{item.type}}" data-msg="{{item.welcomeMsg}}">
+        <view class="agent-icon">{{item.icon}}</view>
+        <view class="agent-info">
+          <text class="agent-name">{{item.name}}</text>
+          <text class="agent-desc">{{item.desc}}</text>
+          <view class="agent-tags">
+            <text class="agent-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+          </view>
+        </view>
+        <view class="agent-action">去咨询 ›</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 工作原理 -->
+  <view class="principle-section">
+    <text class="section-title">💡 工作原理</text>
+    <view class="principle-list">
+      <view class="principle-item">
+        <text class="principle-icon">🎯</text>
+        <view class="principle-content">
+          <text class="principle-title">智能路由</text>
+          <text class="principle-desc">自动识别你的问题类型，分配给最合适的专业智能体处理</text>
+        </view>
+      </view>
+      <view class="principle-item">
+        <text class="principle-icon">📚</text>
+        <view class="principle-content">
+          <text class="principle-title">知识库检索</text>
+          <text class="principle-desc">从法律法规、典型案例、安全规范等专业资料中检索相关信息</text>
+        </view>
+      </view>
+      <view class="principle-item">
+        <text class="principle-icon">🔒</text>
+        <view class="principle-content">
+          <text class="principle-title">隐私保护</text>
+          <text class="principle-desc">自动脱敏处理身份证号、银行卡号等敏感信息，保护你的隐私安全</text>
+        </view>
+      </view>
+      <view class="principle-item">
+        <text class="principle-icon">💾</text>
+        <view class="principle-content">
+          <text class="principle-title">记忆能力</text>
+          <text class="principle-desc">记住你的身份和之前的对话，多轮追问也能保持上下文连贯</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

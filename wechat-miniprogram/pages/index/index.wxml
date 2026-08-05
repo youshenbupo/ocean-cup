@@ -1,80 +1,151 @@
 <!--pages/index/index.wxml-->
 <view class="container">
-  <!-- 欢迎区域 -->
-  <view class="welcome-section">
-    <image class="logo" src="/images/logo.png" mode="aspectFit"></image>
-    <text class="title">工友权益明白人</text>
-    <text class="subtitle">您的权益保障法律顾问</text>
+  <!-- 顶部背景装饰 -->
+  <view class="bg-decoration">
+    <view class="bg-circle bg-circle-1"></view>
+    <view class="bg-circle bg-circle-2"></view>
   </view>
 
-  <!-- 功能入口 -->
-  <view class="feature-grid">
-    <view class="feature-item" bindtap="goToChat" data-type="legal">
-      <view class="feature-icon legal">⚖️</view>
-      <text class="feature-text">法律顾问</text>
-      <text class="feature-desc">欠薪/工伤/合同</text>
+  <!-- 欢迎区域 -->
+  <view class="welcome-section">
+    <view class="logo-wrapper">
+      <view class="logo-icon">🏗️</view>
+      <view class="logo-badge">AI</view>
+    </view>
+    <text class="title">工友权益明白人</text>
+    <text class="subtitle">AI智能体 · 您的权益保障顾问</text>
+  </view>
+
+  <!-- 核心功能入口 - 智能体工作区 -->
+  <view class="workspace-section">
+    <view class="section-header">
+      <text class="section-title">🤖 智能体工作区</text>
+      <view class="section-more" bindtap="goToServiceFlow">服务流程 ›</view>
     </view>
     
-    <view class="feature-item" bindtap="goToChat" data-type="safety">
-      <view class="feature-icon safety">🦺</view>
-      <text class="feature-text">安全守护</text>
-      <text class="feature-desc">隐患识别/天气提醒</text>
+    <view class="workspace-grid">
+      <view class="workspace-card large" bindtap="goToChat" data-type="legal">
+        <view class="card-bg legal-bg"></view>
+        <view class="card-content">
+          <text class="card-icon">⚖️</text>
+          <text class="card-name">法律顾问</text>
+          <text class="card-desc">欠薪·工伤·合同·仲裁</text>
+        </view>
+      </view>
+      
+      <view class="workspace-card" bindtap="goToChat" data-type="safety">
+        <view class="card-bg safety-bg"></view>
+        <view class="card-content">
+          <text class="card-icon">🦺</text>
+          <text class="card-name">安全守护</text>
+        </view>
+      </view>
+      
+      <view class="workspace-card" bindtap="goToChat" data-type="salary">
+        <view class="card-bg salary-bg"></view>
+        <view class="card-content">
+          <text class="card-icon">💰</text>
+          <text class="card-name">薪资管家</text>
+        </view>
+      </view>
+      
+      <view class="workspace-card" bindtap="goToChat" data-type="skill">
+        <view class="card-bg skill-bg"></view>
+        <view class="card-content">
+          <text class="card-icon">📚</text>
+          <text class="card-name">技能导师</text>
+        </view>
+      </view>
+      
+      <view class="workspace-card" bindtap="goToChat" data-type="life">
+        <view class="card-bg life-bg"></view>
+        <view class="card-content">
+          <text class="card-icon">🏠</text>
+          <text class="card-name">生活管家</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 工具区 -->
+  <view class="tools-section">
+    <view class="section-header">
+      <text class="section-title">🛠️ 实用工具</text>
+      <view class="section-more" bindtap="goToKnowledge">知识库 ›</view>
     </view>
     
-    <view class="feature-item" bindtap="goToChat" data-type="salary">
-      <view class="feature-icon salary">💰</view>
-      <text class="feature-text">薪资管家</text>
-      <text class="feature-desc">记工时/算工资</text>
-    </view>
-    
-    <view class="feature-item" bindtap="goToChat" data-type="skill">
-      <view class="feature-icon skill">📚</view>
-      <text class="feature-text">技能导师</text>
-      <text class="feature-desc">考证/培训/补贴</text>
-    </view>
-    
-    <view class="feature-item" bindtap="goToChat" data-type="life">
-      <view class="feature-icon life">🏠</view>
-      <text class="feature-text">生活管家</text>
-      <text class="feature-desc">社保/子女教育</text>
-    </view>
-    
-    <view class="feature-item" bindtap="goToCommunity">
-      <view class="feature-icon community">💬</view>
-      <text class="feature-text">工友社区</text>
-      <text class="feature-desc">互助/经验分享</text>
+    <view class="tools-grid">
+      <view class="tool-item" bindtap="quickAction" data-action="record">
+        <text class="tool-icon">📝</text>
+        <text class="tool-name">记工时</text>
+      </view>
+      <view class="tool-item" bindtap="quickAction" data-action="overtime">
+        <text class="tool-icon">🧮</text>
+        <text class="tool-name">算加班费</text>
+      </view>
+      <view class="tool-item" bindtap="quickAction" data-action="weather">
+        <text class="tool-icon">🌤️</text>
+        <text class="tool-name">安全提醒</text>
+      </view>
+      <view class="tool-item" bindtap="quickAction" data-action="contract">
+        <text class="tool-icon">📄</text>
+        <text class="tool-name">合同咨询</text>
+      </view>
+      <view class="tool-item" bindtap="quickAction" data-action="injury">
+        <text class="tool-icon">🏥</text>
+        <text class="tool-name">工伤认定</text>
+      </view>
+      <view class="tool-item" bindtap="quickAction" data-action="social">
+        <text class="tool-icon">🏦</text>
+        <text class="tool-name">社保查询</text>
+      </view>
+      <view class="tool-item" bindtap="goToKnowledge">
+        <text class="tool-icon">📖</text>
+        <text class="tool-name">知识库</text>
+      </view>
+      <view class="tool-item" bindtap="goToCommunity">
+        <text class="tool-icon">💬</text>
+        <text class="tool-name">工友社区</text>
+      </view>
     </view>
   </view>
 
   <!-- 紧急求助 -->
-  <view class="quick-actions urgent">
-    <text class="section-title">🚨 紧急求助</text>
-    <view class="action-list">
-      <view class="action-item urgent-item" bindtap="quickAction" data-action="hotline">
-        <text>📞 维权热线 12333</text>
+  <view class="urgent-section">
+    <view class="section-header">
+      <text class="section-title">🚨 紧急求助</text>
+    </view>
+    <view class="urgent-list">
+      <view class="urgent-item" bindtap="callHotline" data-phone="12333">
+        <view class="urgent-icon">📞</view>
+        <view class="urgent-info">
+          <text class="urgent-name">维权热线</text>
+          <text class="urgent-desc">人力资源社会保障</text>
+        </view>
+        <view class="urgent-call">立即拨打</view>
       </view>
-      <view class="action-item urgent-item" bindtap="quickAction" data-action="injury">
-        <text>🏥 工伤认定流程</text>
+      <view class="urgent-item" bindtap="callHotline" data-phone="12348">
+        <view class="urgent-icon">⚖️</view>
+        <view class="urgent-info">
+          <text class="urgent-name">法律援助</text>
+          <text class="urgent-desc">免费法律咨询</text>
+        </view>
+        <view class="urgent-call">立即拨打</view>
+      </view>
+      <view class="urgent-item" bindtap="callHotline" data-phone="12350">
+        <view class="urgent-icon">🦺</view>
+        <view class="urgent-info">
+          <text class="urgent-name">安全举报</text>
+          <text class="urgent-desc">安全生产隐患</text>
+        </view>
+        <view class="urgent-call">立即拨打</view>
       </view>
     </view>
   </view>
 
-  <!-- 常用功能 -->
-  <view class="quick-actions">
-    <text class="section-title">📋 常用功能</text>
-    <view class="action-list">
-      <view class="action-item" bindtap="quickAction" data-action="weather">
-        <text>🌤️ 今日安全提醒</text>
-      </view>
-      <view class="action-item" bindtap="quickAction" data-action="record">
-        <text>📝 记录今日工时</text>
-      </view>
-      <view class="action-item" bindtap="quickAction" data-action="overtime">
-        <text>💰 加班费怎么算</text>
-      </view>
-      <view class="action-item" bindtap="quickAction" data-action="contract">
-        <text>📄 没签合同怎么办</text>
-      </view>
-    </view>
+  <!-- 底部信息 -->
+  <view class="footer">
+    <text class="footer-text">工友权益明白人 · AI智能体服务</text>
+    <text class="footer-sub">遇到问题随时找我，24小时在线</text>
   </view>
 </view>

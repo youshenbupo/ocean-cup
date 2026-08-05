@@ -8,7 +8,6 @@ Page({
   },
 
   onLoad: function() {
-    // 检查登录状态
     if (app.globalData.userInfo) {
       this.setData({
         userInfo: app.globalData.userInfo,
@@ -18,7 +17,6 @@ Page({
   },
 
   onShow: function() {
-    // 每次显示首页时刷新用户信息
     if (app.globalData.userInfo) {
       this.setData({
         userInfo: app.globalData.userInfo,
@@ -27,10 +25,9 @@ Page({
     }
   },
 
-  // 跳转到聊天页面（通过globalData传递参数）
+  // 跳转到聊天页面
   goToChat: function(e) {
     const type = e.currentTarget.dataset.type
-    // 通过globalData传递类型参数，因为switchTab不支持URL参数
     app.globalData.chatType = type
     app.globalData.chatMessage = ''
     wx.switchTab({
@@ -42,6 +39,20 @@ Page({
   goToCommunity: function() {
     wx.switchTab({
       url: '/pages/community/community'
+    })
+  },
+
+  // 跳转到知识库
+  goToKnowledge: function() {
+    wx.navigateTo({
+      url: '/pages/knowledge/knowledge'
+    })
+  },
+
+  // 跳转到服务流程
+  goToServiceFlow: function() {
+    wx.navigateTo({
+      url: '/pages/service-flow/service-flow'
     })
   },
 
@@ -66,7 +77,7 @@ Page({
         break
       case 'overtime':
         message = '加班费怎么算？'
-        type = 'legal'
+        type = 'salary'
         break
       case 'contract':
         message = '没签劳动合同怎么办？'
@@ -76,13 +87,27 @@ Page({
         message = '工伤认定流程是什么？'
         type = 'legal'
         break
+      case 'social':
+        message = '我想了解社保怎么交'
+        type = 'life'
+        break
     }
     
-    // 通过globalData传递参数
     app.globalData.chatType = type
     app.globalData.chatMessage = message
     wx.switchTab({
       url: '/pages/chat/chat'
+    })
+  },
+
+  // 拨打热线
+  callHotline: function(e) {
+    const phone = e.currentTarget.dataset.phone
+    wx.makePhoneCall({
+      phoneNumber: phone,
+      fail: function() {
+        wx.showToast({ title: '取消拨号', icon: 'none' })
+      }
     })
   },
 

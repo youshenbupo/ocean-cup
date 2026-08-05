@@ -1,0 +1,61 @@
+<!--pages/knowledge/knowledge.wxml-->
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <input class="search-input" placeholder="搜索法律知识、法规、案例..." value="{{searchKey}}" bindinput="onSearch" bindconfirm="doSearch" />
+    <view class="search-btn" bindtap="doSearch">🔍</view>
+  </view>
+
+  <!-- 分类导航 -->
+  <scroll-view class="category-scroll" scroll-x>
+    <view class="category-item {{currentCategory === '' ? 'active' : ''}}" bindtap="switchCategory" data-cat="">全部</view>
+    <view class="category-item {{currentCategory === 'law' ? 'active' : ''}}" bindtap="switchCategory" data-cat="law">法律法规</view>
+    <view class="category-item {{currentCategory === 'case' ? 'active' : ''}}" bindtap="switchCategory" data-cat="case">典型案例</view>
+    <view class="category-item {{currentCategory === 'safety' ? 'active' : ''}}" bindtap="switchCategory" data-cat="safety">安全生产</view>
+    <view class="category-item {{currentCategory === 'skill' ? 'active' : ''}}" bindtap="switchCategory" data-cat="skill">技能提升</view>
+    <view class="category-item {{currentCategory === 'social' ? 'active' : ''}}" bindtap="switchCategory" data-cat="social">社保医保</view>
+  </scroll-view>
+
+  <!-- 知识列表 -->
+  <view class="knowledge-list">
+    <view class="knowledge-card" wx:for="{{filteredDocs}}" wx:key="id" bindtap="openDoc" data-id="{{item.id}}">
+      <view class="card-header">
+        <view class="card-tag {{item.category}}">{{item.categoryName}}</view>
+        <text class="card-title">{{item.title}}</text>
+      </view>
+      <text class="card-summary">{{item.summary}}</text>
+      <view class="card-footer">
+        <text class="card-date">{{item.date}}</text>
+        <text class="card-action">查看详情 ›</text>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:if="{{filteredDocs.length === 0}}">
+      <text class="empty-icon">📭</text>
+      <text class="empty-text">暂无相关知识</text>
+    </view>
+  </view>
+
+  <!-- 常用热线 -->
+  <view class="hotline-section">
+    <text class="section-title">📞 常用热线</text>
+    <view class="hotline-list">
+      <view class="hotline-item" bindtap="callHotline" data-phone="12333">
+        <text class="hotline-name">人力资源社会保障热线</text>
+        <text class="hotline-number">12333</text>
+      </view>
+      <view class="hotline-item" bindtap="callHotline" data-phone="12348">
+        <text class="hotline-name">法律援助热线</text>
+        <text class="hotline-number">12348</text>
+      </view>
+      <view class="hotline-item" bindtap="callHotline" data-phone="12350">
+        <text class="hotline-name">安全生产举报热线</text>
+        <text class="hotline-number">12350</text>
+      </view>
+      <view class="hotline-item" bindtap="callHotline" data-phone="12345">
+        <text class="hotline-name">政务服务便民热线</text>
+        <text class="hotline-number">12345</text>
+      </view>
+    </view>
+  </view>
+</view>

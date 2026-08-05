@@ -4,7 +4,9 @@
     "pages/chat/chat",
     "pages/community/community",
     "pages/post-detail/post-detail",
-    "pages/create-post/create-post"
+    "pages/create-post/create-post",
+    "pages/knowledge/knowledge",
+    "pages/service-flow/service-flow"
   ],
   "window": {
     "backgroundTextStyle": "light",
