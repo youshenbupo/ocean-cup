@@ -288,6 +288,85 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+# ============ 社区 REST API ============
+from storage.database.supabase_client import get_supabase_client as _get_sb_client
+from coze_coding_utils.log.write_log import request_context as _req_ctx
+from coze_coding_utils.runtime_ctx.context import new_context as _new_ctx
+
+
+def _sb():
+    ctx = _req_ctx.get() or _new_ctx(method="rest_api")
+    return _get_sb_client(ctx)
+
+
+@app.get("/api/community/posts")
+async def list_community_posts(category: str = None, limit: int = 20, offset: int = 0):
+    """获取社区帖子列表"""
+    try:
+        client = _sb()
+        query = client.table("community_posts").select(
+            "id, title, content, category, author_name, created_at"
+        ).order("created_at", desc=True)
+        if category:
+            query = query.eq("category", category)
+        result = query.range(offset, offset + limit - 1).execute()
+        posts = result.data if result.data else []
+        return {"code": 0, "data": posts}
+    except Exception as e:
+        return {"code": 1, "msg": str(e)}
+
+
+@app.get("/api/community/posts/{post_id}")
+async def get_community_post_detail(post_id: str):
+    """获取帖子详情及评论"""
+    try:
+        client = _sb()
+        post_res = client.table("community_posts").select("*").eq("id", post_id).single().execute()
+        post = post_res.data if post_res.data else None
+        if not post:
+            return {"code": 1, "msg": "帖子不存在"}
+        comments_res = client.table("community_comments").select(
+            "id, content, author_name, created_at"
+        ).eq("post_id", post_id).order("created_at", desc=False).execute()
+        comments = comments_res.data if comments_res.data else []
+        return {"code": 0, "data": {"post": post, "comments": comments}}
+    except Exception as e:
+        return {"code": 1, "msg": str(e)}
+
+
+@app.post("/api/community/posts")
+async def create_community_post(body: dict):
+    """创建帖子"""
+    try:
+        client = _sb()
+        result = client.table("community_posts").insert({
+            "title": body.get("title", ""),
+            "content": body.get("content", ""),
+            "category": body.get("category", "综合"),
+            "author_name": body.get("author_name", "匿名工友"),
+        }).execute()
+        post = result.data[0] if result.data else None
+        return {"code": 0, "data": post}
+    except Exception as e:
+        return {"code": 1, "msg": str(e)}
+
+
+@app.post("/api/community/posts/{post_id}/comments")
+async def create_comment(post_id: str, body: dict):
+    """添加评论"""
+    try:
+        client = _sb()
+        result = client.table("community_comments").insert({
+            "post_id": post_id,
+            "content": body.get("content", ""),
+            "author_name": body.get("author_name", "匿名工友"),
+        }).execute()
+        comment = result.data[0] if result.data else None
+        return {"code": 0, "data": comment}
+    except Exception as e:
+        return {"code": 1, "msg": str(e)}
+
+
 # 挂载静态文件目录
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):

@@ -72,7 +72,10 @@ def mask_sensitive_info(text: str) -> str:
     text = mask_phone(text)
     
     if text != original:
-        logger.debug("敏感信息已脱敏处理")
+        logger.debug(f"敏感信息已脱敏处理，原文长度={len(original)}，脱敏类型: "
+                     f"身份证={mask_id_card(original) != original}, "
+                     f"银行卡={mask_bank_card(original) != original}, "
+                     f"手机号={mask_phone(original) != original}")
     
     return text
 

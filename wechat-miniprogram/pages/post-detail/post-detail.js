@@ -4,79 +4,84 @@ const app = getApp()
 Page({
   data: {
     postId: '',
-    post: {},
+    post: null,
     comments: [],
-    commentInput: ''
+    commentText: '',
+    commenterName: '',
+    isLoading: true,
+    submittingComment: false
   },
 
   onLoad: function(options) {
-    const id = options.id
-    this.setData({ postId: id })
-    this.loadPostDetail(id)
-    this.loadComments(id)
+    if (options.id) {
+      this.setData({ postId: options.id })
+      this.loadPostDetail(options.id)
+    }
   },
 
-  loadPostDetail: function(id) {
+  // 加载帖子详情
+  loadPostDetail: function(postId) {
     const that = this
-    wx.request({
-      url: `${app.globalData.apiBaseUrl}/api/community/posts/${id}`,
-      method: 'GET',
-      success: function(res) {
-        if (res.data && res.data.data) {
-          that.setData({ post: res.data.data })
-        }
-      },
-      fail: function() {
-        // 使用缓存数据
-        const cacheKey = `post_${id}`
-        const cached = wx.getStorageSync(cacheKey)
-        if (cached) {
-          that.setData({ post: cached })
-        }
-      }
+    this.setData({ isLoading: true })
+    
+    app.request('/api/community/posts/' + postId).then(function(res) {
+      that.setData({
+        post: res.data,
+        comments: res.data.comments || [],
+        isLoading: false
+      })
+    }).catch(function(err) {
+      console.error('加载帖子详情失败:', err)
+      that.setData({ isLoading: false })
+      wx.showToast({ title: '加载失败', icon: 'none' })
     })
   },
 
-  loadComments: function(postId) {
-    const that = this
-    wx.request({
-      url: `${app.globalData.apiBaseUrl}/api/community/posts/${postId}/comments`,
-      method: 'GET',
-      success: function(res) {
-        if (res.data && res.data.data) {
-          that.setData({ comments: res.data.data })
-        }
-      }
-    })
-  },
-
+  // 输入评论
   onCommentInput: function(e) {
-    this.setData({ commentInput: e.detail.value })
+    this.setData({ commentText: e.detail.value })
   },
 
+  // 输入评论者姓名
+  onCommenterInput: function(e) {
+    this.setData({ commenterName: e.detail.value })
+  },
+
+  // 提交评论
   submitComment: function() {
-    const content = this.data.commentInput.trim()
-    if (!content) {
+    const { commentText, commenterName, postId } = this.data
+    
+    if (!commentText.trim()) {
       wx.showToast({ title: '请输入评论内容', icon: 'none' })
       return
     }
+    if (!commenterName.trim()) {
+      wx.showToast({ title: '请输入你的称呼', icon: 'none' })
+      return
+    }
 
+    this.setData({ submittingComment: true })
     const that = this
-    wx.request({
-      url: `${app.globalData.apiBaseUrl}/api/community/posts/${this.data.postId}/comments`,
-      method: 'POST',
-      data: {
-        content: content,
-        author_name: app.globalData.userInfo ? app.globalData.userInfo.nickName : '匿名用户'
-      },
-      success: function(res) {
-        wx.showToast({ title: '评论成功', icon: 'success' })
-        that.setData({ commentInput: '' })
-        that.loadComments(that.data.postId)
-      },
-      fail: function() {
-        wx.showToast({ title: '评论失败，请重试', icon: 'none' })
-      }
+
+    app.request('/api/community/posts/' + postId + '/comments', {
+      content: commentText.trim(),
+      commenter_name: commenterName.trim()
+    }, 'POST').then(function(res) {
+      wx.showToast({ title: '评论成功', icon: 'success' })
+      that.setData({ commentText: '' })
+      that.loadPostDetail(postId)
+    }).catch(function() {
+      wx.showToast({ title: '评论失败', icon: 'none' })
+    }).finally(function() {
+      that.setData({ submittingComment: false })
     })
+  },
+
+  // 分享帖子
+  onShareAppMessage: function() {
+    return {
+      title: this.data.post ? this.data.post.title : '工友社区',
+      path: '/pages/post-detail/post-detail?id=' + this.data.postId
+    }
   }
 })

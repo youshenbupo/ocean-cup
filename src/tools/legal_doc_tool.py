@@ -1,31 +1,56 @@
 """法律文书生成工具
 
 生成劳动仲裁申请书、欠薪投诉书、工伤认定申请表等法律文书。
-支持导出为文本格式，方便工友打印使用。
+文件上传到对象存储，返回下载URL，方便工友获取和打印。
 """
 import os
-import json
+import tempfile
 from datetime import datetime
 from typing import Optional
 from langchain.tools import tool
 from coze_coding_utils.log.write_log import request_context
 from coze_coding_utils.runtime_ctx.context import new_context
 
-
-def _get_output_dir() -> str:
-    """获取文书输出目录"""
-    output_dir = os.path.join(os.getenv("COZE_WORKSPACE_PATH", "/workspace/projects"), "assets", "legal_docs")
-    os.makedirs(output_dir, exist_ok=True)
-    return output_dir
+logger = __import__("logging").getLogger(__name__)
 
 
-def _save_document(filename: str, content: str) -> str:
-    """保存文书到文件并返回路径"""
-    output_dir = _get_output_dir()
-    filepath = os.path.join(output_dir, filename)
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(content)
-    return filepath
+def _upload_to_storage(filename: str, content: str) -> str:
+    """保存文书到临时文件并上传对象存储，返回下载URL"""
+    try:
+        from coze_coding_dev_sdk.s3 import S3SyncStorage
+
+        storage = S3SyncStorage(
+            endpoint_url=os.getenv("COZE_BUCKET_ENDPOINT_URL"),
+            access_key="",
+            secret_key="",
+            bucket_name=os.getenv("COZE_BUCKET_NAME"),
+            region="cn-beijing",
+        )
+
+        # 上传文件内容（文本转字节）
+        safe_name = filename.replace(" ", "_")
+        file_key = storage.upload_file(
+            file_content=content.encode("utf-8"),
+            file_name=f"legal_docs/{safe_name}",
+            content_type="text/plain; charset=utf-8",
+        )
+
+        # 生成签名URL（7天有效期）
+        download_url = storage.generate_presigned_url(
+            key=file_key,
+            expire_time=604800,
+        )
+
+        return download_url
+    except Exception as e:
+        logger.warning(f"upload_to_storage failed: {e}, falling back to local save")
+        # 降级：保存到本地assets目录
+        output_dir = os.path.join(os.getenv("COZE_WORKSPACE_PATH", "/workspace/projects"), "assets", "legal_docs")
+        os.makedirs(output_dir, exist_ok=True)
+        filepath = os.path.join(output_dir, filename)
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(content)
+        return filepath
 
 
 @tool
@@ -132,12 +157,12 @@ def generate_arbitration_application(
 """
     
     filename = f"劳动仲裁申请书_{applicant_name}_{datetime.now().strftime('%Y%m%d')}.txt"
-    filepath = _save_document(filename, doc)
+    filepath = _upload_to_storage(filename, doc)
     
     return f"""✅ 劳动仲裁申请书已生成！
 
 📄 文件：{filename}
-📍 路径：{filepath}
+🔗 下载：{filepath}
 
 📋 申请信息摘要：
   • 申请人：{applicant_name}
@@ -238,12 +263,12 @@ def generate_wage_complaint(
 """
     
     filename = f"欠薪投诉书_{worker_name}_{datetime.now().strftime('%Y%m%d')}.txt"
-    filepath = _save_document(filename, doc)
+    filepath = _upload_to_storage(filename, doc)
     
     return f"""✅ 欠薪投诉书已生成！
 
 📄 文件：{filename}
-📍 路径：{filepath}
+🔗 下载：{filepath}
 
 📋 投诉信息摘要：
   • 投诉人：{worker_name}
@@ -339,12 +364,12 @@ def generate_wage_slip(
 """
     
     filename = f"工资结算单_{worker_name}_{work_month.replace('年','').replace('月','')}.txt"
-    filepath = _save_document(filename, doc)
+    filepath = _upload_to_storage(filename, doc)
     
     return f"""✅ 工资结算单已生成！
 
 📄 文件：{filename}
-📍 路径：{filepath}
+🔗 下载：{filepath}
 
 💰 工资明细：
   • 正常工资：{base_days}天 × ¥{base_daily_wage:.2f} = ¥{base_pay:.2f}
@@ -435,12 +460,12 @@ def generate_iou(
 """
     
     filename = f"欠条_{debtor_name}_{datetime.now().strftime('%Y%m%d')}.txt"
-    filepath = _save_document(filename, doc)
+    filepath = _upload_to_storage(filename, doc)
     
     return f"""✅ 欠条已生成！
 
 📄 文件：{filename}
-📍 路径：{filepath}
+🔗 下载：{filepath}
 
 📋 欠条信息：
   • 欠款人：{debtor_name}（{debtor_id}）

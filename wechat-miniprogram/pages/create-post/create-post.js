@@ -53,27 +53,20 @@ Page({
     this.setData({ submitting: true })
     const that = this
 
-    wx.request({
-      url: `${app.globalData.apiBaseUrl}/api/community/posts`,
-      method: 'POST',
-      data: {
-        title: title.trim(),
-        content: content.trim(),
-        author_name: authorName.trim(),
-        category: categories[categoryIndex]
-      },
-      success: function(res) {
-        wx.showToast({ title: '发布成功', icon: 'success' })
-        setTimeout(() => {
-          wx.navigateBack()
-        }, 1500)
-      },
-      fail: function() {
-        wx.showToast({ title: '发布失败，请重试', icon: 'none' })
-      },
-      complete: function() {
-        that.setData({ submitting: false })
-      }
+    app.request('/api/community/posts', {
+      title: title.trim(),
+      content: content.trim(),
+      author_name: authorName.trim(),
+      category: categories[categoryIndex]
+    }, 'POST').then(function(res) {
+      wx.showToast({ title: '发布成功', icon: 'success' })
+      setTimeout(() => {
+        wx.navigateBack()
+      }, 1500)
+    }).catch(function() {
+      wx.showToast({ title: '发布失败，请重试', icon: 'none' })
+    }).finally(function() {
+      that.setData({ submitting: false })
     })
   }
 })

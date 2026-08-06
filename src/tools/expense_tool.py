@@ -15,6 +15,26 @@ EXPENSE_CATEGORIES = [
     "餐饮", "交通", "住宿", "日用品", "通讯", "医疗", "娱乐", "其他"
 ]
 
+# 分类别名映射：LLM 可能传入的各种说法 → 标准分类
+_CATEGORY_ALIASES = {
+    "吃饭": "餐饮", "早饭": "餐饮", "午饭": "餐饮", "晚饭": "餐饮",
+    "外卖": "餐饮", "零食": "餐饮", "水果": "餐饮", "喝水": "餐饮",
+    "打车": "交通", "地铁": "交通", "公交": "交通", "高铁": "交通",
+    "火车": "交通", "飞机": "交通", "油费": "交通", "加油": "交通",
+    "房租": "住宿", "租房": "住宿", "酒店": "住宿", "宾馆": "住宿",
+    "洗衣": "日用品", "牙膏": "日用品", "毛巾": "日用品", "纸巾": "日用品",
+    "话费": "通讯", "充值": "通讯", "流量": "通讯", "手机": "通讯",
+    "看病": "医疗", "买药": "医疗", "体检": "医疗", "挂号": "医疗",
+    "游戏": "娱乐", "电影": "娱乐", "唱歌": "娱乐", "烟": "娱乐", "酒": "娱乐",
+}
+
+
+def _normalize_category(category: str) -> str:
+    """将 LLM 传入的分类名映射为标准分类。"""
+    if category in EXPENSE_CATEGORIES:
+        return category
+    return _CATEGORY_ALIASES.get(category, "其他")
+
 
 def _safe_get(item, key, default="") -> str:
     """安全获取字典值，兼容 LSP 类型检查。"""
@@ -44,8 +64,10 @@ def record_expense(
     ctx = request_context.get() or new_context(method="record_expense")
     client = get_supabase_client(ctx)
     
-    if category not in EXPENSE_CATEGORIES:
-        return f"❌ 无效的分类 '{category}'。支持的分类：{', '.join(EXPENSE_CATEGORIES)}"
+    normalized = _normalize_category(category)
+    if normalized == "其他" and category not in EXPENSE_CATEGORIES and category not in _CATEGORY_ALIASES:
+        pass  # 允许自定义分类归入"其他"
+    category = normalized
     
     data = {
         "worker_name": worker_name,

@@ -51,9 +51,14 @@ App({
 
   // 统一请求方法
   request: function(url, data = {}, method = 'GET') {
+    const baseUrl = this.globalData.apiBaseUrl
+    if (!baseUrl || baseUrl === 'https://your-api-domain.com') {
+      wx.showToast({ title: '请先配置后端地址', icon: 'none' })
+      return Promise.reject(new Error('API_BASE_URL未配置，请在app.js中设置apiBaseUrl'))
+    }
     return new Promise((resolve, reject) => {
       wx.request({
-        url: this.globalData.apiBaseUrl + url,
+        url: baseUrl + url,
         method: method,
         data: {
           ...data,
