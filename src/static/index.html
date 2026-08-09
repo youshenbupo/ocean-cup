@@ -872,11 +872,10 @@
             throw new Error(`HTTP ${response.status}: ${errText.substring(0, 200)}`);
         }
 
-        // 检查是否是流式响应
         const contentType = response.headers.get('content-type') || '';
         
         if (contentType.includes('text/event-stream')) {
-            // 流式响应 - 逐字显示
+            // 流式响应（兜底）
             let fullAnswer = '';
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -914,33 +913,24 @@
 
             finalizeStreamingMsg(fullAnswer);
             return fullAnswer;
+        }
 
-        } else {
-            // JSON 响应
-            const result = await response.json();
-            console.log('API Response:', result);
+        // 非流式 JSON 响应（主路径）
+        const result = await response.json();
+        console.log('API Response:', result);
 
-            if (result.success && result.answer) {
-                addMsg(result.answer);
-                return result.answer;
-            } else if (result.success && result.data) {
-                const data = result.data;
-                let reply = data.content?.answer || data.answer || data.output || '';
-                if (typeof reply === 'object') reply = JSON.stringify(reply);
-                if (reply) {
-                    addMsg(reply);
-                    return reply;
-                }
-            } else if (result.error) {
-                const errMsg = typeof result.error === 'string' ? result.error : JSON.stringify(result.error);
-                addMsg('⚠️ ' + errMsg);
-                return null;
-            }
-
-            addMsg('⚠️ 收到未知格式的响应，请检查控制台');
-            console.log('Unexpected response:', result);
+        if (result.success && result.answer) {
+            addMsg(result.answer);
+            return result.answer;
+        } else if (result.error) {
+            const errMsg = typeof result.error === 'string' ? result.error : JSON.stringify(result.error);
+            addMsg('⚠️ ' + errMsg);
             return null;
         }
+
+        addMsg('⚠️ 收到未知格式的响应');
+        console.log('Unexpected response:', result);
+        return null;
     }
 
     async function chatSend() {

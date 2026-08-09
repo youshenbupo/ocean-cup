@@ -1,7 +1,7 @@
 /**
  * Vercel Serverless Function - 扣子平台 API 代理
  * 
- * 支持 stream_run 流式响应，将 SSE 事件解析后返回给前端
+ * 优先使用 run（非流式）接口，兼容 stream_run（流式）接口
  */
 
 export const config = {
@@ -29,14 +29,20 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing message parameter' });
     }
 
-    const apiUrl = process.env.COZE_API_URL;
+    let apiUrl = process.env.COZE_API_URL || '';
     const apiKey = process.env.COZE_API_KEY;
 
     if (!apiUrl || !apiKey) {
       console.error('Missing env vars:', { hasApiUrl: !!apiUrl, hasApiKey: !!apiKey });
       return res.status(500).json({
-        error: 'Server config error: Missing COZE_API_URL or COZE_API_KEY'
+        error: '服务未配置，请在 Vercel 环境变量中设置 COZE_API_URL 和 COZE_API_KEY'
       });
+    }
+
+    // 自动将 stream_run 替换为 run（非流式更稳定）
+    if (apiUrl.includes('stream_run')) {
+      apiUrl = apiUrl.replace('stream_run', 'run');
+      console.log('Auto-switched to non-streaming endpoint:', apiUrl);
     }
 
     // 构造扣子平台请求体
@@ -58,7 +64,7 @@ export default async function handler(req, res) {
       project_id: 7668109916292284459
     };
 
-    console.log('Proxying to:', apiUrl, '| sessionId:', requestBody.session_id);
+    console.log('Proxying to:', apiUrl, '| message:', message.substring(0, 50));
 
     // 请求扣子平台
     const response = await fetch(apiUrl, {
@@ -72,17 +78,17 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Coze API error:', response.status, errorText.substring(0, 500));
+      console.error('Coze API error:', response.status, errorText.substring(0, 300));
       return res.status(response.status).json({
-        error: `Coze API error: ${response.status}`,
-        details: errorText.substring(0, 500)
+        error: `API 返回错误 ${response.status}`,
+        details: errorText.substring(0, 300)
       });
     }
 
     const contentType = response.headers.get('content-type') || '';
 
-    // ===== 流式响应（SSE） =====
-    if (contentType.includes('text/event-stream') || apiUrl.includes('stream')) {
+    // ===== 流式响应（兜底） =====
+    if (contentType.includes('text/event-stream')) {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
@@ -99,131 +105,96 @@ export default async function handler(req, res) {
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
-
-          // 解析 SSE 事件
           const lines = buffer.split('\n');
-          buffer = lines.pop() || ''; // 保留最后一个不完整的行
+          buffer = lines.pop() || '';
 
           for (const line of lines) {
             const trimmed = line.trim();
+            if (!trimmed.startsWith('data:')) continue;
+            const dataStr = trimmed.slice(5).trim();
+            if (dataStr === '[DONE]') continue;
 
-            if (trimmed.startsWith('data:')) {
-              const dataStr = trimmed.slice(5).trim();
-
-              if (dataStr === '[DONE]') {
-                continue;
+            try {
+              const parsed = JSON.parse(dataStr);
+              let chunk = '';
+              if (parsed.content && parsed.content.answer) chunk = parsed.content.answer;
+              else if (parsed.answer) chunk = parsed.answer;
+              else if (parsed.type === 'answer' && parsed.content) {
+                chunk = typeof parsed.content === 'string' ? parsed.content : (parsed.content.text || '');
               }
-
-              try {
-                const parsed = JSON.parse(dataStr);
-
-                // 多种可能的响应结构
-                let textChunk = '';
-                if (parsed.content && parsed.content.answer) {
-                  textChunk = parsed.content.answer;
-                } else if (parsed.answer) {
-                  textChunk = parsed.answer;
-                } else if (parsed.type === 'answer' && parsed.content) {
-                  if (typeof parsed.content === 'string') {
-                    textChunk = parsed.content;
-                  } else if (parsed.content.text) {
-                    textChunk = parsed.content.text;
-                  }
-                } else if (parsed.type === 'message' && parsed.content) {
-                  if (typeof parsed.content === 'string') {
-                    textChunk = parsed.content;
-                  } else if (parsed.content.text) {
-                    textChunk = parsed.content.text;
-                  }
-                }
-
-                if (textChunk) {
-                  fullAnswer += textChunk;
-                  // 向前端发送 SSE 事件
-                  res.write(`data: ${JSON.stringify({ type: 'chunk', content: textChunk })}\n\n`);
-                }
-
-                // 检查是否完成
-                if (parsed.type === 'done' || parsed.event === 'done' || parsed.last === true) {
-                  res.write(`data: ${JSON.stringify({ type: 'done', fullAnswer: fullAnswer })}\n\n`);
-                }
-
-              } catch (parseErr) {
-                // 不是 JSON，可能是纯文本内容
-                if (dataStr && dataStr !== '[DONE]') {
-                  fullAnswer += dataStr;
-                  res.write(`data: ${JSON.stringify({ type: 'chunk', content: dataStr })}\n\n`);
-                }
+              if (chunk) {
+                fullAnswer += chunk;
+                res.write(`data: ${JSON.stringify({ type: 'chunk', content: chunk })}\n\n`);
               }
-            }
+              if (parsed.type === 'done' || parsed.last === true) {
+                res.write(`data: ${JSON.stringify({ type: 'done', fullAnswer })}\n\n`);
+              }
+            } catch {}
           }
         }
-
-        // 处理缓冲区剩余内容
-        if (buffer.trim()) {
-          const remaining = buffer.trim();
-          if (remaining.startsWith('data:')) {
-            const dataStr = remaining.slice(5).trim();
-            if (dataStr && dataStr !== '[DONE]') {
-              try {
-                const parsed = JSON.parse(dataStr);
-                let textChunk = parsed.content?.answer || parsed.answer || parsed.content?.text || '';
-                if (textChunk) {
-                  fullAnswer += textChunk;
-                  res.write(`data: ${JSON.stringify({ type: 'chunk', content: textChunk })}\n\n`);
-                }
-              } catch {}
-            }
-          }
-        }
-
-        // 发送完成事件
         res.write(`data: ${JSON.stringify({ type: 'done', fullAnswer: fullAnswer || '暂无回复' })}\n\n`);
         res.end();
-
-      } catch (streamErr) {
-        console.error('Stream read error:', streamErr);
-        // 尝试发送已收集的内容
-        if (fullAnswer) {
-          res.write(`data: ${JSON.stringify({ type: 'done', fullAnswer: fullAnswer })}\n\n`);
-        } else {
-          res.write(`data: ${JSON.stringify({ type: 'error', message: 'Stream interrupted' })}\n\n`);
+      } catch (err) {
+        console.error('Stream error:', err);
+        if (!res.writableEnded) {
+          res.write(`data: ${JSON.stringify({ type: 'done', fullAnswer: fullAnswer || '响应中断' })}\n\n`);
+          res.end();
         }
-        res.end();
       }
-
       return;
     }
 
-    // ===== 非流式 JSON 响应 =====
+    // ===== 非流式 JSON 响应（主路径） =====
     const data = await response.json();
-    console.log('Non-stream response keys:', Object.keys(data));
+    console.log('Response keys:', Object.keys(data));
 
-    // 解析多种响应格式
+    // 解析扣子平台响应 - 支持多种格式
     let answer = '';
+
+    // 格式1: { content: { answer: "..." } }
     if (data.content && data.content.answer) {
       answer = data.content.answer;
-    } else if (data.answer) {
+    }
+    // 格式2: { answer: "..." }
+    else if (data.answer) {
       answer = data.answer;
-    } else if (data.output) {
+    }
+    // 格式3: { output: "..." }
+    else if (data.output) {
       answer = typeof data.output === 'string' ? data.output : JSON.stringify(data.output);
-    } else if (data.choices && data.choices[0]) {
+    }
+    // 格式4: { messages: [...] }  取最后一条 assistant 消息
+    else if (data.messages && Array.isArray(data.messages)) {
+      const assistantMsgs = data.messages.filter(m => m.role === 'assistant' || m.type === 'answer');
+      if (assistantMsgs.length > 0) {
+        const last = assistantMsgs[assistantMsgs.length - 1];
+        answer = last.content || last.text || last.answer || '';
+      }
+    }
+    // 格式5: OpenAI 兼容 { choices: [...] }
+    else if (data.choices && data.choices[0]) {
       answer = data.choices[0].message?.content || data.choices[0].text || '';
-    } else {
-      // 返回完整数据让前端处理
-      return res.status(200).json({ success: true, data: data, format: 'raw' });
     }
 
+    if (answer) {
+      return res.status(200).json({
+        success: true,
+        answer: answer
+      });
+    }
+
+    // 无法解析时返回原始数据
+    console.log('Unparsed response, returning raw data');
     return res.status(200).json({
       success: true,
-      answer: answer,
-      format: 'json'
+      answer: JSON.stringify(data),
+      raw: true
     });
 
   } catch (error) {
     console.error('Proxy error:', error);
     res.status(500).json({
-      error: 'Internal server error',
+      error: '服务器内部错误',
       message: error.message
     });
   }
