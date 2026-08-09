@@ -319,7 +319,7 @@
         <div class="settings-content">
             <h3>⚙️ API 配置</h3>
             <label>API 地址</label>
-            <input type="text" id="settingApiUrl" placeholder="https://你的扣子API地址/v1/chat/completions">
+            <input type="text" id="settingApiUrl" placeholder="https://yh2g4xtgyt.coze.site/stream_run">
             <div class="hint">扣子平台发布后获取的 API 地址，或同域部署时留空使用默认路径</div>
             <label>API Key（可选）</label>
             <input type="password" id="settingApiKey" placeholder="如果 API 需要鉴权则填写">
@@ -369,7 +369,7 @@
         // 使用 OpenAI 兼容接口
         // ============ 设置管理 ============
         function getApiUrl() {
-            return localStorage.getItem('gongyou_api_url') || '/v1/chat/completions';
+            return localStorage.getItem('gongyou_api_url') || '/api/chat';
         }
         function getApiKey() {
             return localStorage.getItem('gongyou_api_key') || '';
@@ -425,6 +425,7 @@
         
         // 对话历史（OpenAI 格式）
         let conversationHistory = [];
+        let sessionId = 'session_' + Date.now();
         
         // 页面加载时检查配置
         updateErrorBanner();
@@ -497,9 +498,8 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        model: 'doubao-seed-2-0-pro-260215',
-                        messages: conversationHistory,
-                        stream: false
+                        message: message,
+                        session_id: sessionId
                     })
                 });
                 if (!response.ok) {
@@ -507,19 +507,39 @@
                     throw new Error(`HTTP ${response.status}: ${errText.substring(0, 200)}`);
                 }
                 
-                const data = await response.json();
+                const result = await response.json();
                 hideTyping();
                 
-                // 解析 OpenAI 格式的响应
-                if (data.choices && data.choices[0] && data.choices[0].message) {
-                    const reply = data.choices[0].message.content;
-                    addMessage(reply);
-                    conversationHistory.push({ role: 'assistant', content: reply });
-                } else if (data.error) {
-                    addMessage('抱歉，出了点问题：' + (data.error.message || JSON.stringify(data.error)));
+                console.log('API Response:', result);
+                
+                // 解析扣子平台响应
+                if (result.success && result.data) {
+                    const data = result.data;
+                    // 尝试多种可能的响应格式
+                    let reply = null;
+                    
+                    if (data.content && data.content.answer) {
+                        reply = data.content.answer;
+                    } else if (data.content && typeof data.content === 'string') {
+                        reply = data.content;
+                    } else if (data.answer) {
+                        reply = data.answer;
+                    } else if (data.choices && data.choices[0] && data.choices[0].message) {
+                        reply = data.choices[0].message.content;
+                    }
+                    
+                    if (reply) {
+                        addMessage(reply);
+                        conversationHistory.push({ role: 'assistant', content: reply });
+                    } else {
+                        addMessage('收到响应但无法解析内容，请查看控制台日志');
+                        console.log('Unparsed response structure:', data);
+                    }
+                } else if (result.error) {
+                    addMessage('抱歉，出了点问题：' + result.error);
                 } else {
                     addMessage('抱歉，无法获取回复');
-                    console.log('Unexpected response:', data);
+                    console.log('Unexpected response:', result);
                 }
             } catch (error) {
                 hideTyping();

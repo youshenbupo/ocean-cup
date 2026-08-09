@@ -1,12 +1,8 @@
 /**
- * Vercel Serverless Function - Chat API Proxy
+ * Vercel Serverless Function - 扣子平台 API 代理
  * 
- * 这个函数作为代理，将前端请求转发到扣子平台的智能体API
- * 解决了跨域(CORS)问题和API地址配置问题
- * 
- * 环境变量配置（在Vercel项目设置中添加）：
- * - COZE_API_URL: 扣子平台API地址（例如：https://api.coze.cn/v1）
- * - COZE_API_KEY: 扣子平台API密钥
+ * 将前端请求转发到扣子平台的 stream_run 接口
+ * 解决跨域问题和 API 密钥暴露问题
  */
 
 export default async function handler(req, res) {
@@ -15,40 +11,93 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // 从环境变量获取API配置
-  const API_URL = process.env.COZE_API_URL;
-  const API_KEY = process.env.COZE_API_KEY;
-
-  // 检查配置是否存在
-  if (!API_URL || !API_KEY) {
-    return res.status(500).json({
-      error: 'API configuration missing',
-      message: '请在Vercel项目设置中配置 COZE_API_URL 和 COZE_API_KEY 环境变量'
-    });
-  }
-
   try {
-    // 转发请求到扣子平台API
-    const response = await fetch(`${API_URL}/chat/completions`, {
+    const { message, session_id } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: 'Missing message parameter' });
+    }
+
+    const apiUrl = process.env.COZE_API_URL;
+    const apiKey = process.env.COZE_API_KEY;
+
+    if (!apiUrl || !apiKey) {
+      console.error('Missing environment variables:', { 
+        hasApiUrl: !!apiUrl, 
+        hasApiKey: !!apiKey 
+      });
+      return res.status(500).json({ 
+        error: 'Server configuration error: Missing COZE_API_URL or COZE_API_KEY' 
+      });
+    }
+
+    // 构造扣子平台 API 请求体
+    const requestBody = {
+      content: {
+        query: {
+          prompt: [
+            {
+              type: "text",
+              content: {
+                text: message
+              }
+            }
+          ]
+        }
+      },
+      type: "query",
+      session_id: session_id || `session_${Date.now()}`,
+      project_id: 7668109916292284459
+    };
+
+    console.log('Proxying request to Coze API:', {
+      url: apiUrl,
+      sessionId: requestBody.session_id,
+      messageLength: message.length
+    });
+
+    // 转发请求到扣子平台
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(requestBody)
     });
 
-    // 获取响应数据
-    const data = await response.json();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Coze API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
+      return res.status(response.status).json({ 
+        error: `Coze API error: ${response.status}`,
+        details: errorText
+      });
+    }
 
-    // 返回响应
-    res.status(response.status).json(data);
+    // 解析响应
+    const data = await response.json();
+    
+    console.log('Coze API response received:', {
+      hasContent: !!data.content,
+      contentType: typeof data.content
+    });
+
+    // 返回给前端
+    res.status(200).json({
+      success: true,
+      data: data
+    });
 
   } catch (error) {
     console.error('Proxy error:', error);
-    res.status(500).json({
+    res.status(500).json({ 
       error: 'Internal server error',
-      message: error.message
+      message: error.message 
     });
   }
 }
