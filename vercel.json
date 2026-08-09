@@ -19,9 +19,5 @@
       "src": "/(.*)",
       "dest": "/src/static/index.html"
     }
-  ],
-  "env": {
-    "COZE_API_URL": "@coze_api_url",
-    "COZE_API_KEY": "@coze_api_key"
-  }
+  ]
 }
