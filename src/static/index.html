@@ -19,6 +19,80 @@
             flex-direction: column;
         }
         
+        .settings-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        .settings-btn:hover { opacity: 1; }
+
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .settings-modal.active { display: flex; }
+        .settings-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 420px;
+        }
+        .settings-content h3 { margin: 0 0 16px; font-size: 18px; }
+        .settings-content label { display: block; margin: 12px 0 4px; font-size: 14px; color: #666; }
+        .settings-content input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .settings-content .hint { font-size: 12px; color: #999; margin-top: 4px; }
+        .settings-actions { display: flex; gap: 8px; margin-top: 20px; }
+        .settings-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-save { background: #667eea; color: white; }
+        .btn-cancel { background: #f0f0f0; color: #666; }
+        .status-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .status-dot.ok { background: #4CAF50; }
+        .status-dot.err { background: #f44336; }
+        .status-dot.unset { background: #ff9800; }
+
+        .error-banner {
+            display: none;
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px 16px;
+            font-size: 13px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .error-banner.active { display: block; }
+
         .header {
             background: rgba(255, 255, 255, 0.95);
             padding: 15px 20px;
@@ -234,6 +308,31 @@
             <h1>工友权益明白人</h1>
             <p>AI智能助手 · 您的权益保障顾问</p>
         </div>
+        <button class="settings-btn" onclick="openSettings()" title="设置">⚙️</button>
+    </div>
+    <div class="error-banner" id="errorBanner" onclick="openSettings()">
+        ⚠️ <span id="errorText">API 未配置，点击设置</span>
+    </div>
+
+    <!-- 设置弹窗 -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <h3>⚙️ API 配置</h3>
+            <label>API 地址</label>
+            <input type="text" id="settingApiUrl" placeholder="https://你的扣子API地址/v1/chat/completions">
+            <div class="hint">扣子平台发布后获取的 API 地址，或同域部署时留空使用默认路径</div>
+            <label>API Key（可选）</label>
+            <input type="password" id="settingApiKey" placeholder="如果 API 需要鉴权则填写">
+            <div class="hint">扣子平台 API Key，同域部署时通常不需要</div>
+            <div style="margin-top:12px">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText" style="font-size:13px;color:#666"></span>
+            </div>
+            <div class="settings-actions">
+                <button class="btn-cancel" onclick="closeSettings()">取消</button>
+                <button class="btn-save" onclick="saveSettings()">保存</button>
+            </div>
+        </div>
     </div>
     
     <div class="chat-container">
@@ -268,13 +367,67 @@
 
     <script>
         // 使用 OpenAI 兼容接口
-        const API_URL = '/v1/chat/completions';
+        // ============ 设置管理 ============
+        function getApiUrl() {
+            return localStorage.getItem('gongyou_api_url') || '/v1/chat/completions';
+        }
+        function getApiKey() {
+            return localStorage.getItem('gongyou_api_key') || '';
+        }
+        function openSettings() {
+            document.getElementById('settingApiUrl').value = localStorage.getItem('gongyou_api_url') || '';
+            document.getElementById('settingApiKey').value = localStorage.getItem('gongyou_api_key') || '';
+            document.getElementById('settingsModal').classList.add('show');
+        }
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+        function saveSettings() {
+            const url = document.getElementById('settingApiUrl').value.trim();
+            const key = document.getElementById('settingApiKey').value.trim();
+            if (url) {
+                localStorage.setItem('gongyou_api_url', url);
+            } else {
+                localStorage.removeItem('gongyou_api_url');
+            }
+            if (key) {
+                localStorage.setItem('gongyou_api_key', key);
+            } else {
+                localStorage.removeItem('gongyou_api_key');
+            }
+            updateErrorBanner();
+            closeSettings();
+            showToast('设置已保存');
+        }
+        function updateErrorBanner() {
+            const banner = document.getElementById('errorBanner');
+            const url = localStorage.getItem('gongyou_api_url');
+            if (!url) {
+                banner.style.display = 'flex';
+                document.getElementById('errorText').textContent = 'API 未配置，点击右上角 ⚙️ 设置';
+            } else {
+                banner.style.display = 'none';
+            }
+        }
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.textContent = msg;
+            toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:12px 24px;border-radius:8px;z-index:10000;font-size:14px;';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // 初始化：检查 API 配置
+        const API_URL = getApiUrl();
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
         
         // 对话历史（OpenAI 格式）
         let conversationHistory = [];
+        
+        // 页面加载时检查配置
+        updateErrorBanner();
         
         function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
@@ -328,6 +481,15 @@
             const message = messageInput.value.trim();
             if (!message) return;
             
+            const apiUrl = getApiUrl();
+            const apiKey = getApiKey();
+            
+            // 检查 API 是否配置
+            if (!apiUrl || apiUrl === '/v1/chat/completions') {
+                addMessage('⚠️ 请先点击右上角 ⚙️ 设置按钮，配置 API 地址后再使用。');
+                return;
+            }
+            
             addMessage(message, true);
             messageInput.value = '';
             sendBtn.disabled = true;
@@ -337,17 +499,28 @@
             conversationHistory.push({ role: 'user', content: message });
             
             try {
-                const response = await fetch(API_URL, {
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+                // 如果有 API Key，添加到请求头
+                if (apiKey) {
+                    headers['Authorization'] = 'Bearer ' + apiKey;
+                }
+                
+                const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: headers,
                     body: JSON.stringify({
                         model: 'gongyou-assistant',
                         messages: conversationHistory,
                         stream: false
                     })
                 });
+                
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errText.substring(0, 200)}`);
+                }
                 
                 const data = await response.json();
                 hideTyping();
@@ -358,14 +531,22 @@
                     addMessage(reply);
                     conversationHistory.push({ role: 'assistant', content: reply });
                 } else if (data.error) {
-                    addMessage('抱歉，出了点问题：' + (data.error.message || data.error));
+                    addMessage('抱歉，出了点问题：' + (data.error.message || JSON.stringify(data.error)));
                 } else {
                     addMessage('抱歉，无法获取回复');
                     console.log('Unexpected response:', data);
                 }
             } catch (error) {
                 hideTyping();
-                addMessage('网络错误，请稍后重试');
+                let errMsg = '网络错误，请稍后重试';
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errMsg = '⚠️ 无法连接到服务器，请检查：\n1. API 地址是否正确\n2. 是否存在跨域(CORS)限制\n3. 网络连接是否正常';
+                } else if (error.message.includes('401') || error.message.includes('403')) {
+                    errMsg = '⚠️ API 认证失败，请检查 API Key 是否正确';
+                } else if (error.message.includes('HTTP')) {
+                    errMsg = '⚠️ 服务器错误：' + error.message;
+                }
+                addMessage(errMsg);
                 console.error('Error:', error);
             } finally {
                 sendBtn.disabled = false;
@@ -383,6 +564,19 @@
                 sendMessage();
             }
         }
+        
+        // 页面加载时检查 API 配置
+        (function init() {
+            const apiUrl = getApiUrl();
+            const apiKey = getApiKey();
+            // 恢复设置面板的值
+            document.getElementById('apiUrlInput').value = apiUrl;
+            document.getElementById('apiKeyInput').value = apiKey;
+            
+            if (!apiUrl || apiUrl === '/v1/chat/completions') {
+                addMessage('👋 你好！我是工友权益明白人。\n\n⚠️ 首次使用请先点击右上角 **⚙️ 设置** 按钮，配置你的智能体 API 地址。\n\n配置完成后即可正常对话！');
+            }
+        })();
     </script>
 </body>
 </html>
