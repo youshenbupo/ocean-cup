@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/static/index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/chat",
+      "dest": "/api/chat/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/src/static/index.html"
+    }
+  ],
+  "env": {
+    "COZE_API_URL": "@coze_api_url",
+    "COZE_API_KEY": "@coze_api_key"
+  }
+}

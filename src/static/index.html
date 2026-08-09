@@ -481,15 +481,6 @@
             const message = messageInput.value.trim();
             if (!message) return;
             
-            const apiUrl = getApiUrl();
-            const apiKey = getApiKey();
-            
-            // 检查 API 是否配置
-            if (!apiUrl || apiUrl === '/v1/chat/completions') {
-                addMessage('⚠️ 请先点击右上角 ⚙️ 设置按钮，配置 API 地址后再使用。');
-                return;
-            }
-            
             addMessage(message, true);
             messageInput.value = '';
             sendBtn.disabled = true;
@@ -499,24 +490,18 @@
             conversationHistory.push({ role: 'user', content: message });
             
             try {
-                const headers = {
-                    'Content-Type': 'application/json',
-                };
-                // 如果有 API Key，添加到请求头
-                if (apiKey) {
-                    headers['Authorization'] = 'Bearer ' + apiKey;
-                }
-                
-                const response = await fetch(apiUrl, {
+                // 使用本地代理API（Vercel serverless function）
+                const response = await fetch('/api/chat', {
                     method: 'POST',
-                    headers: headers,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify({
-                        model: 'gongyou-assistant',
+                        model: 'doubao-seed-2-0-pro-260215',
                         messages: conversationHistory,
                         stream: false
                     })
                 });
-                
                 if (!response.ok) {
                     const errText = await response.text();
                     throw new Error(`HTTP ${response.status}: ${errText.substring(0, 200)}`);
@@ -540,11 +525,11 @@
                 hideTyping();
                 let errMsg = '网络错误，请稍后重试';
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                    errMsg = '⚠️ 无法连接到服务器，请检查：\n1. API 地址是否正确\n2. 是否存在跨域(CORS)限制\n3. 网络连接是否正常';
-                } else if (error.message.includes('401') || error.message.includes('403')) {
-                    errMsg = '⚠️ API 认证失败，请检查 API Key 是否正确';
+                    errMsg = '⚠️ 无法连接到服务器，请检查网络连接';
+                } else if (error.message.includes('500') || error.message.includes('502')) {
+                    errMsg = '️ 后端服务暂时不可用，请稍后重试';
                 } else if (error.message.includes('HTTP')) {
-                    errMsg = '⚠️ 服务器错误：' + error.message;
+                    errMsg = '️ 服务器错误：' + error.message;
                 }
                 addMessage(errMsg);
                 console.error('Error:', error);
@@ -565,17 +550,9 @@
             }
         }
         
-        // 页面加载时检查 API 配置
+        // 页面加载时显示欢迎消息
         (function init() {
-            const apiUrl = getApiUrl();
-            const apiKey = getApiKey();
-            // 恢复设置面板的值
-            document.getElementById('apiUrlInput').value = apiUrl;
-            document.getElementById('apiKeyInput').value = apiKey;
-            
-            if (!apiUrl || apiUrl === '/v1/chat/completions') {
-                addMessage('👋 你好！我是工友权益明白人。\n\n⚠️ 首次使用请先点击右上角 **⚙️ 设置** 按钮，配置你的智能体 API 地址。\n\n配置完成后即可正常对话！');
-            }
+            addMessage('👋 你好！我是工友权益明白人。\n\n我可以帮你：\n⚖️ 法律咨询（欠薪、工伤、合同）\n💰 薪资管理（记工时、算工资、写欠条）\n🦺 安全提醒（天气预警、隐患识别）\n📚 技能提升（考证、培训）\n\n把你的情况跟我说说，我帮你理一理。');
         })();
     </script>
 </body>
