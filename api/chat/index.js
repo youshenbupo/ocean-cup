@@ -1,7 +1,7 @@
 /**
  * Vercel Serverless Function - 扣子平台 API 代理
  * 
- * 优先使用 run（非流式）接口，兼容 stream_run（流式）接口
+ * 正确解析 run 接口返回的 LangGraph 状态，提取实际回复文本
  */
 
 export const config = {
@@ -95,7 +95,6 @@ export default async function handler(req, res) {
 
       let fullAnswer = '';
       let buffer = '';
-
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
@@ -116,12 +115,7 @@ export default async function handler(req, res) {
 
             try {
               const parsed = JSON.parse(dataStr);
-              let chunk = '';
-              if (parsed.content && parsed.content.answer) chunk = parsed.content.answer;
-              else if (parsed.answer) chunk = parsed.answer;
-              else if (parsed.type === 'answer' && parsed.content) {
-                chunk = typeof parsed.content === 'string' ? parsed.content : (parsed.content.text || '');
-              }
+              const chunk = extractAnswer(parsed);
               if (chunk) {
                 fullAnswer += chunk;
                 res.write(`data: ${JSON.stringify({ type: 'chunk', content: chunk })}\n\n`);
@@ -148,33 +142,8 @@ export default async function handler(req, res) {
     const data = await response.json();
     console.log('Response keys:', Object.keys(data));
 
-    // 解析扣子平台响应 - 支持多种格式
-    let answer = '';
-
-    // 格式1: { content: { answer: "..." } }
-    if (data.content && data.content.answer) {
-      answer = data.content.answer;
-    }
-    // 格式2: { answer: "..." }
-    else if (data.answer) {
-      answer = data.answer;
-    }
-    // 格式3: { output: "..." }
-    else if (data.output) {
-      answer = typeof data.output === 'string' ? data.output : JSON.stringify(data.output);
-    }
-    // 格式4: { messages: [...] }  取最后一条 assistant 消息
-    else if (data.messages && Array.isArray(data.messages)) {
-      const assistantMsgs = data.messages.filter(m => m.role === 'assistant' || m.type === 'answer');
-      if (assistantMsgs.length > 0) {
-        const last = assistantMsgs[assistantMsgs.length - 1];
-        answer = last.content || last.text || last.answer || '';
-      }
-    }
-    // 格式5: OpenAI 兼容 { choices: [...] }
-    else if (data.choices && data.choices[0]) {
-      answer = data.choices[0].message?.content || data.choices[0].text || '';
-    }
+    // 提取实际回复文本
+    const answer = extractAnswer(data);
 
     if (answer) {
       return res.status(200).json({
@@ -183,11 +152,11 @@ export default async function handler(req, res) {
       });
     }
 
-    // 无法解析时返回原始数据
-    console.log('Unparsed response, returning raw data');
+    // 无法提取时，打印完整结构供调试
+    console.log('Could not extract answer. Full response:', JSON.stringify(data).substring(0, 1000));
     return res.status(200).json({
       success: true,
-      answer: JSON.stringify(data),
+      answer: '⚠️ 收到响应但无法解析内容，请查看 Vercel 函数日志',
       raw: true
     });
 
@@ -198,4 +167,76 @@ export default async function handler(req, res) {
       message: error.message
     });
   }
+}
+
+/**
+ * 从扣子平台各种响应格式中提取实际回复文本
+ * 
+ * 支持的格式：
+ * 1. { messages: [{content: "...", type: "ai"}, ...] }  — LangGraph 状态
+ * 2. { content: { answer: "..." } }
+ * 3. { answer: "..." }
+ * 4. { output: "..." }
+ * 5. { choices: [{message: {content: "..."}}] }  — OpenAI 格式
+ */
+function extractAnswer(data) {
+  if (!data || typeof data !== 'object') return '';
+
+  // 格式1: LangGraph 状态 — messages 数组
+  if (data.messages && Array.isArray(data.messages)) {
+    // 找最后一条 AI 消息
+    for (let i = data.messages.length - 1; i >= 0; i--) {
+      const msg = data.messages[i];
+      const msgType = msg.type || msg.role || '';
+      // AI 消息: type="ai" 或 role="assistant"
+      if (msgType === 'ai' || msgType === 'assistant' || msgType === 'AIMessageChunk') {
+        const content = msg.content;
+        if (content && typeof content === 'string' && content.trim()) {
+          return content.trim();
+        }
+        // content 可能是数组 [{type: "text", text: "..."}]
+        if (Array.isArray(content)) {
+          const texts = content
+            .filter(c => c.type === 'text' && c.text)
+            .map(c => c.text);
+          if (texts.length > 0) return texts.join('');
+        }
+      }
+    }
+  }
+
+  // 格式2: { content: { answer: "..." } }
+  if (data.content) {
+    if (data.content.answer && typeof data.content.answer === 'string') {
+      return data.content.answer.trim();
+    }
+    if (typeof data.content === 'string' && data.content.trim()) {
+      return data.content.trim();
+    }
+  }
+
+  // 格式3: { answer: "..." }
+  if (data.answer && typeof data.answer === 'string') {
+    return data.answer.trim();
+  }
+
+  // 格式4: { output: "..." }
+  if (data.output) {
+    if (typeof data.output === 'string' && data.output.trim()) {
+      return data.output.trim();
+    }
+  }
+
+  // 格式5: OpenAI 兼容 { choices: [...] }
+  if (data.choices && data.choices[0]) {
+    const choice = data.choices[0];
+    if (choice.message && choice.message.content) {
+      return choice.message.content.trim();
+    }
+    if (choice.text) {
+      return choice.text.trim();
+    }
+  }
+
+  return '';
 }

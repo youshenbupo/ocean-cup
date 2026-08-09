@@ -876,6 +876,7 @@
         
         if (contentType.includes('text/event-stream')) {
             // 流式响应（兜底）
+            hideTyping(); // 流式用 streamingMsg 代替 typing
             let fullAnswer = '';
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -919,9 +920,38 @@
         const result = await response.json();
         console.log('API Response:', result);
 
+        // 先隐藏 typing 指示器
+        hideTyping();
+
         if (result.success && result.answer) {
-            addMsg(result.answer);
-            return result.answer;
+            // 如果 answer 看起来像 JSON 字符串，尝试再解析一次
+            let answer = result.answer;
+            if (typeof answer === 'string' && answer.startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(answer);
+                    // 尝试从 JSON 中提取实际文本
+                    if (parsed.messages && Array.isArray(parsed.messages)) {
+                        for (let i = parsed.messages.length - 1; i >= 0; i--) {
+                            const msg = parsed.messages[i];
+                            const msgType = msg.type || msg.role || '';
+                            if (msgType === 'ai' || msgType === 'assistant') {
+                                if (msg.content && typeof msg.content === 'string') {
+                                    answer = msg.content;
+                                    break;
+                                }
+                            }
+                        }
+                    } else if (parsed.content && parsed.content.answer) {
+                        answer = parsed.content.answer;
+                    } else if (parsed.answer) {
+                        answer = parsed.answer;
+                    }
+                } catch (e) {
+                    // 不是有效 JSON，保持原样显示
+                }
+            }
+            addMsg(answer);
+            return answer;
         } else if (result.error) {
             const errMsg = typeof result.error === 'string' ? result.error : JSON.stringify(result.error);
             addMsg('⚠️ ' + errMsg);
@@ -949,7 +979,6 @@
         try {
             await sendToAPI(message);
         } catch (error) {
-            hideTyping();
             let errMsg = '网络错误，请稍后重试';
             if (error.message.includes('Failed to fetch')) errMsg = '⚠️ 无法连接服务器，请检查网络';
             else if (error.message.includes('500') || error.message.includes('502')) errMsg = '⚠️ 服务暂时不可用';
@@ -957,6 +986,8 @@
             addMsg(errMsg);
             console.error('Chat error:', error);
         } finally {
+            // 确保无论如何都移除 typing 指示器
+            hideTyping();
             isSending = false;
             document.getElementById('chatSendBtn').disabled = false;
         }
