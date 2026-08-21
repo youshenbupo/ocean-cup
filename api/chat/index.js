@@ -61,7 +61,7 @@ export default async function handler(req, res) {
       },
       type: "query",
       session_id: session_id || `session_${Date.now()}`,
-      project_id: 7668109916292284459
+      project_id: "7668109916292284459"
     };
 
     console.log('Proxying to:', apiUrl, '| message:', message.substring(0, 50));
