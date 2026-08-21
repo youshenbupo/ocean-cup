@@ -25,6 +25,15 @@
             --shadow: 0 6px 24px rgba(11, 37, 69, 0.10);
             --shadow-lg: 0 12px 40px rgba(11, 37, 69, 0.16);
             --radius: 16px;
+            /* 别名与渐变（补齐缺失引用，修复气泡白字看不清问题） */
+            --text-primary: #1E293B;
+            --text-muted: #94A3B8;
+            --text-light: #CBD5E1;
+            --bg-dark: #0B2545;
+            --bg-card: #FFFFFF;
+            --grad-warm: linear-gradient(135deg, #13315C 0%, #1D4ED8 100%);
+            --grad-hot: linear-gradient(135deg, #0B2545 0%, #1D4ED8 60%, #2563EB 100%);
+            --grad-accent: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -773,6 +782,41 @@
             .chat-session-bar { display: none; }
             .chat-messages { padding: 20px 24px; }
         }
+
+        /* ===== 扩展功能折叠 ===== */
+        .extend-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--card); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); cursor: pointer; transition: transform .2s; user-select: none; }
+        .extend-toggle:active { transform: scale(.98); }
+        .extend-toggle-left { display: flex; align-items: center; gap: 12px; }
+        .extend-icon { font-size: 24px; }
+        .extend-title { font-size: 15px; font-weight: 600; color: var(--text); }
+        .extend-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .extend-arrow { color: var(--text-light); font-size: 13px; transition: transform .25s; }
+        .extend-arrow.open { transform: rotate(180deg); }
+        .extend-panel { display: none; margin-top: 10px; animation: fadeIn .25s; }
+        .extend-panel.open { display: block; }
+        .extend-tip { font-size: 12px; color: #B45309; background: #FFF7ED; border: 1px solid #FED7AA; padding: 9px 12px; border-radius: 10px; margin-bottom: 10px; line-height: 1.6; }
+
+        /* ===== 对话页工具按钮（壁纸/清除） ===== */
+        .session-actions, .sidebar-actions { display: flex; align-items: center; gap: 6px; }
+        .icon-btn { width: 34px; height: 34px; border: 1px solid var(--border); background: white; border-radius: 9px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; padding: 0; }
+        .icon-btn:hover { background: #F1F5F9; border-color: var(--primary); }
+        .icon-btn:active { transform: scale(.92); }
+
+        /* ===== 确认弹窗（清除等） ===== */
+        .confirm-body { padding: 8px 4px 4px; text-align: center; }
+        .confirm-icon { font-size: 42px; margin-bottom: 8px; }
+        .confirm-title-text { font-size: 16px; color: var(--text); margin-bottom: 6px; line-height: 1.5; }
+        .confirm-sub { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+        .confirm-actions { display: flex; gap: 10px; margin-top: 18px; }
+        .btn-cancel { flex: 1; padding: 12px; border: 1px solid var(--border); background: #F8FAFC; color: var(--text); border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .btn-cancel:hover { background: #F1F5F9; }
+        .btn-danger { flex: 1; padding: 12px; border: none; background: linear-gradient(135deg, #DC2626, #B91C1C); color: white; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(220,38,38,.3); }
+        .btn-danger:hover { transform: translateY(-1px); }
+
+        /* ===== 壁纸设置弹窗 ===== */
+        .wallpaper-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+        .wallpaper-tip { font-size: 12px; color: var(--text-secondary); background: #F8FAFC; border: 1px dashed var(--border); padding: 9px 12px; border-radius: 10px; margin-top: 12px; line-height: 1.6; }
+        .chat-messages.has-wallpaper { background-size: cover; background-position: center; background-repeat: no-repeat; }
     </style>
 </head>
 <body>
@@ -910,7 +954,11 @@
     <aside class="chat-sidebar">
         <div class="sidebar-header">
             <h3>💬 历史对话</h3>
-            <button class="session-btn" onclick="newChat()">＋ 新对话</button>
+            <div class="sidebar-actions">
+                <button class="icon-btn" title="聊天壁纸" onclick="openWallpaper()">🎨</button>
+                <button class="icon-btn" title="清除全部对话" onclick="confirmClearAll()">🗑️</button>
+                <button class="session-btn" onclick="newChat()">＋ 新对话</button>
+            </div>
         </div>
         <div class="sidebar-sessions" id="sidebarSessions"></div>
         <div class="sidebar-summary">
@@ -922,7 +970,11 @@
         <div class="chat-session-bar">
             <button class="session-btn" onclick="openSessionList()">📋 历史</button>
             <span class="session-title" id="sessionTitle">新对话</span>
-            <button class="session-btn" onclick="newChat()">＋ 新对话</button>
+            <div class="session-actions">
+                <button class="icon-btn" title="聊天壁纸" onclick="openWallpaper()">🎨</button>
+                <button class="icon-btn" title="清除全部对话" onclick="confirmClearAll()">🗑️</button>
+                <button class="session-btn" onclick="newChat()">＋</button>
+            </div>
         </div>
         <div class="chat-quick">
             <div class="chat-quick-btn" onclick="quickChat('老板拖欠工资怎么办')">💰 欠薪维权</div>
@@ -1093,43 +1145,56 @@
             </div>
         </div>
 
-        <!-- 我的工具 -->
-        <div class="section-subtitle">🧰 我的工具</div>
+        <!-- 设置 -->
+        <div class="section-subtitle">⚙️ 设置</div>
         <div class="profile-menu">
-            <div class="menu-item" onclick="quickChat('查看我的工时记录')">
-                <div class="menu-icon">📝</div>
-                <div class="menu-label">我的工时记录</div>
-                <div class="menu-arrow">›</div>
-            </div>
-            <div class="menu-item" onclick="quickChat('查看我的工资条')">
-                <div class="menu-icon">💰</div>
-                <div class="menu-label">我的工资条</div>
-                <div class="menu-arrow">›</div>
-            </div>
-            <div class="menu-item" onclick="quickChat('查看我的证书')">
-                <div class="menu-icon">🏅</div>
-                <div class="menu-label">我的证书</div>
-                <div class="menu-arrow">›</div>
-            </div>
-            <div class="menu-item" onclick="quickChat('查看我的记账明细')">
-                <div class="menu-icon">📊</div>
-                <div class="menu-label">我的记账本</div>
-                <div class="menu-arrow">›</div>
-            </div>
-            <div class="menu-item" onclick="quickChat('查看我发的帖子')">
-                <div class="menu-icon">👥</div>
-                <div class="menu-label">我的社区帖子</div>
-                <div class="menu-arrow">›</div>
-            </div>
             <div class="menu-item" onclick="openSettings()">
-                <div class="menu-icon">⚙️</div>
+                <div class="menu-icon">🔑</div>
                 <div class="menu-label">API 设置</div>
                 <div class="menu-arrow">›</div>
             </div>
-            <div class="menu-item" onclick="clearChat()">
-                <div class="menu-icon">🗑️</div>
-                <div class="menu-label">清除对话记录</div>
-                <div class="menu-arrow">›</div>
+        </div>
+
+        <!-- 扩展功能（默认折叠，点击才展开） -->
+        <div class="section-subtitle">🧩 扩展功能</div>
+        <div class="extend-toggle" onclick="toggleExtend()">
+            <div class="extend-toggle-left">
+                <span class="extend-icon">🗂️</span>
+                <div class="extend-txt">
+                    <div class="extend-title">更多实用工具</div>
+                    <div class="extend-sub">工时 · 工资条 · 证书 · 记账 · 社区</div>
+                </div>
+            </div>
+            <span class="extend-arrow" id="extendArrow">▼</span>
+        </div>
+        <div class="extend-panel" id="extendPanel">
+            <div class="extend-tip">💡 这些功能需要对接工地 / 公司数据后正式开放，现在可以先咨询了解</div>
+            <div class="profile-menu">
+                <div class="menu-item" onclick="quickChat('查看我的工时记录')">
+                    <div class="menu-icon">📝</div>
+                    <div class="menu-label">我的工时记录</div>
+                    <div class="menu-arrow">›</div>
+                </div>
+                <div class="menu-item" onclick="quickChat('查看我的工资条')">
+                    <div class="menu-icon">💰</div>
+                    <div class="menu-label">我的工资条</div>
+                    <div class="menu-arrow">›</div>
+                </div>
+                <div class="menu-item" onclick="quickChat('查看我的证书')">
+                    <div class="menu-icon">🏅</div>
+                    <div class="menu-label">我的证书</div>
+                    <div class="menu-arrow">›</div>
+                </div>
+                <div class="menu-item" onclick="quickChat('查看我的记账明细')">
+                    <div class="menu-icon">📊</div>
+                    <div class="menu-label">我的记账本</div>
+                    <div class="menu-arrow">›</div>
+                </div>
+                <div class="menu-item" onclick="quickChat('查看我发的帖子')">
+                    <div class="menu-icon">👥</div>
+                    <div class="menu-label">我的社区帖子</div>
+                    <div class="menu-arrow">›</div>
+                </div>
             </div>
         </div>
     </div>
@@ -1946,6 +2011,93 @@
         if (rec) { try { rec.onend = null; rec.stop(); } catch (e) {} }
     }
 
+    // ===== 扩展功能折叠 =====
+    function toggleExtend() {
+        const panel = document.getElementById('extendPanel');
+        const arrow = document.getElementById('extendArrow');
+        if (!panel) return;
+        const open = panel.classList.toggle('open');
+        if (arrow) arrow.classList.toggle('open', open);
+    }
+
+    // ===== 清除全部对话（二次确认）=====
+    function confirmClearAll() {
+        document.getElementById('clearAllModal').classList.add('active');
+    }
+    function closeClearAll() {
+        document.getElementById('clearAllModal').classList.remove('active');
+    }
+    function doClearAll() {
+        try {
+            sessions = [];
+            saveSessions();
+            newChat();
+            if (typeof renderSidebarSessions === 'function') renderSidebarSessions();
+            closeClearAll();
+            showToast('已清除全部对话记录');
+        } catch (e) {
+            showToast('清除失败，请重试');
+        }
+    }
+
+    // ===== 聊天壁纸（本地上传照片作为对话背景）=====
+    const WALLPAPER_KEY = 'gongyou_wallpaper';
+    function openWallpaper() {
+        document.getElementById('wallpaperModal').classList.add('active');
+    }
+    function closeWallpaper() {
+        document.getElementById('wallpaperModal').classList.remove('active');
+    }
+    function applyWallpaper(dataUrl) {
+        const el = document.getElementById('chatMessages');
+        if (!el) return;
+        if (dataUrl) {
+            el.style.backgroundImage = 'linear-gradient(rgba(248,250,252,0.86), rgba(248,250,252,0.86)), url(' + dataUrl + ')';
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
+        } else {
+            el.style.backgroundImage = '';
+        }
+    }
+    function handleWallpaperFile(file) {
+        if (!file) return;
+        if (!file.type || file.type.indexOf('image/') !== 0) { showToast('请选择图片文件'); return; }
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const img = new Image();
+            img.onload = function () {
+                try {
+                    const maxW = 1080;
+                    let w = img.width, h = img.height;
+                    if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+                    localStorage.setItem(WALLPAPER_KEY, dataUrl);
+                    applyWallpaper(dataUrl);
+                    closeWallpaper();
+                    showToast('壁纸已设置');
+                } catch (err) {
+                    showToast('图片太大，请换一张小一点的');
+                }
+            };
+            img.onerror = function () { showToast('图片读取失败'); };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+    function resetWallpaper() {
+        localStorage.removeItem(WALLPAPER_KEY);
+        applyWallpaper(null);
+        closeWallpaper();
+        showToast('已恢复默认背景');
+    }
+    function loadWallpaper() {
+        const wp = localStorage.getItem(WALLPAPER_KEY);
+        if (wp) applyWallpaper(wp);
+    }
+
     // ===== 个人信息（手动填写 + 智能识别两种方式）=====
     const PROFILE_KEY = 'gongyou_profile';
     const JOB_OPTIONS = ['钢筋工','木工','瓦工/砌筑工','混凝土工','架子工','电工','焊工','塔吊司机','信号工','测量放线','防水工','装修工','普工/小工','班组长/带班','其他工种'];
@@ -2058,7 +2210,43 @@
         loadSessions();
         renderChatMessages();
         loadProfile();
+        loadWallpaper();
     })();
 </script>
+
+<!-- 清除全部对话 · 二次确认弹窗 -->
+<div class="modal-overlay" id="clearAllModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🗑️ 清除全部对话</h3>
+            <button class="modal-close" onclick="closeClearAll()">✕</button>
+        </div>
+        <div class="confirm-body">
+            <div class="confirm-icon">⚠️</div>
+            <p class="confirm-title-text">确定要清除<b style="color:var(--danger);">所有对话记录</b>吗？</p>
+            <p class="confirm-sub">此操作会删除本设备保存的全部历史对话，且无法恢复。</p>
+        </div>
+        <div class="confirm-actions">
+            <button class="btn-cancel" onclick="closeClearAll()">再想想</button>
+            <button class="btn-danger" onclick="doClearAll()">确认清除</button>
+        </div>
+    </div>
+</div>
+
+<!-- 聊天壁纸设置弹窗 -->
+<div class="modal-overlay" id="wallpaperModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🎨 聊天壁纸</h3>
+            <button class="modal-close" onclick="closeWallpaper()">✕</button>
+        </div>
+        <div class="wallpaper-actions">
+            <button class="btn-primary" onclick="document.getElementById('wallpaperInput').click()">📷 上传照片作为壁纸</button>
+            <button class="btn-cancel" onclick="resetWallpaper()">恢复默认背景</button>
+        </div>
+        <div class="wallpaper-tip">支持从电脑或相册选择图片，仅保存在本设备，不会上传</div>
+    </div>
+</div>
+<input type="file" id="wallpaperInput" accept="image/*" style="display:none" onchange="handleWallpaperFile(this.files[0]); this.value='';">
 </body>
 </html>
