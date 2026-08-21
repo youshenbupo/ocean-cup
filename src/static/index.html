@@ -1243,6 +1243,73 @@
             </div>
         </div>
 
+        <!-- 工时记录 -->
+        <div class="section-subtitle">📝 工时记录</div>
+        <div class="profile-panel">
+            <div class="expense-summary">
+                <div class="expense-summary-item" style="background:linear-gradient(135deg,#1E40AF,#3B82F6)">
+                    <div class="expense-summary-label">本月工时</div>
+                    <div class="expense-summary-value" id="workHoursMonth">0h</div>
+                </div>
+                <div class="expense-summary-item" style="background:linear-gradient(135deg,#7C2D12,#EA580C)">
+                    <div class="expense-summary-label">本月工天</div>
+                    <div class="expense-summary-value" id="workDaysMonth">0天</div>
+                </div>
+            </div>
+            <div class="expense-form">
+                <div class="expense-form-row">
+                    <input type="date" id="workDate" style="flex:1">
+                    <input type="number" id="workHours" placeholder="工时（小时）" min="0.5" max="24" step="0.5" style="flex:1">
+                </div>
+                <div class="expense-form-row">
+                    <input type="text" id="workNote" placeholder="备注（如：3号楼钢筋绑扎）">
+                </div>
+                <button class="btn-add-expense" style="background:linear-gradient(135deg,#3B82F6,#2563EB)" onclick="addWorkHour()">✚ 记录工时</button>
+            </div>
+            <div class="expense-list" id="workHourList">
+                <div class="expense-empty">还没有工时记录，记一笔吧～</div>
+            </div>
+        </div>
+
+        <!-- 工资计算器 -->
+        <div class="section-subtitle">🧮 工资计算器</div>
+        <div class="profile-panel">
+            <div class="expense-form">
+                <div class="expense-form-row">
+                    <select id="calcMode" onchange="toggleCalcMode()">
+                        <option value="day">按天计算</option>
+                        <option value="hour">按小时计算</option>
+                        <option value="month">按月计算</option>
+                    </select>
+                    <input type="number" id="calcRate" placeholder="日薪/时薪/月薪" min="0">
+                </div>
+                <div class="expense-form-row" id="calcDaysRow">
+                    <input type="number" id="calcDays" placeholder="工作天数" min="0" step="0.5">
+                    <input type="number" id="calcOvertime" placeholder="加班小时" min="0" step="0.5">
+                </div>
+                <div class="expense-form-row" id="calcOvertimeRateRow">
+                    <input type="number" id="calcOvertimeRate" placeholder="加班时薪（默认1.5倍）" min="0" step="0.1">
+                </div>
+                <button class="btn-add-expense" style="background:linear-gradient(135deg,#F59E0B,#D97706)" onclick="calcSalary()">🧮 计算应得工资</button>
+            </div>
+            <div id="calcResult" style="display:none;text-align:center;padding:16px;background:#F0F9FF;border-radius:10px;border:1px solid #BAE6FD;">
+                <div style="font-size:12px;color:#0369A1;margin-bottom:4px">应得工资</div>
+                <div id="calcResultValue" style="font-size:28px;font-weight:800;color:#0C4A6E">¥0</div>
+                <div id="calcResultDetail" style="font-size:12px;color:#0369A1;margin-top:6px;line-height:1.6"></div>
+            </div>
+        </div>
+
+        <!-- 安全晨会 -->
+        <div class="section-subtitle">🦺 安全晨会</div>
+        <div class="profile-panel" style="background:linear-gradient(135deg,#FFF7ED,#FFFBEB);border-color:#FDE68A">
+            <div id="safetyTipContent" style="font-size:14px;line-height:1.8;color:#78350F">
+                <div style="text-align:center;padding:20px;color:#B45309">加载中...</div>
+            </div>
+            <div style="text-align:center;margin-top:12px">
+                <button class="btn-add-expense" style="background:linear-gradient(135deg,#F59E0B,#D97706);width:auto;padding:8px 24px" onclick="loadSafetyTip()">🔄 换一条</button>
+            </div>
+        </div>
+
         <!-- 设置 -->
         <div class="section-subtitle">⚙️ 设置</div>
         <div class="profile-menu">
@@ -2366,6 +2433,110 @@
         }).join('');
     }
 
+    // ===== 工时记录 =====
+    const WORKHOUR_KEY = 'gongyou_workhours';
+    function getWorkHours() { try { return JSON.parse(localStorage.getItem(WORKHOUR_KEY) || '[]'); } catch(e) { return []; } }
+    function saveWorkHours(list) { localStorage.setItem(WORKHOUR_KEY, JSON.stringify(list)); }
+    function addWorkHour() {
+        const date = document.getElementById('workDate').value;
+        const hours = parseFloat(document.getElementById('workHours').value);
+        if (!date) { showToast('请选择日期'); return; }
+        if (!hours || hours <= 0) { showToast('请输入工时'); return; }
+        const note = document.getElementById('workNote').value.trim();
+        const list = getWorkHours();
+        list.unshift({ id: Date.now(), date: date, hours: hours, note: note || '正常上班' });
+        saveWorkHours(list);
+        document.getElementById('workHours').value = '';
+        document.getElementById('workNote').value = '';
+        renderWorkHours();
+        showToast('工时已记录：' + hours + '小时');
+    }
+    function deleteWorkHour(id) {
+        saveWorkHours(getWorkHours().filter(w => w.id !== id));
+        renderWorkHours();
+    }
+    function renderWorkHours() {
+        const list = getWorkHours();
+        const month = new Date().toISOString().slice(0, 7);
+        let totalHours = 0, totalDays = 0;
+        const daySet = new Set();
+        list.forEach(w => {
+            if (w.date && w.date.indexOf(month) === 0) {
+                totalHours += w.hours;
+                daySet.add(w.date);
+            }
+        });
+        totalDays = daySet.size;
+        document.getElementById('workHoursMonth').textContent = totalHours + 'h';
+        document.getElementById('workDaysMonth').textContent = totalDays + '天';
+        const container = document.getElementById('workHourList');
+        if (!list.length) { container.innerHTML = '<div class="expense-empty">还没有工时记录，记一笔吧～</div>'; return; }
+        container.innerHTML = list.slice(0, 30).map(w =>
+            '<div class="expense-item">' +
+            '<div class="expense-item-icon" style="background:#EFF6FF">📋</div>' +
+            '<div class="expense-item-info"><div class="expense-item-note">' + escapeHtml(w.note) + '</div>' +
+            '<div class="expense-item-date">' + w.date + '</div></div>' +
+            '<div class="expense-item-amount" style="color:#2563EB">' + w.hours + 'h</div>' +
+            '<div class="expense-item-del" onclick="deleteWorkHour(' + w.id + ')">🗑️</div></div>'
+        ).join('');
+    }
+
+    // ===== 工资计算器 =====
+    function toggleCalcMode() {
+        const mode = document.getElementById('calcMode').value;
+        document.getElementById('calcDaysRow').style.display = mode === 'month' ? 'none' : 'flex';
+        document.getElementById('calcOvertimeRateRow').style.display = mode === 'month' ? 'none' : 'flex';
+    }
+    function calcSalary() {
+        const mode = document.getElementById('calcMode').value;
+        const rate = parseFloat(document.getElementById('calcRate').value) || 0;
+        if (rate <= 0) { showToast('请输入薪资标准'); return; }
+        let total = 0, detail = '';
+        if (mode === 'day') {
+            const days = parseFloat(document.getElementById('calcDays').value) || 0;
+            const ot = parseFloat(document.getElementById('calcOvertime').value) || 0;
+            const otRate = parseFloat(document.getElementById('calcOvertimeRate').value) || (rate / 8 * 1.5);
+            total = days * rate + ot * otRate;
+            detail = days + '天 × ¥' + rate + '/天' + (ot > 0 ? ' + 加班' + ot + 'h × ¥' + otRate.toFixed(2) + '/h' : '');
+        } else if (mode === 'hour') {
+            const hours = parseFloat(document.getElementById('calcDays').value) || 0;
+            const ot = parseFloat(document.getElementById('calcOvertime').value) || 0;
+            const otRate = parseFloat(document.getElementById('calcOvertimeRate').value) || (rate * 1.5);
+            total = hours * rate + ot * otRate;
+            detail = hours + 'h × ¥' + rate + '/h' + (ot > 0 ? ' + 加班' + ot + 'h × ¥' + otRate.toFixed(2) + '/h' : '');
+        } else {
+            total = rate;
+            detail = '月薪 ¥' + rate;
+        }
+        document.getElementById('calcResult').style.display = 'block';
+        document.getElementById('calcResultValue').textContent = '¥' + total.toFixed(2);
+        document.getElementById('calcResultDetail').textContent = detail;
+    }
+
+    // ===== 安全晨会（每日安全提示） =====
+    const SAFETY_TIPS = [
+        { icon: '🪖', title: '安全帽要戴好', desc: '进入施工现场必须正确佩戴安全帽，系紧下颚带。安全帽能有效防止高空坠物伤害，是保命的第一道防线。' },
+        { icon: '🧤', title: '高处作业系安全带', desc: '凡在2米以上高处作业，必须系好安全带并高挂低用。安全带要挂在牢固可靠的挂点上，严禁低挂高用。' },
+        { icon: '⚡', title: '临时用电安全', desc: '施工用电必须由专业电工操作，电缆线不得拖地泡水，配电箱要上锁并有防雨措施。非电工严禁私拉乱接。' },
+        { icon: '🏗️', title: '脚手架验收', desc: '上架前检查脚手架是否验收合格，脚手板是否铺满铺稳，连墙件是否牢固。严禁在未验收的脚手架上作业。' },
+        { icon: '🚧', title: '洞口防护要到位', desc: '楼梯口、电梯井口、预留洞口必须设置防护栏杆和盖板。严禁随意拆除防护设施，发现损坏及时报告。' },
+        { icon: '🔥', title: '动火作业审批', desc: '电焊、气割等动火作业必须办理动火证，配备灭火器材，设专人监护。作业完毕后确认无火种方可离开。' },
+        { icon: '🌧️', title: '雨天施工注意', desc: '雨天暂停露天高处作业和起重吊装。雨后检查脚手架、临时用电设施是否受潮，确认安全后方可复工。' },
+        { icon: '🧱', title: '材料堆放规范', desc: '建筑材料堆放要整齐稳固，高度不超过规定，不占用消防通道。模板、钢管等要分类码放，防止坍塌伤人。' },
+        { icon: '👷', title: '吊装作业安全', desc: '吊装作业设警戒区，专人指挥。严禁在吊物下方站人或穿行。司机必须持证上岗，信号工指挥清晰。' },
+        { icon: '🏥', title: '中暑预防', desc: '夏季高温时段（11:00-15:00）尽量避免露天作业。多喝水、备防暑药品，感觉头晕恶心立即停止作业到阴凉处休息。' },
+        { icon: '🔩', title: '机械设备检查', desc: '每天开工前检查所用机械设备是否完好，防护罩是否齐全。发现异常立即报修，严禁带病运转。' },
+        { icon: '📋', title: '安全技术交底', desc: '每天开工前认真参加班前安全交底，了解当天作业内容和危险因素。不懂的地方主动问，不盲目作业。' }
+    ];
+    function loadSafetyTip() {
+        const tip = SAFETY_TIPS[Math.floor(Math.random() * SAFETY_TIPS.length)];
+        document.getElementById('safetyTipContent').innerHTML =
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
+            '<div style="font-size:32px">' + tip.icon + '</div>' +
+            '<div style="font-size:16px;font-weight:700;color:#92400E">' + tip.title + '</div></div>' +
+            '<div>' + tip.desc + '</div>';
+    }
+
     // ===== 个人信息（手动填写 + 智能识别两种方式）=====
     const PROFILE_KEY = 'gongyou_profile';
     const JOB_OPTIONS = ['钢筋工','木工','瓦工/砌筑工','混凝土工','架子工','电工','焊工','塔吊司机','信号工','测量放线','防水工','装修工','普工/小工','班组长/带班','其他工种'];
@@ -2487,6 +2658,11 @@
         loadWallpaper();
         renderExpenseCats();
         renderExpenses();
+        renderWorkHours();
+        loadSafetyTip();
+        // 设置工时日期默认为今天
+        const workDateEl = document.getElementById('workDate');
+        if (workDateEl) workDateEl.value = new Date().toISOString().slice(0, 10);
     })();
 </script>
 
