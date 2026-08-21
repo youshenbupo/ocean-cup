@@ -268,6 +268,65 @@
         }
         .chat-messages::-webkit-scrollbar { width: 6px; }
         .chat-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+        .chat-main {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
+        }
+        .chat-sidebar {
+            display: none;
+            flex-direction: column;
+            width: 260px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border);
+            background: #FAFBFF;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-header h3 { font-size: 15px; font-weight: 700; }
+        .sidebar-sessions { flex: 1; overflow-y: auto; padding: 8px; }
+        .sidebar-sessions .session-item {
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-sessions .session-item:hover { background: #F0F3FF; }
+        .sidebar-sessions .session-item.active { background: #E8EDFF; }
+        .sidebar-sessions .si-title { flex: 1; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sidebar-sessions .si-count { font-size: 11px; color: #9CA3AF; flex-shrink: 0; }
+        .sidebar-sessions .si-del { font-size: 12px; cursor: pointer; flex-shrink: 0; }
+        .sidebar-summary {
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+            max-height: 40%;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-summary-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        .sidebar-summary-list ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar-summary-list li {
+            font-size: 12px;
+            line-height: 1.5;
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            background: white;
+            border-radius: 8px;
+            border-left: 3px solid #4A6CF7;
+            color: #374151;
+        }
+        .summary-empty { font-size: 12px; color: #9CA3AF; }
         .msg {
             display: flex;
             gap: 10px;
@@ -548,6 +607,12 @@
             .quick-grid { max-width: 600px; margin: 0 auto; }
             #page-chat.active { max-width: 720px; margin: 0 auto; box-shadow: 0 0 30px rgba(0,0,0,0.04); }
         }
+        @media (min-width: 1024px) {
+            #page-chat.active { max-width: none; margin: 0; box-shadow: none; flex-direction: row; }
+            .chat-sidebar { display: flex; }
+            .chat-session-bar { display: none; }
+            .chat-messages { padding: 20px 24px; }
+        }
     </style>
 </head>
 <body>
@@ -682,22 +747,35 @@
 
 <!-- ===== 聊天页 ===== -->
 <div class="page" id="page-chat">
-    <div class="chat-session-bar">
-        <button class="session-btn" onclick="openSessionList()">📋 历史</button>
-        <span class="session-title" id="sessionTitle">新对话</span>
-        <button class="session-btn" onclick="newChat()">＋ 新对话</button>
-    </div>
-    <div class="chat-quick">
-        <div class="chat-quick-btn" onclick="quickChat('老板拖欠工资怎么办')">💰 欠薪维权</div>
-        <div class="chat-quick-btn" onclick="quickChat('工伤认定流程')">🏥 工伤认定</div>
-        <div class="chat-quick-btn" onclick="quickChat('帮我记今天的工时')">📝 记录工时</div>
-        <div class="chat-quick-btn" onclick="quickChat('帮我写一份欠条')">📄 写欠条</div>
-        <div class="chat-quick-btn" onclick="quickChat('今天工地安全注意事项')">🦺 安全提醒</div>
-    </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="输入你的问题..." onkeypress="if(event.key==='Enter')chatSend()">
-        <button class="chat-send-btn" id="chatSendBtn" onclick="chatSend()">➤</button>
+    <aside class="chat-sidebar">
+        <div class="sidebar-header">
+            <h3>💬 历史对话</h3>
+            <button class="session-btn" onclick="newChat()">＋ 新对话</button>
+        </div>
+        <div class="sidebar-sessions" id="sidebarSessions"></div>
+        <div class="sidebar-summary">
+            <div class="sidebar-summary-title">📌 权益点小结</div>
+            <div class="sidebar-summary-list" id="sidebarSummary"><div class="summary-empty">还没有权益小结，聊两句就有啦～</div></div>
+        </div>
+    </aside>
+    <div class="chat-main">
+        <div class="chat-session-bar">
+            <button class="session-btn" onclick="openSessionList()">📋 历史</button>
+            <span class="session-title" id="sessionTitle">新对话</span>
+            <button class="session-btn" onclick="newChat()">＋ 新对话</button>
+        </div>
+        <div class="chat-quick">
+            <div class="chat-quick-btn" onclick="quickChat('老板拖欠工资怎么办')">💰 欠薪维权</div>
+            <div class="chat-quick-btn" onclick="quickChat('工伤认定流程')">🏥 工伤认定</div>
+            <div class="chat-quick-btn" onclick="quickChat('帮我记今天的工时')">📝 记录工时</div>
+            <div class="chat-quick-btn" onclick="quickChat('帮我写一份欠条')">📄 写欠条</div>
+            <div class="chat-quick-btn" onclick="quickChat('今天工地安全注意事项')">🦺 安全提醒</div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="输入你的问题..." onkeypress="if(event.key==='Enter')chatSend()">
+            <button class="chat-send-btn" id="chatSendBtn" onclick="chatSend()">➤</button>
+        </div>
     </div>
 </div>
 
@@ -936,6 +1014,7 @@
         if (cur.title === '新对话' && isUser) cur.title = content.slice(0, 16) || '新对话';
         saveSessions();
         refreshSessionTitle();
+        refreshSidebar();
     }
 
     function formatContent(text) {
@@ -989,6 +1068,7 @@
         if (el) el.id = '';
         currentSession().history.push({ role: 'assistant', content: text });
         saveSessions();
+        refreshSidebar();
     }
 
     // ===== 发送消息 =====
@@ -1239,6 +1319,7 @@
         }
         scrollChatToBottom();
         refreshSessionTitle();
+        refreshSidebar();
     }
 
     function showWelcome() {
@@ -1286,6 +1367,61 @@
             item.onclick = () => switchSession(s.id);
             list.appendChild(item);
         });
+    }
+
+    function renderSidebarSessions() {
+        const list = document.getElementById('sidebarSessions');
+        if (!list) return;
+        list.innerHTML = '';
+        sessions.forEach(s => {
+            const item = document.createElement('div');
+            item.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
+            const msgs = (s.history || []).filter(m => m.role === 'user').length;
+            item.innerHTML = `
+                <div class="si-title">${escapeHtml(s.title || '新对话')}</div>
+                <div class="si-count">${msgs} 问</div>
+                <div class="si-del" onclick="deleteSession('${s.id}', event)">🗑️</div>
+            `;
+            item.onclick = () => switchSession(s.id);
+            list.appendChild(item);
+        });
+    }
+
+    function renderSidebarSummary() {
+        const box = document.getElementById('sidebarSummary');
+        if (!box) return;
+        const cur = currentSession();
+        const points = [];
+        if (cur && cur.history) {
+            cur.history.forEach(m => {
+                if (m.role !== 'assistant') return;
+                const idx = m.content.indexOf('权益点小结');
+                if (idx === -1) return;
+                const tail = m.content.slice(idx);
+                tail.split('\n').forEach(line => {
+                    let t = line.replace(/^#+\s*/, '').trim();
+                    t = t.replace(/^[-*•]\s*/, '').replace(/^\d+[.、)]\s*/, '').replace(/\*\*/g, '').trim();
+                    if (t && t.length >= 4 && t.length <= 80 && !points.includes(t)) points.push(t);
+                });
+            });
+        }
+        box.innerHTML = '';
+        if (points.length === 0) {
+            box.innerHTML = '<div class="summary-empty">还没有权益小结，聊两句就有啦～</div>';
+            return;
+        }
+        const ul = document.createElement('ul');
+        points.forEach(p => {
+            const li = document.createElement('li');
+            li.textContent = p;
+            ul.appendChild(li);
+        });
+        box.appendChild(ul);
+    }
+
+    function refreshSidebar() {
+        renderSidebarSessions();
+        renderSidebarSummary();
     }
 
     function switchSession(id) {
