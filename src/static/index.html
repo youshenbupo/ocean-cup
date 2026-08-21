@@ -512,6 +512,13 @@
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
             padding: 0 4px;
         }
+        .chat-profile-hint {
+            font-size: 11px; color: var(--text-muted); cursor: pointer;
+            padding: 2px 6px; border-radius: 6px;
+            transition: all .15s;
+            white-space: nowrap;
+        }
+        .chat-profile-hint:hover { background: #F0F4FF; color: var(--primary); }
 
         /* 会话列表 */
         .session-list { display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; }
@@ -1035,6 +1042,7 @@
         <div class="chat-session-bar">
             <button class="session-btn" onclick="openSessionList()">📋 历史</button>
             <span class="session-title" id="sessionTitle">新对话</span>
+            <span class="chat-profile-hint" id="chatProfileHint" onclick="showPage('profile')" title="点击完善个人信息"></span>
             <div class="session-actions">
                 <button class="icon-btn" title="聊天壁纸" onclick="openWallpaper()">🎨</button>
                 <button class="icon-btn" title="清除全部对话" onclick="confirmClearAll()">🗑️</button>
@@ -2630,6 +2638,20 @@
             avatarEl.innerHTML = '<img src="' + avatarData + '" alt="头像"><div class="avatar-upload-hint">📷 换头像</div>';
         } else {
             avatarEl.innerHTML = '<span id="avatarEmoji">' + (p.name ? escapeHtml(p.name.charAt(0)) : '👷') + '</span><div class="avatar-upload-hint">📷 换头像</div>';
+        }
+        updateChatProfileHint(p);
+    }
+
+    // 更新对话页的"我的信息"提示
+    function updateChatProfileHint(p) {
+        const hint = document.getElementById('chatProfileHint');
+        if (!hint) return;
+        if (p && p.name) {
+            hint.textContent = '👤 ' + p.name;
+            hint.title = p.job ? p.job + (p.location ? ' · ' + p.location : '') : '点击完善个人信息';
+        } else {
+            hint.textContent = '👤 完善信息';
+            hint.title = '点击完善个人信息，让智能体更懂你';
         }
     }
 
