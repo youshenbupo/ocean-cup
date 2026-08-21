@@ -702,20 +702,23 @@ def community_node(state: AgentState, ctx=None) -> dict:
 
 
 def chat_node(state: AgentState, ctx=None) -> dict:
-    """闲聊节点：直接回复"""
+    """通用兜底节点：LLM 路由判断各专业节点均不合适时，由带知识库检索能力的 Agent 自行处理"""
     # 加载系统提示词
     workspace_path = os.getenv("COZE_WORKSPACE_PATH", "/workspace/projects")
     config_path = os.path.join(workspace_path, LLM_CONFIG)
     with open(config_path, 'r', encoding='utf-8') as f:
         cfg = json.load(f)
     
-    llm = get_llm(ctx)
     messages = state["messages"]
-    
-    # 添加系统提示词
-    chat_messages = [SystemMessage(content=cfg.get("sp", "") + COMMON_REPLY_RULES)] + messages
-    response = llm.invoke(chat_messages)
-    return {"messages": [response]}
+    # 兜底节点同样挂载知识库检索工具：确保"自行处理"时能查法条、答得专业，而非凭空回答
+    # create_specialist_agent 内部会追加 COMMON_REPLY_RULES（含安全边界/针对性/权益小结等规则）
+    agent = create_specialist_agent(
+        cfg.get("sp", ""),
+        [search_law_knowledge, search_hotlines],
+        ctx
+    )
+    result = agent.invoke({"messages": messages})
+    return {"messages": result["messages"]}
 
 
 # ============== 路由决策 ==============
