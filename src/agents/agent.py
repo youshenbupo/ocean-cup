@@ -44,6 +44,10 @@ MAX_MESSAGES = 40
 THINK_PREFIX = "【深度思考】"
 THINK_PREFIX_ALIASES = ["[深度思考]", "（深度思考）", "【深度思考模式】", "[深度思考模式]"]
 
+# 个人信息解析前缀：前端"我的"页面"智能解析"功能在用户自述文本前追加，
+# 后端据此将请求路由到专门的解析节点，从自然语言中提取结构化工友信息（返回纯 JSON）
+PROFILE_PARSE_PREFIX = "【解析工友信息】"
+
 
 def _windowed_messages(old, new):
     """滑动窗口: 只保留最近 MAX_MESSAGES 条消息"""
@@ -616,6 +620,11 @@ def router_node(state: AgentState, ctx=None) -> dict:
     if masked_text != user_text:
         logger.info("用户消息包含敏感信息，已脱敏处理")
 
+    # 个人信息解析请求：优先于常规路由，直接进入解析节点返回结构化 JSON
+    if user_text.startswith(PROFILE_PARSE_PREFIX):
+        logger.info("[ROUTE_MONITOR] method=profile_parse_prefix route=profile_parse")
+        return {"next_agent": "profile_parse", "think_mode": False}
+
     # 快速路径：关键词匹配（避免LLM调用，降低延迟）
     keyword_result = _keyword_route(user_text)
     if keyword_result:
@@ -772,12 +781,63 @@ def chat_node(state: AgentState, ctx=None) -> dict:
     return {"messages": result["messages"]}
 
 
+PROFILE_PARSE_PROMPT = """# 角色：工友信息解析助手
+你会收到一段建筑工友的自然语言自述，请从中提取结构化个人信息。
+
+# 提取字段（只提取自述中明确提到或能直接推断的信息）
+- name：姓名
+- gender：性别（"男" 或 "女"，未提及留空）
+- age：年龄（数字字符串，未提及留空）
+- job：工种/职位（如钢筋工、木工、瓦工、电工、架子工、塔吊司机、装修工、普工等）
+- location：所在地区/工作城市
+- salary：薪资（保留原始表述，如"8000元/月""300元/天"）
+- workYears：工作年限（数字字符串）
+- phone：联系电话
+- note：其他重要信息（技能特长、证书、家庭情况、诉求等）
+
+# 输出要求（严格遵守）
+- 只返回一个 JSON 对象，不要返回任何其他文字、解释或 markdown 代码块标记。
+- 未提及或无法确定的字段，一律用空字符串 ""。
+- 严禁编造自述中没有的信息。
+- 输出示例：{"name":"张三","gender":"男","age":"35","job":"钢筋工","location":"成都","salary":"8000元/月","workYears":"10","phone":"","note":"有焊工证"}
+"""
+
+
+def profile_parse_node(state: AgentState, ctx=None) -> dict:
+    """个人信息解析节点：从工友自然语言自述中提取结构化信息，返回纯 JSON。"""
+    messages = state["messages"]
+    last_message = messages[-1] if messages else None
+    user_text = ""
+    if isinstance(last_message, HumanMessage):
+        content = last_message.content
+        if isinstance(content, str):
+            user_text = content
+        elif isinstance(content, list):
+            user_text = " ".join(
+                item.get("text", "") for item in content if isinstance(item, dict) and item.get("type") == "text"
+            )
+    # 剥离解析前缀，得到自述正文
+    if user_text.startswith(PROFILE_PARSE_PREFIX):
+        user_text = user_text[len(PROFILE_PARSE_PREFIX):].strip()
+
+    llm = get_llm(ctx)
+    try:
+        response = llm.invoke([
+            SystemMessage(content=PROFILE_PARSE_PROMPT),
+            HumanMessage(content=user_text or "（未提供自述内容）"),
+        ])
+        return {"messages": [response]}
+    except Exception as e:
+        logger.error(f"profile_parse 节点执行失败: {e}")
+        return {"messages": [AIMessage(content='{"error":"信息解析失败，请换个说法再试，或改用表单填写"}')]}
+
+
 # ============== 路由决策 ==============
 
 def route_decision(state: AgentState) -> str:
     """根据路由结果决定下一个节点"""
     next_agent = state.get("next_agent", "legal")
-    valid_routes = {"legal", "safety", "support", "salary", "skill", "life", "community", "chat"}
+    valid_routes = {"legal", "safety", "support", "salary", "skill", "life", "community", "chat", "profile_parse"}
     if next_agent in valid_routes:
         return next_agent
     return "legal"  # 未知路由值默认回到法律顾问
@@ -870,6 +930,7 @@ def build_agent(ctx=None):
     workflow.add_node("life", lambda state: life_node(state, ctx))
     workflow.add_node("community", lambda state: community_node(state, ctx))
     workflow.add_node("chat", lambda state: chat_node(state, ctx))
+    workflow.add_node("profile_parse", lambda state: profile_parse_node(state, ctx))
     workflow.add_node("polish", lambda state: polish_node(state, ctx))
 
     # 设置入口
@@ -888,6 +949,7 @@ def build_agent(ctx=None):
             "life": "life",
             "community": "community",
             "chat": "chat",
+            "profile_parse": "profile_parse",
         }
     )
 
@@ -899,6 +961,9 @@ def build_agent(ctx=None):
             should_polish,
             {"polish": "polish", "end": END}
         )
+
+    # 信息解析节点直接结束（返回纯 JSON，不走 polish 优化）
+    workflow.add_edge("profile_parse", END)
 
     # 优化节点执行完结束
     workflow.add_edge("polish", END)

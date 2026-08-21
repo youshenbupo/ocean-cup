@@ -6,19 +6,24 @@
     <title>工友权益明白人 - AI智能助手</title>
     <style>
         :root {
-            --primary: #4A6CF7;
-            --primary-dark: #3B5DE7;
-            --primary-light: #6B8CFF;
-            --accent: #F59E0B;
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #60A5FA;
+            --accent: #F97316;
+            --accent-dark: #EA580C;
+            --accent-light: #FDBA74;
             --success: #10B981;
             --danger: #EF4444;
             --warning: #F59E0B;
-            --bg: #F0F4FF;
+            --navy: #0B2545;
+            --navy-2: #13315C;
+            --bg: #EEF2F8;
             --card: #FFFFFF;
-            --text: #1F2937;
-            --text-secondary: #6B7280;
-            --border: #E5E7EB;
-            --shadow: 0 4px 20px rgba(74, 108, 247, 0.12);
+            --text: #1E293B;
+            --text-secondary: #64748B;
+            --border: #E2E8F0;
+            --shadow: 0 6px 24px rgba(11, 37, 69, 0.10);
+            --shadow-lg: 0 12px 40px rgba(11, 37, 69, 0.16);
             --radius: 16px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -32,7 +37,7 @@
 
         /* ===== 顶部导航 ===== */
         .top-nav {
-            background: linear-gradient(135deg, #4A6CF7 0%, #7C3AED 100%);
+            background: linear-gradient(120deg, #0B2545 0%, #13315C 55%, #1D4ED8 100%);
             padding: 16px 20px;
             color: white;
             display: flex;
@@ -41,16 +46,16 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(74, 108, 247, 0.3);
+            box-shadow: 0 6px 24px rgba(11, 37, 69, 0.35);
         }
         .top-nav .nav-left { display: flex; align-items: center; gap: 12px; }
         .top-nav .logo {
             width: 42px; height: 42px;
-            background: rgba(255,255,255,0.2);
+            background: linear-gradient(135deg, #F97316, #EA580C);
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             font-size: 22px;
-            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
         }
         .top-nav h1 { font-size: 18px; font-weight: 700; }
         .top-nav .subtitle { font-size: 11px; opacity: 0.85; margin-top: 2px; }
@@ -102,7 +107,9 @@
 
         /* ===== 首页 ===== */
         .hero-section {
-            background: linear-gradient(135deg, #4A6CF7 0%, #7C3AED 50%, #EC4899 100%);
+            background:
+                linear-gradient(120deg, rgba(11,37,69,0.92) 0%, rgba(19,49,92,0.88) 55%, rgba(29,78,216,0.85) 100%),
+                repeating-linear-gradient(45deg, rgba(249,115,22,0.06) 0 2px, transparent 2px 18px);
             padding: 30px 20px 40px;
             color: white;
             position: relative;
@@ -355,8 +362,8 @@
             font-size: 14px;
             word-break: break-word;
         }
-        .msg.bot .msg-bubble { background: white; color: var(--text); border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .msg.user .msg-bubble { background: linear-gradient(135deg, #4A6CF7, #7C3AED); color: white; border-bottom-right-radius: 4px; }
+        .msg.bot .msg-bubble { background: white; color: var(--text); border-bottom-left-radius: 6px; box-shadow: 0 2px 10px rgba(13,38,76,0.08); }
+        .msg.user .msg-bubble { background: var(--grad-warm); color: white; border-bottom-right-radius: 6px; box-shadow: 0 3px 10px rgba(27,59,111,0.25); }
         .msg-actions {
             flex-basis: 100%;
             margin-left: 46px;
@@ -405,6 +412,19 @@
         }
         .chat-send-btn:hover { transform: scale(1.1); }
         .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .voice-btn {
+            width: 44px; height: 44px; flex-shrink: 0;
+            background: #F0F3FF; border: 2px solid var(--border); border-radius: 50%;
+            font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; line-height: 1;
+        }
+        .voice-btn.recording {
+            background: #FFE3D0; border-color: #FFB98A;
+            animation: pulse-rec 1.2s infinite;
+        }
+        .voice-btn:active { transform: scale(0.94); }
 
         .think-toggle {
             display: flex; align-items: center; gap: 5px;
@@ -564,7 +584,7 @@
         }
         .profile-name { font-size: 18px; font-weight: 700; }
         .profile-role { font-size: 12px; opacity: 0.85; margin-top: 4px; }
-        .profile-menu { padding: 16px; }
+        .profile-menu { padding: 4px 16px 16px; }
         .menu-item {
             background: white;
             border-radius: 12px;
@@ -579,6 +599,95 @@
         .menu-icon { font-size: 22px; }
         .menu-label { flex: 1; font-size: 14px; }
         .menu-arrow { color: var(--text-secondary); font-size: 14px; }
+
+        /* ===== 我的-个人信息页 ===== */
+        .page-content { padding: 16px 16px 24px; }
+        .section-subtitle {
+            font-size: 14px; font-weight: 700; color: var(--text-primary);
+            margin: 18px 2px 10px; display: flex; align-items: center; gap: 6px;
+        }
+        .profile-card {
+            background: var(--bg-dark);
+            background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+                linear-gradient(135deg, #12315C 0%, #1D4E89 100%);
+            background-size: 22px 22px, 100% 100%;
+            border-radius: 18px; padding: 20px 18px; color: #fff;
+            box-shadow: 0 8px 24px rgba(18,49,92,0.28);
+        }
+        .profile-card-top { display: flex; align-items: center; gap: 14px; }
+        .profile-avatar-lg {
+            width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+            background: rgba(255,255,255,0.16); border: 2px solid rgba(255,255,255,0.35);
+            display: flex; align-items: center; justify-content: center; font-size: 32px;
+        }
+        .profile-card-info { flex: 1; min-width: 0; }
+        .profile-name-lg { font-size: 19px; font-weight: 800; letter-spacing: 0.5px; }
+        .profile-sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+        .profile-edit-badge {
+            font-size: 12px; background: rgba(255,255,255,0.18); padding: 6px 12px;
+            border-radius: 999px; cursor: pointer; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2);
+        }
+        .profile-edit-badge:active { background: rgba(255,255,255,0.3); }
+        .profile-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+        .ptag {
+            font-size: 12px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.18);
+            padding: 5px 11px; border-radius: 999px; color: #fff;
+        }
+        .ptag.accent { background: rgba(255,122,26,0.85); border-color: transparent; }
+        .ptag.muted { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); }
+
+        .profile-tabs {
+            display: flex; gap: 8px; margin: 16px 2px 12px;
+            background: #EAF0F9; padding: 4px; border-radius: 12px;
+        }
+        .profile-tab {
+            flex: 1; border: none; background: transparent; padding: 10px 0;
+            border-radius: 9px; font-size: 14px; font-weight: 600; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s; font-family: inherit;
+        }
+        .profile-tab.active { background: #fff; color: var(--bg-dark); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+        .profile-panel {
+            background: var(--bg-card); border-radius: 16px; padding: 18px 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05); border: 1px solid var(--border);
+        }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-item { display: flex; flex-direction: column; gap: 6px; }
+        .form-item.form-full { grid-column: 1 / -1; }
+        .form-item label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+        .form-item input, .form-item select, .form-item textarea {
+            border: 1.5px solid var(--border); border-radius: 10px; padding: 11px 12px;
+            font-size: 14px; font-family: inherit; color: var(--text-primary);
+            background: #FAFBFD; outline: none; transition: border 0.2s; width: 100%;
+        }
+        .form-item input:focus, .form-item select:focus, .form-item textarea:focus { border-color: var(--primary); background: #fff; }
+        .form-item textarea { resize: vertical; min-height: 64px; }
+        .btn-save {
+            width: 100%; margin-top: 16px; border: none; border-radius: 12px; padding: 13px;
+            background: linear-gradient(135deg, #FF7A1A, #FF9A3D); color: #fff;
+            font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+            box-shadow: 0 4px 14px rgba(255,122,26,0.35); transition: transform 0.15s;
+        }
+        .btn-save:active { transform: scale(0.98); }
+
+        .ai-parse-box textarea {
+            width: 100%; min-height: 110px; border: 1.5px solid var(--border); border-radius: 12px;
+            padding: 13px; font-size: 14px; font-family: inherit; color: var(--text-primary);
+            background: #FAFBFD; outline: none; resize: vertical; line-height: 1.6;
+        }
+        .ai-parse-box textarea:focus { border-color: var(--primary); background: #fff; }
+        .ai-parse-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display:flex; align-items:center; gap:6px; }
+        .ai-parse-actions { display: flex; gap: 10px; margin-top: 12px; }
+        .btn-voice, .btn-parse {
+            flex: 1; border: none; border-radius: 12px; padding: 12px; font-size: 14px;
+            font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.15s;
+        }
+        .btn-voice { background: #EAF0F9; color: var(--bg-dark); border: 1.5px solid var(--border); }
+        .btn-voice.recording { background: #FFE3D0; color: #D1400F; border-color: #FFB98A; animation: pulse-rec 1.2s infinite; }
+        .btn-parse { background: linear-gradient(135deg, #FF7A1A, #FF9A3D); color: #fff; box-shadow: 0 4px 14px rgba(255,122,26,0.3); }
+        .btn-voice:active, .btn-parse:active { transform: scale(0.97); }
+        .ai-parse-tip { font-size: 12px; color: var(--text-muted); margin-top: 10px; line-height: 1.5; }
+        @keyframes pulse-rec { 0%,100% { box-shadow: 0 0 0 0 rgba(255,122,26,0.35); } 50% { box-shadow: 0 0 0 7px rgba(255,122,26,0); } }
 
         /* ===== 设置弹窗 ===== */
         .modal-overlay {
@@ -828,7 +937,8 @@
                 <input type="checkbox" id="thinkToggle">
                 <span class="think-text">🧠 思考</span>
             </label>
-            <input type="text" id="chatInput" placeholder="输入你的问题..." onkeypress="if(event.key==='Enter')chatSend()">
+            <input type="text" id="chatInput" placeholder="输入或按住说话..." onkeypress="if(event.key==='Enter')chatSend()">
+            <button class="voice-btn" id="chatVoiceBtn" title="语音输入：点一下开始，再点一下结束" onclick="toggleVoice('chatInput','chatVoiceBtn')">🎤</button>
             <button class="chat-send-btn" id="chatSendBtn" onclick="chatSend()">➤</button>
         </div>
     </div>
@@ -892,46 +1002,135 @@
 
 <!-- ===== 我的页面 ===== -->
 <div class="page" id="page-profile">
-    <div class="profile-header">
-        <div class="profile-avatar">👷</div>
-        <div class="profile-name">工友</div>
-        <div class="profile-role">建筑行业从业者</div>
-    </div>
-    <div class="profile-menu">
-        <div class="menu-item" onclick="quickChat('查看我的工时记录')">
-            <div class="menu-icon">📝</div>
-            <div class="menu-label">我的工时记录</div>
-            <div class="menu-arrow">›</div>
+    <div class="page-content">
+        <!-- 个人信息卡 -->
+        <div class="profile-card">
+            <div class="profile-card-top">
+                <div class="profile-avatar-lg" id="profileAvatarLg">👷</div>
+                <div class="profile-card-info">
+                    <div class="profile-name-lg" id="profileName">工友</div>
+                    <div class="profile-sub" id="profileSub">完善个人信息，让服务更懂你</div>
+                </div>
+            </div>
+            <div class="profile-tags" id="profileTags"></div>
         </div>
-        <div class="menu-item" onclick="quickChat('查看我的工资条')">
-            <div class="menu-icon">💰</div>
-            <div class="menu-label">我的工资条</div>
-            <div class="menu-arrow">›</div>
+
+        <!-- 录入方式切换 -->
+        <div class="profile-tabs">
+            <button class="profile-tab active" id="tabBtnForm" onclick="switchProfileTab('form')">✏️ 手动填写</button>
+            <button class="profile-tab" id="tabBtnAi" onclick="switchProfileTab('ai')">🎤 语音/文字识别</button>
         </div>
-        <div class="menu-item" onclick="quickChat('查看我的证书')">
-            <div class="menu-icon">🏅</div>
-            <div class="menu-label">我的证书</div>
-            <div class="menu-arrow">›</div>
+
+        <!-- 方式一：手动表单 -->
+        <div class="profile-panel" id="profilePanelForm">
+            <div class="form-grid">
+                <div class="form-item">
+                    <label>姓名</label>
+                    <input type="text" id="pf-name" placeholder="您的姓名">
+                </div>
+                <div class="form-item">
+                    <label>性别</label>
+                    <select id="pf-gender">
+                        <option value="">请选择</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label>年龄</label>
+                    <input type="number" id="pf-age" placeholder="岁" min="16" max="70">
+                </div>
+                <div class="form-item">
+                    <label>工种</label>
+                    <select id="pf-job">
+                        <option value="">请选择</option>
+                        <option>钢筋工</option>
+                        <option>木工</option>
+                        <option>瓦工/砌筑工</option>
+                        <option>电工</option>
+                        <option>架子工</option>
+                        <option>塔吊司机</option>
+                        <option>混凝土工</option>
+                        <option>焊工</option>
+                        <option>抹灰工</option>
+                        <option>油漆工</option>
+                        <option>管道工</option>
+                        <option>普工/小工</option>
+                        <option>班组长</option>
+                        <option>其他</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label>所在地区</label>
+                    <input type="text" id="pf-location" placeholder="如：江苏 苏州">
+                </div>
+                <div class="form-item">
+                    <label>薪资待遇</label>
+                    <input type="text" id="pf-salary" placeholder="如：9000元/月">
+                </div>
+                <div class="form-item form-full">
+                    <label>联系电话</label>
+                    <input type="tel" id="pf-phone" placeholder="选填">
+                </div>
+                <div class="form-item form-full">
+                    <label>备注</label>
+                    <textarea id="pf-note" rows="2" placeholder="选填，如：有焊工证、常年高空作业"></textarea>
+                </div>
+            </div>
+            <button class="btn-save" onclick="saveProfile()">💾 保存我的信息</button>
         </div>
-        <div class="menu-item" onclick="quickChat('查看我的记账明细')">
-            <div class="menu-icon">📊</div>
-            <div class="menu-label">我的记账本</div>
-            <div class="menu-arrow">›</div>
+
+        <!-- 方式二：语音/文字智能识别 -->
+        <div class="profile-panel" id="profilePanelAi" style="display:none">
+            <div class="ai-parse-box">
+                <div class="ai-parse-title">🗣️ 用大白话说说您自己</div>
+                <textarea id="profileParseInput" rows="4" placeholder="例如：我叫张建国，今年42岁，在河南郑州干钢筋工十来年了，一个月能挣八千五"></textarea>
+                <div class="ai-parse-actions">
+                    <button class="btn-voice" id="profileVoiceBtn" onclick="toggleVoice('profileParseInput','profileVoiceBtn')">🎤 语音输入</button>
+                    <button class="btn-parse" id="parseBtn" onclick="parseProfile()">✨ 智能识别</button>
+                </div>
+                <div class="ai-parse-tip">识别后会自动填到「手动填写」，您核对修改后再保存</div>
+            </div>
         </div>
-        <div class="menu-item" onclick="quickChat('查看我发的帖子')">
-            <div class="menu-icon">👥</div>
-            <div class="menu-label">我的社区帖子</div>
-            <div class="menu-arrow">›</div>
-        </div>
-        <div class="menu-item" onclick="openSettings()">
-            <div class="menu-icon">⚙️</div>
-            <div class="menu-label">API 设置</div>
-            <div class="menu-arrow">›</div>
-        </div>
-        <div class="menu-item" onclick="clearChat()">
-            <div class="menu-icon">🗑️</div>
-            <div class="menu-label">清除对话记录</div>
-            <div class="menu-arrow">›</div>
+
+        <!-- 我的工具 -->
+        <div class="section-subtitle">🧰 我的工具</div>
+        <div class="profile-menu">
+            <div class="menu-item" onclick="quickChat('查看我的工时记录')">
+                <div class="menu-icon">📝</div>
+                <div class="menu-label">我的工时记录</div>
+                <div class="menu-arrow">›</div>
+            </div>
+            <div class="menu-item" onclick="quickChat('查看我的工资条')">
+                <div class="menu-icon">💰</div>
+                <div class="menu-label">我的工资条</div>
+                <div class="menu-arrow">›</div>
+            </div>
+            <div class="menu-item" onclick="quickChat('查看我的证书')">
+                <div class="menu-icon">🏅</div>
+                <div class="menu-label">我的证书</div>
+                <div class="menu-arrow">›</div>
+            </div>
+            <div class="menu-item" onclick="quickChat('查看我的记账明细')">
+                <div class="menu-icon">📊</div>
+                <div class="menu-label">我的记账本</div>
+                <div class="menu-arrow">›</div>
+            </div>
+            <div class="menu-item" onclick="quickChat('查看我发的帖子')">
+                <div class="menu-icon">👥</div>
+                <div class="menu-label">我的社区帖子</div>
+                <div class="menu-arrow">›</div>
+            </div>
+            <div class="menu-item" onclick="openSettings()">
+                <div class="menu-icon">⚙️</div>
+                <div class="menu-label">API 设置</div>
+                <div class="menu-arrow">›</div>
+            </div>
+            <div class="menu-item" onclick="clearChat()">
+                <div class="menu-icon">🗑️</div>
+                <div class="menu-label">清除对话记录</div>
+                <div class="menu-arrow">›</div>
+            </div>
         </div>
     </div>
 </div>
@@ -1693,10 +1892,172 @@
         if (e.target === this) closeToolTemplate();
     });
 
+    // ===== 语音转文字（浏览器原生 Web Speech API，适合不会打字的工友）=====
+    let _recog = null, _recogBtn = null, _recogBase = '';
+
+    function speechSupported() {
+        return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    }
+
+    function toggleVoice(inputId, btnId) {
+        if (!speechSupported()) { showToast('当前浏览器不支持语音输入，请改用打字'); return; }
+        if (_recog) { stopVoice(); return; }
+        startVoice(inputId, btnId);
+    }
+
+    function startVoice(inputId, btnId) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rec = new SR();
+        rec.lang = 'zh-CN';
+        rec.continuous = true;
+        rec.interimResults = true;
+        const input = document.getElementById(inputId);
+        const btn = document.getElementById(btnId);
+        if (!input || !btn) return;
+        _recogBase = input.value ? (input.value + ' ') : '';
+        rec.onresult = function(e) {
+            let finalTxt = '', interimTxt = '';
+            for (let i = 0; i < e.results.length; i++) {
+                const t = e.results[i][0].transcript;
+                if (e.results[i].isFinal) finalTxt += t; else interimTxt += t;
+            }
+            input.value = _recogBase + finalTxt + interimTxt;
+        };
+        rec.onerror = function(e) {
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') showToast('请在浏览器中允许使用麦克风');
+            else if (e.error === 'no-speech') showToast('没听清，请靠近话筒大声一点');
+            else showToast('语音识别出错，请重试');
+            stopVoice();
+        };
+        rec.onend = function() { stopVoice(); };
+        try {
+            rec.start();
+            _recog = rec; _recogBtn = btnId;
+            btn.classList.add('recording');
+            showToast('🎤 正在聆听，说完再点一下结束');
+        } catch (e) { showToast('无法启动语音识别'); }
+    }
+
+    function stopVoice() {
+        const rec = _recog;
+        _recog = null;
+        if (_recogBtn) { const b = document.getElementById(_recogBtn); if (b) b.classList.remove('recording'); }
+        _recogBtn = null;
+        if (rec) { try { rec.onend = null; rec.stop(); } catch (e) {} }
+    }
+
+    // ===== 个人信息（手动填写 + 智能识别两种方式）=====
+    const PROFILE_KEY = 'gongyou_profile';
+    const JOB_OPTIONS = ['钢筋工','木工','瓦工/砌筑工','混凝土工','架子工','电工','焊工','塔吊司机','信号工','测量放线','防水工','装修工','普工/小工','班组长/带班','其他工种'];
+
+    function _val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+    function _setVal(id, v) { const el = document.getElementById(id); if (el && v !== undefined && v !== null && v !== '') el.value = v; }
+
+    function switchProfileTab(tab) {
+        document.getElementById('profilePanelForm').style.display = tab === 'form' ? 'block' : 'none';
+        document.getElementById('profilePanelAi').style.display = tab === 'ai' ? 'block' : 'none';
+        document.getElementById('tabBtnForm').classList.toggle('active', tab === 'form');
+        document.getElementById('tabBtnAi').classList.toggle('active', tab === 'ai');
+    }
+
+    function getProfile() {
+        try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}'); } catch (e) { return {}; }
+    }
+
+    function initJobOptions() {
+        const sel = document.getElementById('pf-job');
+        if (!sel || sel.options.length > 1) return;
+        JOB_OPTIONS.forEach(j => { const o = document.createElement('option'); o.value = j; o.textContent = j; sel.appendChild(o); });
+    }
+
+    function fillProfileForm(p) {
+        _setVal('pf-name', p.name); _setVal('pf-gender', p.gender); _setVal('pf-age', p.age);
+        _setVal('pf-job', p.job); _setVal('pf-location', p.location); _setVal('pf-salary', p.salary);
+        _setVal('pf-phone', p.phone); _setVal('pf-note', p.note);
+        // 工龄合并进备注，避免单独字段
+        if (p.workYears && !p.note) _setVal('pf-note', '工龄 ' + p.workYears);
+    }
+
+    function saveProfile() {
+        const p = {
+            name: _val('pf-name'), gender: _val('pf-gender'), age: _val('pf-age'),
+            job: _val('pf-job'), location: _val('pf-location'), salary: _val('pf-salary'),
+            phone: _val('pf-phone'), note: _val('pf-note')
+        };
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+        renderProfileCard();
+        showToast('✅ 信息已保存，下次咨询更贴心');
+    }
+
+    function renderProfileCard() {
+        const p = getProfile();
+        const filled = p.name || p.job || p.location;
+        document.getElementById('profileName').textContent = p.name || '工友，您好';
+        document.getElementById('profileSub').textContent = filled ? '信息已保存，咨询时会更贴合您的情况' : '完善信息，让明白人更懂你';
+        const tags = [];
+        if (p.gender) tags.push(p.gender);
+        if (p.age) tags.push(p.age + ' 岁');
+        if (p.job) tags.push('👷 ' + p.job);
+        if (p.location) tags.push('📍 ' + p.location);
+        if (p.salary) tags.push('💰 ' + p.salary);
+        document.getElementById('profileTags').innerHTML = tags.length
+            ? tags.map(t => `<span class="profile-tag">${escapeHtml(t)}</span>`).join('')
+            : '<span class="profile-tag">信息越全，维权越准</span>';
+        document.getElementById('profileAvatarLg').textContent = p.name ? p.name.charAt(0) : '👷';
+    }
+
+    function loadProfile() {
+        initJobOptions();
+        fillProfileForm(getProfile());
+        renderProfileCard();
+    }
+
+    // 智能识别：调用后端【解析工友信息】专用节点，返回 JSON 回填表单
+    let _parsing = false;
+    async function parseProfile() {
+        const text = document.getElementById('profileParseInput').value.trim();
+        if (!text) { showToast('请先输入或语音描述您的情况'); return; }
+        if (_parsing) return;
+        _parsing = true;
+        const btn = document.getElementById('btnParseProfile');
+        btn.disabled = true; btn.textContent = '识别中…';
+        try {
+            const resp = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: '【解析工友信息】' + text, session_id: 'profile_parse_' + Date.now() })
+            });
+            const data = await resp.json();
+            const profile = extractJsonFromText(data.answer || '');
+            if (profile && Object.keys(profile).length) {
+                fillProfileForm(profile);
+                switchProfileTab('form');
+                renderProfileCard();
+                showToast('✨ 识别完成，请核对后点保存');
+            } else {
+                showToast('没识别出有效信息，请换个说法或手动填写');
+            }
+        } catch (e) {
+            showToast('识别失败，请检查网络后重试');
+        } finally {
+            _parsing = false;
+            btn.disabled = false; btn.textContent = '✨ 智能识别';
+        }
+    }
+
+    function extractJsonFromText(text) {
+        if (!text) return null;
+        const t = text.replace(/```json|```/gi, '').trim();
+        const s = t.indexOf('{'), e = t.lastIndexOf('}');
+        if (s === -1 || e === -1 || e <= s) return null;
+        try { return JSON.parse(t.substring(s, e + 1)); } catch (e) { return null; }
+    }
+
     // ===== 初始化 =====
     (function init() {
         loadSessions();
         renderChatMessages();
+        loadProfile();
     })();
 </script>
 </body>
