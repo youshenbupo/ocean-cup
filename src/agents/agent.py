@@ -40,6 +40,10 @@ logger = logging.getLogger(__name__)
 LLM_CONFIG = "config/agent_llm_config.json"
 MAX_MESSAGES = 40
 
+# 深度思考模式前缀：前端开启"思考模式"时在用户消息前追加，后端据此决定是否对输出做二轮 LLM 优化
+THINK_PREFIX = "【深度思考】"
+THINK_PREFIX_ALIASES = ["[深度思考]", "（深度思考）", "【深度思考模式】", "[深度思考模式]"]
+
 
 def _windowed_messages(old, new):
     """滑动窗口: 只保留最近 MAX_MESSAGES 条消息"""
@@ -50,6 +54,7 @@ def _windowed_messages(old, new):
 class AgentState(MessagesState):
     messages: Annotated[list[AnyMessage], _windowed_messages]
     next_agent: str  # 路由目标
+    think_mode: bool  # 思考模式标记：True 时专业节点输出后再经一轮 LLM 优化
 
 
 # ============== Agent系统提示词 ==============
@@ -422,6 +427,7 @@ COMMON_REPLY_RULES = """
 4. **法律依据与风险提示**：涉及具体法律规定时，明确写出依据来源（例如「依据《劳动争议调解仲裁法》第X条」）；在「权益点小结」之后，附一句风险提示「各地执行细则可能不同，具体以当地人社局/仲裁委答复为准」。
 5. **信息不足时的折中处理**：若用户是具体求助（欠薪/工伤等）但关键信息缺失（如金额、时间、是否签合同），必须**先基于现有信息给出可执行方案**，再用 1-2 句话追问最关键的缺失信息；**禁止只追问不回答**。
 6. 生成文书若缺少必填信息（如姓名、金额、时间），先给出模板与填写说明，再请用户补充。
+7. **忽略思考标记**：若用户消息以「【深度思考】」开头（表示用户开启了"思考模式"），请忽略该标记本身，直接针对标记之后的内容正常回答，不要把它当作问题的一部分。
 """
 
 
@@ -560,6 +566,22 @@ def _parse_route(content: str) -> str:
     return "legal"
 
 
+def _extract_think_flag(user_text: str):
+    """检测并剥离"深度思考"前缀，返回 (是否开启思考模式, 剥离前缀后的文本)"""
+    if not user_text:
+        return False, user_text
+    stripped = user_text.strip()
+    prefixes = [THINK_PREFIX] + THINK_PREFIX_ALIASES
+    for prefix in prefixes:
+        if stripped.startswith(prefix):
+            remainder = stripped[len(prefix):].strip()
+            # 剥离前缀后若为空则视为未开启，避免吞掉用户内容
+            if not remainder:
+                return False, user_text
+            return True, remainder
+    return False, user_text
+
+
 def router_node(state: AgentState, ctx=None) -> dict:
     """路由节点：分析用户意图，决定路由到哪个Agent。
     优先使用关键词快速路由，未命中时再调用LLM。"""
@@ -568,7 +590,7 @@ def router_node(state: AgentState, ctx=None) -> dict:
     # 获取最后一条用户消息
     last_message = messages[-1] if messages else None
     if not last_message:
-        return {"next_agent": "legal"}
+        return {"next_agent": "legal", "think_mode": False}
 
     # 提取用户消息文本
     user_text = ""
@@ -581,6 +603,11 @@ def router_node(state: AgentState, ctx=None) -> dict:
                 item.get("text", "") for item in content if isinstance(item, dict) and item.get("type") == "text"
             )
 
+    # 检测"深度思考"模式前缀：开启后在专业节点输出上追加一轮 LLM 优化
+    think_mode, user_text = _extract_think_flag(user_text)
+    if think_mode:
+        logger.info("[ROUTE_MONITOR] think_mode=on 已剥离深度思考前缀")
+
     # 敏感信息脱敏（记录日志前）
     masked_text = mask_sensitive_info(user_text)
     if masked_text != user_text:
@@ -590,13 +617,13 @@ def router_node(state: AgentState, ctx=None) -> dict:
     keyword_result = _keyword_route(user_text)
     if keyword_result:
         logger.info(f"[ROUTE_MONITOR] method=keyword text='{user_text[:50]}' route={keyword_result}")
-        return {"next_agent": keyword_result}
+        return {"next_agent": keyword_result, "think_mode": think_mode}
 
-    # 慢路径：LLM意图分析
+    # 慢路径：LLM意图分析（使用剥离前缀后的文本，避免标记干扰意图判断）
     llm = get_llm(ctx)
     router_messages = [
         SystemMessage(content=ROUTER_PROMPT),
-        last_message
+        HumanMessage(content=user_text)
     ]
 
     response = llm.invoke(router_messages)
@@ -606,7 +633,7 @@ def router_node(state: AgentState, ctx=None) -> dict:
 
     route = _parse_route(content)
     logger.info(f"[ROUTE_MONITOR] method=llm text='{user_text[:50]}' route={route} raw='{content[:30]}'")
-    return {"next_agent": route}
+    return {"next_agent": route, "think_mode": think_mode}
 
 
 # ============== 专业Agent节点 ==============
@@ -732,6 +759,70 @@ def route_decision(state: AgentState) -> str:
     return "legal"  # 未知路由值默认回到法律顾问
 
 
+# ============== 输出优化（思考模式） ==============
+
+POLISH_PROMPT = """你是「明白人」的回复优化助手。请对下面这段回复做一轮润色，让它更适合建筑工友阅读，但**严格保持法律内容的准确性**：
+
+1. 语言更精炼、更口语化、更亲切，去掉啰嗦和重复；
+2. 保留原有结构不丢失（例如权益小结、法律依据标注、风险提示、行动步骤等）；
+3. 任何法律条款、金额、时间、程序步骤、联系方式等关键事实**一个字都不能改动**，只能润色措辞；
+4. 原文如果已经很好，只做轻微文字优化，不要大改、不要补充原文没有的新内容；
+5. 直接输出优化后的完整回复，不要加"以下是优化后的回复"之类的说明，也不要加引号或代码块。
+"""
+
+
+def polish_node(state: AgentState, ctx=None) -> dict:
+    """思考模式：对专业节点的输出追加一轮 LLM 优化，再作为最终答复返回"""
+    messages = state["messages"]
+
+    # 取最后一条 AI 消息作为待优化内容
+    ai_msg = None
+    for msg in reversed(messages):
+        if isinstance(msg, AIMessage):
+            ai_msg = msg
+            break
+    if ai_msg is None:
+        return {"think_mode": False}
+
+    raw_content = ai_msg.content
+    if isinstance(raw_content, list):
+        raw_content = " ".join(str(item) for item in raw_content)
+    if not raw_content or not str(raw_content).strip():
+        return {"think_mode": False}
+
+    # 提取用户问题（剥离深度思考前缀），供优化时保持针对性
+    user_msg = _get_last_user_message(messages)
+    user_text = ""
+    if user_msg is not None:
+        user_text = user_msg.content if isinstance(user_msg.content, str) else str(user_msg.content)
+    _, user_text = _extract_think_flag(user_text)
+
+    llm = get_llm(ctx, temperature_override=0.3)
+    optimize_messages = [SystemMessage(content=POLISH_PROMPT)]
+    if user_text:
+        optimize_messages.append(HumanMessage(content=user_text))
+    optimize_messages.append(HumanMessage(content=f"请优化下面这段回复：\n\n{raw_content}"))
+
+    try:
+        response = llm.invoke(optimize_messages)
+        optimized = response.content
+        if isinstance(optimized, list):
+            optimized = " ".join(str(item) for item in optimized)
+        if optimized and str(optimized).strip():
+            logger.info("[POLISH] 思考模式优化完成")
+            return {"messages": [AIMessage(content=str(optimized))], "think_mode": False}
+    except Exception as e:
+        logger.warning(f"[POLISH] 优化失败，回退原始输出: {e}")
+
+    # 优化失败或结果为空：保持原始输出不变
+    return {"think_mode": False}
+
+
+def should_polish(state: AgentState) -> str:
+    """专业节点输出后：思考模式走优化节点，快速模式直接结束"""
+    return "polish" if state.get("think_mode") else "end"
+
+
 # ============== 构建多Agent图 ==============
 
 class AgentBuilder:
@@ -755,6 +846,7 @@ def build_agent(ctx=None):
     workflow.add_node("life", lambda state: life_node(state, ctx))
     workflow.add_node("community", lambda state: community_node(state, ctx))
     workflow.add_node("chat", lambda state: chat_node(state, ctx))
+    workflow.add_node("polish", lambda state: polish_node(state, ctx))
 
     # 设置入口
     workflow.set_entry_point("router")
@@ -775,15 +867,17 @@ def build_agent(ctx=None):
         }
     )
 
-    # 所有Agent执行完后结束
-    workflow.add_edge("legal", END)
-    workflow.add_edge("safety", END)
-    workflow.add_edge("support", END)
-    workflow.add_edge("salary", END)
-    workflow.add_edge("skill", END)
-    workflow.add_edge("life", END)
-    workflow.add_edge("community", END)
-    workflow.add_edge("chat", END)
+    # 专业节点输出后：思考模式先经 polish 优化再结束，快速模式直接结束
+    agent_names = ["legal", "safety", "support", "salary", "skill", "life", "community", "chat"]
+    for name in agent_names:
+        workflow.add_conditional_edges(
+            name,
+            should_polish,
+            {"polish": "polish", "end": END}
+        )
+
+    # 优化节点执行完结束
+    workflow.add_edge("polish", END)
 
     # 返回包装对象（平台通过builder属性访问StateGraph并自行compile+注入checkpointer）
     return AgentBuilder(workflow)

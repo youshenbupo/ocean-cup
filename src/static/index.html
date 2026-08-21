@@ -406,6 +406,38 @@
         .chat-send-btn:hover { transform: scale(1.1); }
         .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
+        .think-toggle {
+            display: flex; align-items: center; gap: 5px;
+            padding: 8px 12px;
+            background: #F0F3FF;
+            border-radius: 20px;
+            cursor: pointer;
+            user-select: none;
+            flex-shrink: 0;
+            font-size: 13px;
+            color: #5A6B8C;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .think-toggle:hover { background: #E3EAFF; }
+        .think-toggle input { display: none; }
+        .think-toggle .think-text { font-weight: 500; }
+        .think-toggle input:checked ~ .think-text {
+            color: #4A6CF7;
+        }
+        .think-toggle input:checked ~ .think-text::after {
+            content: '·开';
+            color: #4A6CF7; font-weight: 700;
+        }
+        .think-toggle input:not(:checked) ~ .think-text::after {
+            content: '·关';
+            color: #9AA7C1;
+        }
+        .think-toggle:has(input:checked) {
+            background: #E4EDFF;
+            box-shadow: inset 0 0 0 1px #B9CFFF;
+        }
+
         .chat-quick {
             padding: 10px 16px;
             display: flex; gap: 8px; flex-wrap: wrap;
@@ -792,6 +824,10 @@
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-area">
+            <label class="think-toggle" id="thinkToggleWrap" title="思考模式：回复经 LLM 二次优化后输出，更严谨（略慢）">
+                <input type="checkbox" id="thinkToggle">
+                <span class="think-text">🧠 思考</span>
+            </label>
             <input type="text" id="chatInput" placeholder="输入你的问题..." onkeypress="if(event.key==='Enter')chatSend()">
             <button class="chat-send-btn" id="chatSendBtn" onclick="chatSend()">➤</button>
         </div>
@@ -1274,15 +1310,19 @@
             return;
         }
 
-        const message = input.value.trim();
-        if (!message) return;
+        const rawMessage = input.value.trim();
+        if (!rawMessage) return;
 
         input.value = '';
         isSending = true;
         lastStreamedText = '';
         setSendingState(true);
 
-        addMsg(message, true);
+        // 思考模式：在发送的消息前追加约定前缀，后端据此对输出做二轮 LLM 优化
+        const thinkMode = document.getElementById('thinkToggle')?.checked || false;
+        const message = thinkMode ? ('【深度思考】' + rawMessage) : rawMessage;
+
+        addMsg(rawMessage, true);
         showTyping();
 
         currentController = new AbortController();
