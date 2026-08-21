@@ -141,7 +141,8 @@
             border-radius: 50%;
         }
         .hero-greeting { font-size: 26px; font-weight: 800; margin-bottom: 8px; position: relative; z-index: 1; }
-        .hero-subtitle { font-size: 14px; opacity: 0.9; margin-bottom: 20px; position: relative; z-index: 1; }
+        .hero-subtitle { font-size: 14px; opacity: 0.9; margin-bottom: 10px; position: relative; z-index: 1; }
+        .hero-quote { font-size: 12px; opacity: 0.75; margin-bottom: 16px; position: relative; z-index: 1; font-style: italic; padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 8px; display: inline-block; }
         .hero-input-wrap {
             display: flex; gap: 10px;
             background: rgba(255,255,255,0.2);
@@ -904,6 +905,7 @@
     <div class="hero-section">
         <div class="hero-greeting">👋 你好，工友！</div>
         <div class="hero-subtitle">有啥问题尽管问，我来帮你理一理</div>
+        <div class="hero-quote" id="dailyQuote">🏗️ 每一砖每一瓦，都是城市的脊梁</div>
         <div class="hero-input-wrap">
             <input type="text" id="heroInput" placeholder="输入你的问题，如：老板拖欠工资怎么办" onkeypress="if(event.key==='Enter')heroSend()">
             <button onclick="heroSend()">提问</button>
@@ -1363,6 +1365,12 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- ===== 页脚 ===== -->
+<div style="text-align:center;padding:20px;font-size:11px;color:var(--text-secondary);opacity:0.6">
+    <div>🏗️ 工友权益明白人 · 为人民建好房，为工友谋幸福</div>
+    <div style="margin-top:4px">AI智能助手 · 权益保障 · 安全守护 · 技能提升</div>
 </div>
 
 <!-- ===== 底部标签栏 ===== -->
@@ -2312,6 +2320,28 @@
         if (wp) applyWallpaper(wp);
     }
 
+    // ===== 每日一语 =====
+    const DAILY_QUOTES = [
+        '🏗️ 每一砖每一瓦，都是城市的脊梁',
+        '💪 你的汗水，筑起了万家灯火',
+        '🌟 平凡的工作，不平凡的贡献',
+        '🤝 工友们互帮互助，共渡难关',
+        '🛡️ 你的权益，法律来守护',
+        '📚 技能是最好的铁饭碗',
+        '🏠 建的是房子，筑的是幸福',
+        '☀️ 安全回家，是家人最大的期盼',
+        '💰 辛苦钱一分不能少',
+        '🌈 风雨过后，总会见彩虹',
+        '🔨 手中的工具，心中的梦想',
+        '🌆 城市因你而美丽'
+    ];
+    function loadDailyQuote() {
+        const el = document.getElementById('dailyQuote');
+        if (!el) return;
+        const day = new Date().getDate();
+        el.textContent = DAILY_QUOTES[day % DAILY_QUOTES.length];
+    }
+
     // ===== 构建用户上下文（让智能体"认识"你）=====
     function buildProfileContext() {
         const p = getProfile();
@@ -2660,6 +2690,7 @@
         renderExpenses();
         renderWorkHours();
         loadSafetyTip();
+        loadDailyQuote();
         // 设置工时日期默认为今天
         const workDateEl = document.getElementById('workDate');
         if (workDateEl) workDateEl.value = new Date().toISOString().slice(0, 10);
