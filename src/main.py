@@ -489,6 +489,12 @@ async def http_run(request: Request) -> Dict[str, Any]:
     try:
         payload = await request.json()
 
+        # agent 项目需要把 content.query.prompt 结构转换为 messages，
+        # 否则 /run 直传原始 body 会导致 state["messages"] 为空、路由兜底答非所问
+        if graph_helper.is_agent_proj() and not (isinstance(payload, dict) and payload.get("messages")):
+            client_msg, _ = to_client_message(payload)
+            payload = to_stream_input(client_msg)
+
         # 创建任务并记录 - 这是关键，让我们可以通过run_id取消任务
         task = asyncio.create_task(service.run(payload, ctx))
         service.running_tasks[run_id] = task
