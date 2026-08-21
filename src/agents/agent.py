@@ -98,6 +98,9 @@ ROUTER_PROMPT = """你是「明白人」智能路由助手。你的任务是分�
    - 关键词：你好、谢谢、再见、闲聊
    - 场景：简单问候、闲聊
 
+## 指代消解
+若「当前提问」较短且包含指代（如"那怎么办""然后呢""该怎么做""还有吗"），必须结合「历史提问」判断真实意图，路由到与历史话题一致的专业 Agent（例如历史在讨论打人后的法律后果，则继续路由到 legal）。
+
 ## 输出格式
 【严格指令】只输出以下8个词中的一个，不要输出任何其他内容（不要标点、不要解释、不要序号）：
 
@@ -621,9 +624,30 @@ def router_node(state: AgentState, ctx=None) -> dict:
 
     # 慢路径：LLM意图分析（使用剥离前缀后的文本，避免标记干扰意图判断）
     llm = get_llm(ctx)
+
+    # 提取较近的历史用户提问，帮助识别"那我该怎么办"这类指代词
+    history_texts = []
+    for m in messages[:-1]:
+        if isinstance(m, HumanMessage):
+            t = m.content
+            if isinstance(t, list):
+                t = " ".join(
+                    item.get("text", "") for item in t
+                    if isinstance(item, dict) and item.get("type") == "text"
+                )
+            t = (t or "").strip()
+            if t:
+                history_texts.append(t)
+
+    if history_texts:
+        recent = history_texts[-3:]
+        context = "【历史提问】\n" + "\n".join(f"- {t[:80]}" for t in recent) + "\n\n【当前提问】" + user_text
+    else:
+        context = "【当前提问】" + user_text
+
     router_messages = [
         SystemMessage(content=ROUTER_PROMPT),
-        HumanMessage(content=user_text)
+        HumanMessage(content=context)
     ]
 
     response = llm.invoke(router_messages)

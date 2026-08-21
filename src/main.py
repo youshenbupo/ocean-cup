@@ -118,7 +118,12 @@ class GraphService:
             graph = self._get_graph(ctx)
             # custom tracer
             run_config = init_run_config(graph, ctx)
-            run_config.setdefault("configurable", {})["thread_id"] = ctx.run_id
+            # 多轮对话：优先使用前端传入的 session_id 作为 thread_id，
+            # 保证 checkpointer 能跨请求恢复历史消息（否则每次 run_id 不同会丢失上下文）
+            thread_id = None
+            if isinstance(payload, dict):
+                thread_id = payload.get("session_id")
+            run_config.setdefault("configurable", {})["thread_id"] = thread_id or ctx.run_id
 
             # 直接调用，LangGraph会在当前任务上下文中执行
             # 如果当前任务被取消，LangGraph的执行也会被取消
@@ -492,8 +497,11 @@ async def http_run(request: Request) -> Dict[str, Any]:
         # agent 项目需要把 content.query.prompt 结构转换为 messages，
         # 否则 /run 直传原始 body 会导致 state["messages"] 为空、路由兜底答非所问
         if graph_helper.is_agent_proj() and not (isinstance(payload, dict) and payload.get("messages")):
-            client_msg, _ = to_client_message(payload)
+            client_msg, session_id = to_client_message(payload)
             payload = to_stream_input(client_msg)
+            # 保留 session_id，供 run() 作为 thread_id 使用，确保多轮对话上下文连续
+            if session_id:
+                payload["session_id"] = session_id
 
         # 创建任务并记录 - 这是关键，让我们可以通过run_id取消任务
         task = asyncio.create_task(service.run(payload, ctx))
