@@ -509,6 +509,21 @@
             border-radius: 12px; font-size: 15px;
             font-weight: 600; cursor: pointer;
         }
+        .btn-line {
+            width: 100%; padding: 12px;
+            background: white; color: var(--primary);
+            border: 1px solid var(--primary); border-radius: 12px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+        }
+        .template-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.6; }
+        .template-body {
+            width: 100%; height: 48vh; padding: 14px;
+            border: 1px solid var(--border); border-radius: 12px;
+            font-size: 13px; line-height: 1.7; font-family: inherit;
+            resize: vertical; background: #FAFBFF; color: var(--text-primary);
+        }
+        .template-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+        .chat-send-btn.stop { background: linear-gradient(135deg, #F43F5E, #E11D48); }
 
         /* ===== 知识详情 ===== */
         .know-detail { padding: 20px; }
@@ -604,15 +619,15 @@
         <h2>🔧 实用工具</h2>
     </div>
     <div class="tool-grid">
-        <div class="tool-item" onclick="quickChat('帮我写一份欠条')">
+        <div class="tool-item" onclick="openToolTemplate('iou')">
             <div class="tool-icon">📄</div>
             <div class="tool-name">写欠条</div>
         </div>
-        <div class="tool-item" onclick="quickChat('帮我写仲裁申请书')">
+        <div class="tool-item" onclick="openToolTemplate('arbitration')">
             <div class="tool-icon">📝</div>
             <div class="tool-name">仲裁申请</div>
         </div>
-        <div class="tool-item" onclick="quickChat('帮我写欠薪投诉书')">
+        <div class="tool-item" onclick="openToolTemplate('complaint')">
             <div class="tool-icon">📋</div>
             <div class="tool-name">投诉书</div>
         </div>
@@ -840,12 +855,30 @@
     </div>
 </div>
 
+<!-- ===== 文书模板弹窗 ===== -->
+<div class="modal-overlay" id="toolTemplateModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="templateTitle">📄 文书模板</h3>
+            <button class="modal-close" onclick="closeToolTemplate()">✕</button>
+        </div>
+        <div class="template-desc" id="templateDesc"></div>
+        <textarea class="template-body" id="templateBody" readonly></textarea>
+        <div class="template-actions">
+            <button class="btn-primary" onclick="copyTemplate()">📋 复制模板</button>
+            <button class="btn-line" onclick="useTemplateAsDraft()">✍️ 交给 AI 帮我填写</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // ===== 全局状态（多会话） =====
     const WELCOME_TEXT = '👋 你好工友！我是工友权益明白人。\n\n我可以帮你：\n⚖️ 法律维权（欠薪、工伤、合同）\n💰 薪资管理（记工时、算工资、写欠条）\n🦺 安全预警（天气预警、隐患识别）\n📚 技能提升（考证、培训、社保）\n\n有啥问题尽管问！';
     let sessions = [];
     let currentSessionId = null;
     let isSending = false;
+    let currentController = null;
+    let lastStreamedText = '';
 
     function loadSessions() {
         try {
@@ -933,6 +966,7 @@
 
     // 更新正在输入的消息（流式）
     function updateStreamingMsg(text) {
+        lastStreamedText = text;
         let el = document.getElementById('streamingMsg');
         if (!el) {
             hideTyping();
@@ -958,14 +992,15 @@
     }
 
     // ===== 发送消息 =====
-    async function sendToAPI(message) {
+    async function sendToAPI(message, signal) {
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 message: message,
                 session_id: currentSessionId
-            })
+            }),
+            signal
         });
 
         if (!response.ok) {
@@ -1065,33 +1100,94 @@
     }
 
     async function chatSend() {
-        if (isSending) return;
         const input = document.getElementById('chatInput');
+
+        // 正在生成中：点击按钮触发"停止生成"
+        if (isSending) {
+            stopGenerating();
+            return;
+        }
+
         const message = input.value.trim();
         if (!message) return;
 
         input.value = '';
         isSending = true;
-        document.getElementById('chatSendBtn').disabled = true;
+        lastStreamedText = '';
+        setSendingState(true);
 
         addMsg(message, true);
         showTyping();
 
+        currentController = new AbortController();
+        // 最长等待 90 秒，超时自动中断，避免"发送后无回应"
+        const timeoutId = setTimeout(() => { if (currentController) currentController.abort(); }, 90000);
+
         try {
-            await sendToAPI(message);
+            await sendToAPI(message, currentController.signal);
         } catch (error) {
-            let errMsg = '网络错误，请稍后重试';
-            if (error.message.includes('Failed to fetch')) errMsg = '⚠️ 无法连接服务器，请检查网络';
-            else if (error.message.includes('500') || error.message.includes('502')) errMsg = '⚠️ 服务暂时不可用';
-            else errMsg = '⚠️ ' + error.message;
-            addMsg(errMsg);
-            console.error('Chat error:', error);
+            if (error && error.name === 'AbortError') {
+                // 主动停止或超时：保留已生成内容
+                const streamingEl = document.getElementById('streamingMsg');
+                if (lastStreamedText && lastStreamedText.trim()) {
+                    finalizeStreamingMsg(lastStreamedText);
+                    addMsg('⏹（已停止生成，可继续追问）');
+                } else if (streamingEl) {
+                    streamingEl.remove();
+                    addMsg('⏹（已停止生成）');
+                } else {
+                    hideTyping();
+                    addMsg('⏹（已停止生成）');
+                }
+            } else {
+                let errMsg = '网络错误，请稍后重试';
+                if (error && error.message) {
+                    if (error.message.includes('Failed to fetch') || error.message.includes('load failed')) errMsg = '⚠️ 无法连接服务器，请检查网络后重试';
+                    else if (error.message.includes('500') || error.message.includes('502') || error.message.includes('504')) errMsg = '⚠️ 服务暂时不可用，请稍后重试';
+                    else errMsg = '⚠️ ' + error.message;
+                }
+                addMsg(errMsg);
+                console.error('Chat error:', error);
+            }
         } finally {
-            // 确保无论如何都移除 typing 指示器
+            clearTimeout(timeoutId);
             hideTyping();
             isSending = false;
-            document.getElementById('chatSendBtn').disabled = false;
+            currentController = null;
+            setSendingState(false);
         }
+    }
+
+    function stopGenerating() {
+        if (currentController) currentController.abort();
+    }
+
+    function setSendingState(sending) {
+        const btn = document.getElementById('chatSendBtn');
+        if (sending) {
+            btn.textContent = '⏹';
+            btn.classList.add('stop');
+            btn.title = '停止生成';
+        } else {
+            btn.textContent = '➤';
+            btn.classList.remove('stop');
+            btn.title = '发送';
+        }
+    }
+
+    // 快捷入口统一发送：先中断上一轮未完成的回复，再发新消息
+    function sendMessage(text) {
+        if (isSending) {
+            if (currentController) currentController.abort();
+            isSending = false;
+            currentController = null;
+            setSendingState(false);
+            hideTyping();
+            const streamingEl = document.getElementById('streamingMsg');
+            if (streamingEl) streamingEl.remove();
+        }
+        document.getElementById('chatInput').value = text;
+        chatSend();
     }
 
     function heroSend() {
@@ -1100,26 +1196,17 @@
         if (!msg) return;
         input.value = '';
         switchTab('chat');
-        setTimeout(() => {
-            document.getElementById('chatInput').value = msg;
-            chatSend();
-        }, 200);
+        setTimeout(() => sendMessage(msg), 200);
     }
 
     function quickChat(text) {
         switchTab('chat');
-        setTimeout(() => {
-            document.getElementById('chatInput').value = text;
-            chatSend();
-        }, 200);
+        setTimeout(() => sendMessage(text), 200);
     }
 
     function askKnowledge(topic) {
         switchTab('chat');
-        setTimeout(() => {
-            document.getElementById('chatInput').value = '请给我讲讲' + topic + '的相关知识';
-            chatSend();
-        }, 200);
+        setTimeout(() => sendMessage('请给我讲讲' + topic + '的相关知识'), 200);
     }
 
     function clearChat() {
@@ -1255,12 +1342,78 @@
         setTimeout(() => t.remove(), 2000);
     }
 
+    // ===== 文书模板 =====
+    const TOOL_TEMPLATES = {
+        iou: {
+            title: '📄 工资欠条模板',
+            desc: '被老板/包工头拖欠工资时，让对方当场写欠条是最有力的书面证据，请让对方亲笔填写并签名按手印。',
+            body: '工资欠条\n\n今欠到 ____________（工友姓名，身份证号：__________________）\n工资共计人民币 ____________ 元（大写：____________________）。\n\n该款项为 ____年____月至____年____月在 ____________（工地/项目名称）\n从事 ____________ 岗位的工资。\n\n本人承诺于 ____年____月____日前一次性付清上述款项。\n逾期未付，本人愿承担相应法律责任及逾期利息。\n\n欠款人（签名/按手印）：____________\n身份证号：________________________\n联系电话：________________________\n日期：____年____月____日\n\n【注意事项】\n1. 欠条由欠款人本人亲笔书写并签字、按手印，写清欠款金额（大小写一致）、欠的是哪个时间段、何时还清；\n2. 拍照留存原件，若能录像记录签字过程更好；\n3. 如欠款人是公司，应写公司全称并加盖公章，同时写清负责人姓名。'
+        },
+        arbitration: {
+            title: '📝 劳动仲裁申请书模板',
+            desc: '协商、投诉无果后，可向劳动争议仲裁委员会申请仲裁，全程免费。请按实际情况填写并附证据。',
+            body: '劳动争议仲裁申请书\n\n申请人：姓名______，性别______，身份证号________________，\n住址________________________，联系电话____________。\n\n被申请人：______________________（单位全称）\n法定代表人/负责人：____________\n住所地：________________________\n\n请求事项：\n1. 请求裁决被申请人支付拖欠工资人民币______元；\n2. 请求裁决被申请人支付未签订劳动合同的双倍工资差额______元（如适用）；\n3. 请求裁决被申请人支付经济补偿金______元（如适用）。\n\n事实与理由：\n申请人于____年____月入职被申请人处，从事______工作，\n约定日薪/月薪______元。被申请人自____年____月起拖欠工资，\n至今累计拖欠______元。经多次催要未果，为维护自身合法权益，\n特依法申请仲裁，请求裁决支持申请人的全部请求。\n\n此致\n______劳动争议仲裁委员会\n\n申请人（签名）：____________\n日期：____年____月____日\n\n【注意事项】\n1. 携带身份证、工资条/考勤记录、聊天记录、工友证言等证据；\n2. 劳动合同有争议的，可同时主张未签合同双倍工资（最多11个月）；\n3. 仲裁时效为一年，从知道权利被侵害之日起算，请及时主张。'
+        },
+        complaint: {
+            title: '📋 欠薪投诉书模板',
+            desc: '向项目所在地的区/县劳动保障监察大队投诉，是免费的官方维权渠道，一般15个工作日内答复。',
+            body: '欠薪投诉书\n\n投诉人：姓名______，身份证号________________，联系电话____________。\n\n被投诉单位：______________________（单位全称/老板姓名）\n项目名称：________________________\n工地地址：________________________\n\n投诉事项：\n被投诉单位拖欠本人工资人民币______元（大写：______________）。\n\n事实经过：\n本人于____年____月至____年____月在该项目从事______工作，\n约定日薪/月薪______元。自____年____月起，被投诉单位未按时足额支付工资，\n至今累计拖欠______元。本人多次催要，被投诉单位均以____________为由推脱。\n\n请求事项：\n请贵单位依法责令被投诉单位限期支付拖欠的工资，并对违法行为依法处理。\n\n此致\n______劳动保障监察大队\n\n投诉人（签名）：____________\n日期：____年____月____日\n\n【注意事项】\n1. 拨打 12333 可查询当地劳动监察大队地址并在线登记投诉；\n2. 带上身份证、欠条/工资条、考勤记录、聊天记录等证据；\n3. 留存投诉回执，作为后续仲裁或诉讼的凭证。'
+        }
+    };
+    let currentTemplateKey = '';
+
+    function openToolTemplate(key) {
+        const tpl = TOOL_TEMPLATES[key];
+        if (!tpl) return;
+        currentTemplateKey = key;
+        document.getElementById('templateTitle').textContent = tpl.title;
+        document.getElementById('templateDesc').textContent = tpl.desc;
+        document.getElementById('templateBody').value = tpl.body;
+        document.getElementById('toolTemplateModal').classList.add('active');
+    }
+
+    function closeToolTemplate() {
+        document.getElementById('toolTemplateModal').classList.remove('active');
+    }
+
+    function copyTemplate() {
+        const el = document.getElementById('templateBody');
+        el.focus();
+        el.select();
+        el.setSelectionRange(0, el.value.length);
+        try {
+            if (document.execCommand('copy')) {
+                showToast('模板已复制到剪贴板');
+                return;
+            }
+        } catch (e) { /* 继续尝试现代 API */ }
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(el.value).then(() => showToast('模板已复制')).catch(() => showToast('复制失败，请手动选择复制'));
+        } else {
+            showToast('复制失败，请手动选择复制');
+        }
+    }
+
+    function useTemplateAsDraft() {
+        const map = {
+            iou: '帮我写一份规范的工资欠条',
+            arbitration: '帮我写一份劳动仲裁申请书',
+            complaint: '帮我写一份欠薪投诉书'
+        };
+        closeToolTemplate();
+        switchTab('chat');
+        setTimeout(() => sendMessage(map[currentTemplateKey] || '帮我写一份法律文书'), 200);
+    }
+
     // 点击弹窗外关闭
     document.getElementById('settingsModal').addEventListener('click', function(e) {
         if (e.target === this) closeSettings();
     });
     document.getElementById('sessionModal').addEventListener('click', function(e) {
         if (e.target === this) closeSessionList();
+    });
+    document.getElementById('toolTemplateModal').addEventListener('click', function(e) {
+        if (e.target === this) closeToolTemplate();
     });
 
     // ===== 初始化 =====

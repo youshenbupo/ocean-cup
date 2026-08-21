@@ -403,6 +403,20 @@ COMMUNITY_PROMPT = """# 角色：工友社区助手
 """
 
 
+# ============== 通用回复规则（所有专业Agent + 闲聊节点统一追加） ==============
+
+COMMON_REPLY_RULES = """
+
+## 本轮通用要求（务必逐条遵守）
+1. **先判断问题类型**：
+   - 若用户是「泛泛请教 / 希望讲解某领域知识」（例如"讲讲劳动法""工伤认定有哪些""怎么考证""社保怎么交"），请**直接、系统地讲解该主题的核心要点**（概念、分类、关键规定、注意事项、常见误区），不要反问用户、不要只发欢迎语或自我介绍。
+   - 若用户是「具体求助」（例如"老板欠我3万怎么办""我受伤了怎么认定工伤"），则按你的专业流程给出针对性方案。
+2. **针对性回答**：紧扣用户本次的具体问题展开，避免每一轮都输出相同的大段通用介绍或欢迎语。
+3. **结尾附权益小结**：每轮回复末尾，单独新增「## 💡 权益点小结」小节，用 1-3 条 bullet（- 开头，每条一行）概括本轮最关键、最该记住的权益要点或行动提醒。
+4. 如果确实缺少关键信息（如生成文书需要姓名、金额等），可以询问，但要先给出能给的通用知识或模板。
+"""
+
+
 # ============== 工具错误处理 ==============
 
 @wrap_tool_call
@@ -592,7 +606,7 @@ def create_specialist_agent(system_prompt: str, tools: list, ctx=None):
     llm = get_llm(ctx)
     agent = create_agent(
         model=llm,
-        system_prompt=system_prompt,
+        system_prompt=system_prompt + COMMON_REPLY_RULES,
         tools=tools,
         middleware=[handle_tool_errors],
         checkpointer=get_memory_saver(),
@@ -681,7 +695,7 @@ def chat_node(state: AgentState, ctx=None) -> dict:
     messages = state["messages"]
     
     # 添加系统提示词
-    chat_messages = [SystemMessage(content=cfg.get("sp", ""))] + messages
+    chat_messages = [SystemMessage(content=cfg.get("sp", "") + COMMON_REPLY_RULES)] + messages
     response = llm.invoke(chat_messages)
     return {"messages": [response]}
 
