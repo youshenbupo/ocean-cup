@@ -249,13 +249,25 @@
         .quick-card .qc-desc { font-size: 11px; opacity: 0.85; margin-top: 4px; }
 
         /* ===== 聊天页 ===== */
+        #page-chat.active {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 74px - 62px);
+            padding-bottom: 0;
+            min-height: 0;
+            overflow: hidden;
+        }
         .chat-messages {
             padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            min-height: calc(100vh - 200px);
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
         }
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
         .msg {
             display: flex;
             gap: 10px;
@@ -287,12 +299,11 @@
         .msg.user .msg-bubble { background: linear-gradient(135deg, #4A6CF7, #7C3AED); color: white; border-bottom-right-radius: 4px; }
 
         .chat-input-area {
-            position: fixed;
-            bottom: 62px; left: 0; right: 0;
             background: white;
             padding: 10px 16px;
             display: flex; gap: 10px; align-items: center;
             border-top: 1px solid var(--border);
+            flex-shrink: 0;
             z-index: 50;
         }
         .chat-input-area input {
@@ -321,6 +332,7 @@
             padding: 10px 16px;
             display: flex; gap: 8px; flex-wrap: wrap;
             background: #FAFBFF;
+            flex-shrink: 0;
         }
         .chat-quick-btn {
             padding: 7px 14px;
@@ -332,6 +344,52 @@
             transition: all 0.2s;
         }
         .chat-quick-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* 会话工具条 */
+        .chat-session-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; padding: 8px 16px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .session-btn {
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .session-btn:hover { background: #F0F4FF; border-color: var(--primary-light); color: var(--primary); }
+        .session-title {
+            flex: 1; text-align: center;
+            font-size: 13px; font-weight: 600;
+            color: var(--text);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            padding: 0 4px;
+        }
+
+        /* 会话列表 */
+        .session-list { display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; }
+        .session-item {
+            background: #F8FAFF;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .session-item:hover { border-color: var(--primary-light); background: #F0F4FF; }
+        .session-item.active { border-color: var(--primary); background: #EEF3FF; }
+        .session-item .si-title { flex: 1; font-size: 14px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .session-item .si-count { font-size: 11px; color: var(--text-secondary); flex-shrink: 0; }
+        .session-item .si-del { color: var(--text-secondary); font-size: 16px; flex-shrink: 0; padding: 0 2px; }
+        .session-item .si-del:hover { color: var(--danger); }
 
         .typing-dots {
             display: flex; gap: 4px; padding: 4px 0;
@@ -473,7 +531,7 @@
             .work-grid { grid-template-columns: repeat(3, 1fr); max-width: 600px; margin: 0 auto; }
             .tool-grid { grid-template-columns: repeat(4, 1fr); max-width: 600px; margin: 0 auto; }
             .quick-grid { max-width: 600px; margin: 0 auto; }
-            .chat-messages { max-width: 700px; margin: 0 auto; }
+            #page-chat.active { max-width: 720px; margin: 0 auto; box-shadow: 0 0 30px rgba(0,0,0,0.04); }
         }
     </style>
 </head>
@@ -609,6 +667,11 @@
 
 <!-- ===== 聊天页 ===== -->
 <div class="page" id="page-chat">
+    <div class="chat-session-bar">
+        <button class="session-btn" onclick="openSessionList()">📋 历史</button>
+        <span class="session-title" id="sessionTitle">新对话</span>
+        <button class="session-btn" onclick="newChat()">＋ 新对话</button>
+    </div>
     <div class="chat-quick">
         <div class="chat-quick-btn" onclick="quickChat('老板拖欠工资怎么办')">💰 欠薪维权</div>
         <div class="chat-quick-btn" onclick="quickChat('工伤认定流程')">🏥 工伤认定</div>
@@ -766,11 +829,42 @@
     </div>
 </div>
 
+<!-- ===== 会话列表面板 ===== -->
+<div class="modal-overlay" id="sessionModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📋 历史对话</h3>
+            <button class="modal-close" onclick="closeSessionList()">✕</button>
+        </div>
+        <div class="session-list" id="sessionList"></div>
+    </div>
+</div>
+
 <script>
-    // ===== 全局状态 =====
-    let sessionId = 'session_' + Date.now();
-    let chatHistory = [];
+    // ===== 全局状态（多会话） =====
+    const WELCOME_TEXT = '👋 你好工友！我是工友权益明白人。\n\n我可以帮你：\n⚖️ 法律维权（欠薪、工伤、合同）\n💰 薪资管理（记工时、算工资、写欠条）\n🦺 安全预警（天气预警、隐患识别）\n📚 技能提升（考证、培训、社保）\n\n有啥问题尽管问！';
+    let sessions = [];
+    let currentSessionId = null;
     let isSending = false;
+
+    function loadSessions() {
+        try {
+            const raw = localStorage.getItem('gongyou_sessions');
+            sessions = raw ? JSON.parse(raw) : null;
+        } catch (e) { sessions = null; }
+        if (!Array.isArray(sessions) || sessions.length === 0) {
+            sessions = [{ id: 'session_' + Date.now(), title: '新对话', history: [] }];
+        }
+        currentSessionId = sessions[0].id;
+    }
+
+    function currentSession() {
+        return sessions.find(s => s.id === currentSessionId) || sessions[0];
+    }
+
+    function saveSessions() {
+        try { localStorage.setItem('gongyou_sessions', JSON.stringify(sessions)); } catch (e) {}
+    }
 
     // ===== 页面切换 =====
     function switchTab(name) {
@@ -783,14 +877,17 @@
         if (tabMap[name] !== undefined) tabs[tabMap[name]].classList.add('active');
         // 切到聊天页时滚动到底部
         if (name === 'chat') {
-            setTimeout(() => {
-                const el = document.getElementById('chatMessages');
-                el.scrollTop = el.scrollHeight;
-            }, 100);
+            refreshSessionTitle();
+            setTimeout(scrollChatToBottom, 100);
         }
     }
 
     // ===== 聊天功能 =====
+    function scrollChatToBottom() {
+        const el = document.getElementById('chatMessages');
+        if (el) el.scrollTop = el.scrollHeight;
+    }
+
     function addMsg(content, isUser = false) {
         const container = document.getElementById('chatMessages');
         const div = document.createElement('div');
@@ -800,8 +897,12 @@
             <div class="msg-bubble">${formatContent(content)}</div>
         `;
         container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-        chatHistory.push({ role: isUser ? 'user' : 'assistant', content });
+        scrollChatToBottom();
+        const cur = currentSession();
+        cur.history.push({ role: isUser ? 'user' : 'assistant', content });
+        if (cur.title === '新对话' && isUser) cur.title = content.slice(0, 16) || '新对话';
+        saveSessions();
+        refreshSessionTitle();
     }
 
     function formatContent(text) {
@@ -822,7 +923,7 @@
             </div>
         `;
         container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
+        scrollChatToBottom();
     }
 
     function hideTyping() {
@@ -846,14 +947,14 @@
             container.appendChild(el);
         }
         document.getElementById('streamingContent').innerHTML = formatContent(text);
-        const container = document.getElementById('chatMessages');
-        container.scrollTop = container.scrollHeight;
+        scrollChatToBottom();
     }
 
     function finalizeStreamingMsg(text) {
         const el = document.getElementById('streamingMsg');
         if (el) el.id = '';
-        chatHistory.push({ role: 'assistant', content: text });
+        currentSession().history.push({ role: 'assistant', content: text });
+        saveSessions();
     }
 
     // ===== 发送消息 =====
@@ -863,7 +964,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 message: message,
-                session_id: sessionId
+                session_id: currentSessionId
             })
         });
 
@@ -1022,10 +1123,109 @@
     }
 
     function clearChat() {
-        chatHistory = [];
-        sessionId = 'session_' + Date.now();
-        document.getElementById('chatMessages').innerHTML = '';
-        addMsg('👋 对话已清空，有什么新问题尽管问！');
+        const cur = currentSession();
+        cur.history = [];
+        cur.title = '新对话';
+        saveSessions();
+        renderChatMessages();
+    }
+
+    // ===== 多会话 =====
+    function refreshSessionTitle() {
+        const el = document.getElementById('sessionTitle');
+        if (el) el.textContent = currentSession().title || '新对话';
+    }
+
+    function renderChatMessages() {
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = '';
+        const cur = currentSession();
+        if (!cur.history || cur.history.length === 0) {
+            showWelcome();
+        } else {
+            cur.history.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'msg ' + (m.role === 'user' ? 'user' : 'bot');
+                div.innerHTML = `<div class="msg-avatar">${m.role === 'user' ? '👤' : '🤖'}</div><div class="msg-bubble">${formatContent(m.content)}</div>`;
+                container.appendChild(div);
+            });
+        }
+        scrollChatToBottom();
+        refreshSessionTitle();
+    }
+
+    function showWelcome() {
+        const container = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = 'msg bot';
+        div.innerHTML = `<div class="msg-avatar">🤖</div><div class="msg-bubble">${formatContent(WELCOME_TEXT)}</div>`;
+        container.appendChild(div);
+    }
+
+    function newChat() {
+        const cur = currentSession();
+        if (cur && cur.history.length === 0) {
+            closeSessionList();
+            return;
+        }
+        sessions.unshift({ id: 'session_' + Date.now(), title: '新对话', history: [] });
+        currentSessionId = sessions[0].id;
+        saveSessions();
+        renderChatMessages();
+        closeSessionList();
+    }
+
+    function openSessionList() {
+        renderSessionList();
+        document.getElementById('sessionModal').classList.add('active');
+    }
+
+    function closeSessionList() {
+        document.getElementById('sessionModal').classList.remove('active');
+    }
+
+    function renderSessionList() {
+        const list = document.getElementById('sessionList');
+        list.innerHTML = '';
+        sessions.forEach(s => {
+            const item = document.createElement('div');
+            item.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
+            const msgs = (s.history || []).filter(m => m.role === 'user').length;
+            item.innerHTML = `
+                <div class="si-title">${escapeHtml(s.title || '新对话')}</div>
+                <div class="si-count">${msgs} 问</div>
+                <div class="si-del" onclick="deleteSession('${s.id}', event)">🗑️</div>
+            `;
+            item.onclick = () => switchSession(s.id);
+            list.appendChild(item);
+        });
+    }
+
+    function switchSession(id) {
+        currentSessionId = id;
+        saveSessions();
+        renderChatMessages();
+        closeSessionList();
+    }
+
+    function deleteSession(id, ev) {
+        if (ev) ev.stopPropagation();
+        if (sessions.length <= 1) {
+            showToast('至少保留一个对话');
+            return;
+        }
+        sessions = sessions.filter(s => s.id !== id);
+        if (currentSessionId === id) currentSessionId = sessions[0].id;
+        saveSessions();
+        renderSessionList();
+        renderChatMessages();
+        refreshSessionTitle();
+    }
+
+    function escapeHtml(text) {
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
     }
 
     // ===== 设置 =====
@@ -1059,10 +1259,14 @@
     document.getElementById('settingsModal').addEventListener('click', function(e) {
         if (e.target === this) closeSettings();
     });
+    document.getElementById('sessionModal').addEventListener('click', function(e) {
+        if (e.target === this) closeSessionList();
+    });
 
-    // ===== 初始化欢迎消息 =====
+    // ===== 初始化 =====
     (function init() {
-        addMsg('👋 你好工友！我是工友权益明白人。\n\n我可以帮你：\n⚖️ 法律维权（欠薪、工伤、合同）\n💰 薪资管理（记工时、算工资、写欠条）\n🦺 安全预警（天气预警、隐患识别）\n📚 技能提升（考证、培训、社保）\n\n有啥问题尽管问！');
+        loadSessions();
+        renderChatMessages();
     })();
 </script>
 </body>
