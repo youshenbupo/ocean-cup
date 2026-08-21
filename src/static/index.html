@@ -638,6 +638,10 @@
         }
         .profile-edit-badge:active { background: rgba(255,255,255,0.3); }
         .profile-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+        .profile-tag {
+            font-size: 12px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.18);
+            padding: 5px 11px; border-radius: 999px; color: #fff;
+        }
         .ptag {
             font-size: 12px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.18);
             padding: 5px 11px; border-radius: 999px; color: #fff;
@@ -817,6 +821,65 @@
         .wallpaper-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
         .wallpaper-tip { font-size: 12px; color: var(--text-secondary); background: #F8FAFC; border: 1px dashed var(--border); padding: 9px 12px; border-radius: 10px; margin-top: 12px; line-height: 1.6; }
         .chat-messages.has-wallpaper { background-size: cover; background-position: center; background-repeat: no-repeat; }
+
+        /* ===== Markdown 渲染 ===== */
+        .md-h1 { font-size: 18px; font-weight: 800; color: var(--text); margin: 14px 0 8px; padding-bottom: 6px; border-bottom: 2px solid var(--primary); }
+        .md-h2 { font-size: 16px; font-weight: 700; color: var(--text); margin: 12px 0 6px; padding-left: 10px; border-left: 3px solid var(--primary); }
+        .md-h3 { font-size: 15px; font-weight: 700; color: var(--primary); margin: 10px 0 5px; }
+        .md-h4 { font-size: 14px; font-weight: 600; color: var(--text); margin: 8px 0 4px; }
+        .md-code { background: #F1F5F9; color: #DC2626; padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: 'SF Mono', Monaco, Consolas, monospace; }
+        .md-pre { background: #1E293B; color: #E2E8F0; padding: 14px; border-radius: 10px; overflow-x: auto; margin: 8px 0; font-size: 13px; line-height: 1.5; }
+        .md-pre code { font-family: 'SF Mono', Monaco, Consolas, monospace; }
+        .md-quote { border-left: 3px solid var(--accent); background: #FFF7ED; padding: 10px 14px; margin: 8px 0; border-radius: 0 8px 8px 0; color: #9A3412; font-size: 13px; }
+        .md-ul, .md-ol { margin: 8px 0; padding-left: 20px; }
+        .md-li { margin: 4px 0; line-height: 1.6; }
+        .md-ol .md-li { list-style: decimal; }
+        .md-ul .md-li { list-style: disc; }
+        .md-link { color: var(--primary); text-decoration: underline; }
+        .md-link:hover { color: var(--primary-dark); }
+        .md-num { font-weight: 600; color: var(--primary); }
+
+        /* ===== 头像上传 ===== */
+        .profile-avatar-lg { cursor: pointer; position: relative; overflow: hidden; }
+        .profile-avatar-lg:hover { border-color: rgba(255,255,255,0.7); }
+        .profile-avatar-lg img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .avatar-upload-hint { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 10px; text-align: center; padding: 2px 0; border-radius: 0 0 50% 50%; opacity: 0; transition: opacity 0.2s; }
+        .profile-avatar-lg:hover .avatar-upload-hint { opacity: 1; }
+
+        /* ===== 记账功能 ===== */
+        .expense-summary { display: flex; gap: 10px; margin-bottom: 14px; }
+        .expense-summary-item { flex: 1; background: linear-gradient(135deg, #0B2545, #1D4ED8); border-radius: 12px; padding: 14px; color: #fff; text-align: center; }
+        .expense-summary-item.expense-out { background: linear-gradient(135deg, #7C2D12, #DC2626); }
+        .expense-summary-item.expense-in { background: linear-gradient(135deg, #065F46, #10B981); }
+        .expense-summary-label { font-size: 11px; opacity: 0.8; }
+        .expense-summary-value { font-size: 20px; font-weight: 800; margin-top: 4px; }
+        .expense-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+        .expense-item { display: flex; align-items: center; gap: 10px; background: #F8FAFC; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+        .expense-item-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .expense-item-info { flex: 1; min-width: 0; }
+        .expense-item-note { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .expense-item-date { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+        .expense-item-amount { font-size: 15px; font-weight: 700; flex-shrink: 0; }
+        .expense-item-amount.in { color: #059669; }
+        .expense-item-amount.out { color: #DC2626; }
+        .expense-item-del { color: var(--text-secondary); cursor: pointer; font-size: 14px; padding: 4px; flex-shrink: 0; }
+        .expense-item-del:hover { color: var(--danger); }
+        .expense-empty { text-align: center; padding: 30px; color: var(--text-muted); font-size: 13px; }
+        .expense-form { background: #F8FAFC; border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+        .expense-form-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .expense-form-row:last-child { margin-bottom: 0; }
+        .expense-form-row > * { flex: 1; }
+        .expense-form select, .expense-form input { border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 10px; font-size: 13px; font-family: inherit; background: #fff; outline: none; width: 100%; }
+        .expense-form select:focus, .expense-form input:focus { border-color: var(--primary); }
+        .expense-type-toggle { display: flex; gap: 6px; }
+        .expense-type-btn { flex: 1; padding: 8px; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .expense-type-btn.active-in { border-color: #10B981; background: #ECFDF5; color: #059669; }
+        .expense-type-btn.active-out { border-color: #DC2626; background: #FEF2F2; color: #DC2626; }
+        .expense-cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+        .expense-cat-btn { padding: 8px 4px; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; font-size: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .expense-cat-btn.active { border-color: var(--primary); background: #EFF6FF; color: var(--primary); font-weight: 600; }
+        .btn-add-expense { width: 100%; padding: 10px; border: none; border-radius: 10px; background: linear-gradient(135deg, #10B981, #059669); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .btn-add-expense:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -1058,7 +1121,10 @@
         <!-- 个人信息卡 -->
         <div class="profile-card">
             <div class="profile-card-top">
-                <div class="profile-avatar-lg" id="profileAvatarLg">👷</div>
+                <div class="profile-avatar-lg" id="profileAvatarLg" onclick="document.getElementById('avatarInput').click()" title="点击上传头像">
+                    <span id="avatarEmoji">👷</span>
+                    <div class="avatar-upload-hint">📷 换头像</div>
+                </div>
                 <div class="profile-card-info">
                     <div class="profile-name-lg" id="profileName">工友</div>
                     <div class="profile-sub" id="profileSub">完善个人信息，让服务更懂你</div>
@@ -1142,6 +1208,38 @@
                     <button class="btn-parse" id="parseBtn" onclick="parseProfile()">✨ 智能识别</button>
                 </div>
                 <div class="ai-parse-tip">识别后会自动填到「手动填写」，您核对修改后再保存</div>
+            </div>
+        </div>
+
+        <!-- 记账功能 -->
+        <div class="section-subtitle">💰 工友记账</div>
+        <div class="profile-panel">
+            <div class="expense-summary">
+                <div class="expense-summary-item expense-in">
+                    <div class="expense-summary-label">本月收入</div>
+                    <div class="expense-summary-value" id="expenseTotalIn">¥0</div>
+                </div>
+                <div class="expense-summary-item expense-out">
+                    <div class="expense-summary-label">本月支出</div>
+                    <div class="expense-summary-value" id="expenseTotalOut">¥0</div>
+                </div>
+            </div>
+            <div class="expense-form">
+                <div class="expense-form-row">
+                    <div class="expense-type-toggle">
+                        <div class="expense-type-btn active-out" id="expTypeOut" onclick="setExpenseType('out')">支出</div>
+                        <div class="expense-type-btn" id="expTypeIn" onclick="setExpenseType('in')">收入</div>
+                    </div>
+                    <input type="number" id="expAmount" placeholder="金额" min="0" step="0.01">
+                </div>
+                <div class="expense-cat-grid" id="expCatGrid"></div>
+                <div class="expense-form-row">
+                    <input type="text" id="expNote" placeholder="备注（如：买盒饭、打车）">
+                </div>
+                <button class="btn-add-expense" onclick="addExpense()">✚ 记一笔</button>
+            </div>
+            <div class="expense-list" id="expenseList">
+                <div class="expense-empty">还没有记录，记一笔吧～</div>
             </div>
         </div>
 
@@ -1338,9 +1436,54 @@
     }
 
     function formatContent(text) {
-        return text
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\n/g, '<br>');
+        if (!text) return '';
+        // 先 HTML 转义，防止 XSS
+        let html = escapeHtml(text);
+
+        // 代码块（先处理，保护内容不被后续规则影响）
+        html = html.replace(/```([\s\S]*?)```/g, function(m, code) {
+            return '<pre class="md-pre"><code>' + code.trim() + '</code></pre>';
+        });
+        // 行内代码
+        html = html.replace(/`([^`\n]+)`/g, '<code class="md-code">$1</code>');
+
+        // 标题（### → ## → #，注意顺序）
+        html = html.replace(/^#### (.+)$/gm, '<div class="md-h4">$1</div>');
+        html = html.replace(/^### (.+)$/gm, '<div class="md-h3">$1</div>');
+        html = html.replace(/^## (.+)$/gm, '<div class="md-h2">$1</div>');
+        html = html.replace(/^# (.+)$/gm, '<div class="md-h1">$1</div>');
+
+        // 粗斜体 → 粗体 → 斜体
+        html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+        // 引用（> 开头）
+        html = html.replace(/^&gt; (.+)$/gm, '<div class="md-quote">$1</div>');
+
+        // 链接
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="md-link">$1</a>');
+
+        // 无序列表（- * • 开头）
+        html = html.replace(/^[\s]*[-*•] (.+)$/gm, '<li class="md-li">$1</li>');
+        // 有序列表（1. 或 1、开头）
+        html = html.replace(/^[\s]*(\d+)[.、] (.+)$/gm, '<li class="md-li md-oli"><span class="md-num">$1.</span> $2</li>');
+
+        // 将连续的 <li> 包裹成 <ul> 或 <ol>
+        html = html.replace(/((?:<li class="md-li[^"]*"[^>]*>[\s\S]*?<\/li>[\s]*)+)/g, function(m) {
+            if (m.indexOf('md-oli') !== -1) return '<ol class="md-ol">' + m + '</ol>';
+            return '<ul class="md-ul">' + m + '</ul>';
+        });
+
+        // 换行
+        html = html.replace(/\n/g, '<br>');
+
+        // 清理块级元素周围多余的 <br>
+        html = html.replace(/<br>(<(?:div|ul|ol|pre) class="md-)/g, '$1');
+        html = html.replace(/(<\/(?:div|ul|ol|pre)>)<br>/g, '$1');
+        html = html.replace(/<br><br>/g, '<br>');
+
+        return html;
     }
 
     function showTyping() {
@@ -1584,7 +1727,11 @@
 
         // 思考模式：在发送的消息前追加约定前缀，后端据此对输出做二轮 LLM 优化
         const thinkMode = document.getElementById('thinkToggle')?.checked || false;
-        const message = thinkMode ? ('【深度思考】' + rawMessage) : rawMessage;
+        // 把用户已保存的个人信息作为上下文附加到消息前，让智能体"认识"你
+        const profileCtx = buildProfileContext();
+        let message = rawMessage;
+        if (thinkMode) message = '【深度思考】' + message;
+        if (profileCtx) message = profileCtx + message;
 
         addMsg(rawMessage, true);
         showTyping();
@@ -2098,6 +2245,127 @@
         if (wp) applyWallpaper(wp);
     }
 
+    // ===== 构建用户上下文（让智能体"认识"你）=====
+    function buildProfileContext() {
+        const p = getProfile();
+        if (!p.name) return '';
+        const parts = [];
+        if (p.name) parts.push('我叫' + p.name);
+        if (p.gender) parts.push(p.gender);
+        if (p.age) parts.push(p.age + '岁');
+        if (p.job) parts.push('工种是' + p.job);
+        if (p.location) parts.push('在' + p.location);
+        if (p.salary) parts.push('薪资' + p.salary);
+        if (p.note) parts.push(p.note);
+        return '[我的信息：' + parts.join('，') + '] ';
+    }
+
+    // ===== 头像上传 =====
+    function handleAvatarFile(file) {
+        if (!file) return;
+        if (!file.type || file.type.indexOf('image/') !== 0) { showToast('请选择图片文件'); return; }
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const img = new Image();
+            img.onload = function () {
+                try {
+                    const size = 200;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size; canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    // 居中裁剪为方形
+                    const min = Math.min(img.width, img.height);
+                    const sx = (img.width - min) / 2, sy = (img.height - min) / 2;
+                    ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    localStorage.setItem('gongyou_avatar', dataUrl);
+                    renderProfileCard();
+                    showToast('头像已更新');
+                } catch (err) { showToast('图片处理失败，请换一张'); }
+            };
+            img.onerror = function () { showToast('图片读取失败'); };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ===== 记账功能 =====
+    const EXPENSE_KEY = 'gongyou_expenses';
+    let _expenseType = 'out';
+    let _expenseCat = '餐饮';
+    const EXPENSE_CATS_OUT = ['餐饮','交通','住宿','烟酒','日用品','医疗','通讯','其他'];
+    const EXPENSE_CATS_IN = ['工资','奖金','兼职','报销','其他'];
+
+    function setExpenseType(type) {
+        _expenseType = type;
+        document.getElementById('expTypeOut').className = 'expense-type-btn' + (type === 'out' ? ' active-out' : '');
+        document.getElementById('expTypeIn').className = 'expense-type-btn' + (type === 'in' ? ' active-in' : '');
+        renderExpenseCats();
+    }
+    function renderExpenseCats() {
+        const cats = _expenseType === 'out' ? EXPENSE_CATS_OUT : EXPENSE_CATS_IN;
+        const grid = document.getElementById('expCatGrid');
+        grid.innerHTML = cats.map(c =>
+            '<div class="expense-cat-btn' + (c === _expenseCat ? ' active' : '') + '" onclick="setExpenseCat(\'' + c + '\')">' + c + '</div>'
+        ).join('');
+        if (cats.indexOf(_expenseCat) === -1) _expenseCat = cats[0];
+    }
+    function setExpenseCat(cat) { _expenseCat = cat; renderExpenseCats(); }
+    function getExpenses() { try { return JSON.parse(localStorage.getItem(EXPENSE_KEY) || '[]'); } catch(e) { return []; } }
+    function saveExpenses(list) { localStorage.setItem(EXPENSE_KEY, JSON.stringify(list)); }
+    function addExpense() {
+        const amount = parseFloat(document.getElementById('expAmount').value);
+        if (!amount || amount <= 0) { showToast('请输入金额'); return; }
+        const note = document.getElementById('expNote').value.trim();
+        const list = getExpenses();
+        list.unshift({
+            id: Date.now(),
+            type: _expenseType,
+            category: _expenseCat,
+            amount: amount,
+            note: note || _expenseCat,
+            date: new Date().toISOString().slice(0, 10)
+        });
+        saveExpenses(list);
+        document.getElementById('expAmount').value = '';
+        document.getElementById('expNote').value = '';
+        renderExpenses();
+        showToast((_expenseType === 'in' ? '收入' : '支出') + ' ¥' + amount + ' 已记录');
+    }
+    function deleteExpense(id) {
+        saveExpenses(getExpenses().filter(e => e.id !== id));
+        renderExpenses();
+    }
+    function renderExpenses() {
+        const list = getExpenses();
+        const now = new Date();
+        const month = now.toISOString().slice(0, 7);
+        let totalIn = 0, totalOut = 0;
+        list.forEach(e => {
+            if (e.date && e.date.indexOf(month) === 0) {
+                if (e.type === 'in') totalIn += e.amount; else totalOut += e.amount;
+            }
+        });
+        document.getElementById('expenseTotalIn').textContent = '¥' + totalIn.toFixed(0);
+        document.getElementById('expenseTotalOut').textContent = '¥' + totalOut.toFixed(0);
+
+        const container = document.getElementById('expenseList');
+        if (!list.length) { container.innerHTML = '<div class="expense-empty">还没有记录，记一笔吧～</div>'; return; }
+        const icons = {'餐饮':'🍜','交通':'🚌','住宿':'🏠','烟酒':'🚬','日用品':'🧴','医疗':'💊','通讯':'📱','其他':'📦','工资':'💰','奖金':'🎁','兼职':'💼','报销':'🧾'};
+        container.innerHTML = list.slice(0, 30).map(e => {
+            const icon = icons[e.category] || '📦';
+            const bg = e.type === 'in' ? '#ECFDF5' : '#FEF2F2';
+            const cls = e.type === 'in' ? 'in' : 'out';
+            const sign = e.type === 'in' ? '+' : '-';
+            return '<div class="expense-item">' +
+                '<div class="expense-item-icon" style="background:' + bg + '">' + icon + '</div>' +
+                '<div class="expense-item-info"><div class="expense-item-note">' + escapeHtml(e.note) + '</div>' +
+                '<div class="expense-item-date">' + e.date + ' · ' + escapeHtml(e.category) + '</div></div>' +
+                '<div class="expense-item-amount ' + cls + '">' + sign + '¥' + e.amount.toFixed(2) + '</div>' +
+                '<div class="expense-item-del" onclick="deleteExpense(' + e.id + ')">🗑️</div></div>';
+        }).join('');
+    }
+
     // ===== 个人信息（手动填写 + 智能识别两种方式）=====
     const PROFILE_KEY = 'gongyou_profile';
     const JOB_OPTIONS = ['钢筋工','木工','瓦工/砌筑工','混凝土工','架子工','电工','焊工','塔吊司机','信号工','测量放线','防水工','装修工','普工/小工','班组长/带班','其他工种'];
@@ -2155,7 +2423,13 @@
         document.getElementById('profileTags').innerHTML = tags.length
             ? tags.map(t => `<span class="profile-tag">${escapeHtml(t)}</span>`).join('')
             : '<span class="profile-tag">信息越全，维权越准</span>';
-        document.getElementById('profileAvatarLg').textContent = p.name ? p.name.charAt(0) : '👷';
+        const avatarEl = document.getElementById('profileAvatarLg');
+        const avatarData = localStorage.getItem('gongyou_avatar');
+        if (avatarData) {
+            avatarEl.innerHTML = '<img src="' + avatarData + '" alt="头像"><div class="avatar-upload-hint">📷 换头像</div>';
+        } else {
+            avatarEl.innerHTML = '<span id="avatarEmoji">' + (p.name ? escapeHtml(p.name.charAt(0)) : '👷') + '</span><div class="avatar-upload-hint">📷 换头像</div>';
+        }
     }
 
     function loadProfile() {
@@ -2211,6 +2485,8 @@
         renderChatMessages();
         loadProfile();
         loadWallpaper();
+        renderExpenseCats();
+        renderExpenses();
     })();
 </script>
 
@@ -2248,5 +2524,6 @@
     </div>
 </div>
 <input type="file" id="wallpaperInput" accept="image/*" style="display:none" onchange="handleWallpaperFile(this.files[0]); this.value='';">
+<input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleAvatarFile(this.files[0]); this.value='';">
 </body>
 </html>
