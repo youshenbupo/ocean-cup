@@ -638,6 +638,47 @@
             display: flex; align-items: center; justify-content: center; font-size: 32px;
         }
         .profile-card-info { flex: 1; min-width: 0; }
+        /* 工伤急救 */
+        .firstaid-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .firstaid-item {
+            background: rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 14px;
+            cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+        }
+        .firstaid-item:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.25); }
+        .firstaid-item-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .firstaid-item-desc { font-size: 11px; color: rgba(255,255,255,0.7); line-height: 1.4; }
+        /* 文书模板 */
+        .template-list { display: flex; flex-direction: column; gap: 8px; }
+        .template-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            background: rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer;
+            transition: all 0.2s; border: 1px solid transparent;
+        }
+        .template-item:hover { background: rgba(255,255,255,0.18); }
+        .template-item-icon { font-size: 22px; flex-shrink: 0; }
+        .template-item-info { flex: 1; min-width: 0; }
+        .template-item-name { font-size: 13px; font-weight: 600; color: #fff; }
+        .template-item-desc { font-size: 11px; color: rgba(255,255,255,0.65); }
+        .template-item-btn {
+            padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+            background: var(--accent); color: #fff; border: none; cursor: pointer;
+        }
+        /* 维权进度 */
+        .rights-step {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            background: rgba(255,255,255,0.08); border-radius: 12px; margin-bottom: 8px;
+        }
+        .rights-step-check {
+            width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            font-size: 12px; flex-shrink: 0; transition: all 0.2s;
+        }
+        .rights-step-check.done { background: #27AE60; border-color: #27AE60; color: #fff; }
+        .rights-step-info { flex: 1; min-width: 0; }
+        .rights-step-title { font-size: 13px; font-weight: 600; color: #fff; }
+        .rights-step-note { font-size: 11px; color: rgba(255,255,255,0.6); }
+        .rights-step-del { color: rgba(255,255,255,0.5); cursor: pointer; font-size: 14px; padding: 4px; }
+        .rights-step-del:hover { color: #E74C3C; }
         .profile-name-lg { font-size: 19px; font-weight: 800; letter-spacing: 0.5px; }
         .profile-sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
         .profile-edit-badge {
@@ -1042,7 +1083,7 @@
         <div class="chat-session-bar">
             <button class="session-btn" onclick="openSessionList()">📋 历史</button>
             <span class="session-title" id="sessionTitle">新对话</span>
-            <span class="chat-profile-hint" id="chatProfileHint" onclick="showPage('profile')" title="点击完善个人信息"></span>
+            <span class="chat-profile-hint" id="chatProfileHint" onclick="switchTab('profile')" title="点击完善个人信息"></span>
             <div class="session-actions">
                 <button class="icon-btn" title="聊天壁纸" onclick="openWallpaper()">🎨</button>
                 <button class="icon-btn" title="清除全部对话" onclick="confirmClearAll()">🗑️</button>
@@ -1055,6 +1096,7 @@
             <div class="chat-quick-btn" onclick="quickChat('帮我记今天的工时')">📝 记录工时</div>
             <div class="chat-quick-btn" onclick="quickChat('帮我写一份欠条')">📄 写欠条</div>
             <div class="chat-quick-btn" onclick="quickChat('今天工地安全注意事项')">🦺 安全提醒</div>
+            <div class="chat-quick-btn" onclick="quickChat('紧急求助')">🆘 紧急求助</div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-area">
@@ -1318,6 +1360,27 @@
             <div style="text-align:center;margin-top:12px">
                 <button class="btn-add-expense" style="background:linear-gradient(135deg,#F59E0B,#D97706);width:auto;padding:8px 24px" onclick="loadSafetyTip()">🔄 换一条</button>
             </div>
+        </div>
+
+        <!-- 工伤急救指南 -->
+        <div class="profile-card" style="margin-top:12px">
+          <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--primary)">🚑 工伤急救指南</div>
+          <div class="firstaid-grid" id="firstaidGrid"></div>
+        </div>
+
+        <!-- 合同模板 -->
+        <div class="profile-card" style="margin-top:12px">
+          <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--primary)">📄 实用文书模板</div>
+          <div class="template-list" id="templateList"></div>
+        </div>
+
+        <!-- 维权进度追踪 -->
+        <div class="profile-card" style="margin-top:12px">
+          <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--primary)">📋 维权进度追踪</div>
+          <div id="rightsProgressList"></div>
+          <div class="form-actions" style="margin-top:10px">
+            <button class="btn-secondary" onclick="addRightsStep()">＋ 添加维权步骤</button>
+          </div>
         </div>
 
         <!-- 设置 -->
@@ -2328,6 +2391,121 @@
         if (wp) applyWallpaper(wp);
     }
 
+    // ===== 工伤急救指南 =====
+    const FIRSTAID_DATA = [
+      { title: '高空坠落', desc: '不要随意搬动伤者，立即拨打120，用硬板固定颈部，防止二次伤害' },
+      { title: '物体打击', desc: '检查意识是否清醒，伤口用干净纱布压迫止血，肿胀处冰敷' },
+      { title: '触电', desc: '先断电再救人，用干燥木棍挑开电线，必要时做心肺复苏' },
+      { title: '机械伤害', desc: '立即停机，不要强行拔出被夹部位，用工具拆解设备后送医' },
+      { title: '中暑', desc: '移到阴凉处，解开衣领，用湿毛巾擦拭降温，补充淡盐水' },
+      { title: '烫伤烧伤', desc: '流动冷水冲15分钟以上，不要撕扯粘连衣物，覆盖干净纱布' },
+      { title: '骨折', desc: '用木板或硬纸板固定骨折部位，不要强行复位，尽快送医' },
+      { title: '化学灼伤', desc: '大量清水冲洗30分钟以上，脱去污染衣物，不要使用中和剂' },
+    ];
+
+    function renderFirstaid() {
+      const grid = document.getElementById('firstaidGrid');
+      grid.innerHTML = FIRSTAID_DATA.map(item => `
+        <div class="firstaid-item" onclick="showFirstaidDetail('${item.title.replace(/'/g, "\\'")}', \`${item.desc.replace(/`/g, '\\`')}\`)">
+          <div class="firstaid-item-title">${item.title}</div>
+          <div class="firstaid-item-desc">${item.desc.substring(0, 20)}...</div>
+        </div>`).join('');
+    }
+
+    function showFirstaidDetail(title, desc) {
+      showToast('🚑 ' + title + '：' + desc);
+    }
+
+    // ===== 文书模板 =====
+    const TEMPLATE_DATA = [
+      { icon: '📝', name: '工资欠条', desc: '标准格式，具有法律效力', type: '欠条' },
+      { icon: '📋', name: '劳动合同', desc: '简易劳动合同模板', type: '合同' },
+      { icon: '💰', name: '工资确认单', desc: '确认工时和金额的凭证', type: '确认单' },
+      { icon: '🏥', name: '工伤报告', desc: '工伤事故书面报告模板', type: '报告' },
+      { icon: '📞', name: '投诉书', desc: '劳动监察投诉书模板', type: '投诉书' },
+      { icon: '⚖️', name: '仲裁申请书', desc: '劳动仲裁申请书模板', type: '申请书' },
+    ];
+
+    function renderTemplates() {
+      const list = document.getElementById('templateList');
+      list.innerHTML = TEMPLATE_DATA.map(t => `
+        <div class="template-item">
+          <div class="template-item-icon">${t.icon}</div>
+          <div class="template-item-info">
+            <div class="template-item-name">${t.name}</div>
+            <div class="template-item-desc">${t.desc}</div>
+          </div>
+          <button class="template-item-btn" onclick="copyTemplate('${t.name}')">复制</button>
+        </div>`).join('');
+    }
+
+    function copyTemplate(name) {
+      const templates = {
+        '工资欠条': '工资欠条\n\n今欠到_______（身份证号：_______）在_______工地（项目地址：_______）从事_______工种的工资，共计人民币_______元（大写：_______）。\n\n承诺于_______年_______月_______日前付清。\n\n欠款人（签字按手印）：_______\n身份证号：_______\n联系电话：_______\n日期：_______年_______月_______日',
+        '劳动合同': '简易劳动合同\n\n甲方（用人单位）：_______\n乙方（劳动者）：_______\n\n一、工作内容：乙方在_______工地从事_______工种。\n二、劳动报酬：日薪_______元/天，每月_______日发放。\n三、工作时间：每天_______小时，每月休息_______天。\n四、合同期限：自_______年_______月_______日起至_______年_______月_______日止。\n\n甲方签字：_______  乙方签字：_______\n日期：_______年_______月_______日',
+        '工资确认单': '工资确认单\n\n姓名：_______\n工种：_______\n工地/项目：_______\n\n本月出勤天数：_______天\n日薪标准：_______元/天\n加班时长：_______小时\n应发工资：_______元\n已发工资：_______元\n未发工资：_______元\n\n工友签字：_______\n负责人签字：_______\n日期：_______年_______月_______日',
+        '工伤报告': '工伤事故报告\n\n报告人：_______\n身份证号：_______\n联系电话：_______\n\n事故时间：_______年_______月_______日_______时\n事故地点：_______\n事故经过：_______\n受伤部位及程度：_______\n现场证人：_______\n\n单位负责人签字：_______\n日期：_______年_______月_______日',
+        '投诉书': '劳动监察投诉书\n\n投诉人：_______\n身份证号：_______\n联系电话：_______\n\n被投诉单位：_______\n地址：_______\n法定代表人：_______\n\n投诉事项：_______\n事实与理由：_______\n\n此致\n_______劳动保障监察大队\n\n投诉人（签字）：_______\n日期：_______年_______月_______日',
+        '仲裁申请书': '劳动仲裁申请书\n\n申请人：_______\n身份证号：_______\n联系电话：_______\n\n被申请人：_______\n地址：_______\n法定代表人：_______\n\n仲裁请求：_______\n事实与理由：_______\n\n此致\n_______劳动人事争议仲裁委员会\n\n申请人（签字）：_______\n日期：_______年_______月_______日',
+      };
+      const text = templates[name] || '';
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => showToast('已复制「' + name + '」模板'));
+      } else {
+        showToast('模板内容：\n\n' + text);
+      }
+    }
+
+    // ===== 维权进度追踪 =====
+    const RIGHTS_KEY = 'gongyou_rights';
+
+    function getRightsSteps() {
+      try { return JSON.parse(localStorage.getItem(RIGHTS_KEY) || '[]'); } catch(e) { return []; }
+    }
+    function saveRightsSteps(steps) { localStorage.setItem(RIGHTS_KEY, JSON.stringify(steps)); }
+
+    function addRightsStep() {
+      const title = prompt('维权步骤（如：收集证据、投诉劳动监察、申请仲裁）');
+      if (!title) return;
+      const steps = getRightsSteps();
+      steps.push({ title, note: '', done: false, createdAt: new Date().toISOString() });
+      saveRightsSteps(steps);
+      renderRightsSteps();
+      showToast('已添加维权步骤');
+    }
+
+    function toggleRightsStep(idx) {
+      const steps = getRightsSteps();
+      steps[idx].done = !steps[idx].done;
+      saveRightsSteps(steps);
+      renderRightsSteps();
+    }
+
+    function deleteRightsStep(idx) {
+      const steps = getRightsSteps();
+      steps.splice(idx, 1);
+      saveRightsSteps(steps);
+      renderRightsSteps();
+    }
+
+    function renderRightsSteps() {
+      const steps = getRightsSteps();
+      const list = document.getElementById('rightsProgressList');
+      if (steps.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);font-size:13px">暂无维权步骤<br>点击上方按钮添加</div>';
+        return;
+      }
+      list.innerHTML = steps.map((s, i) => `
+        <div class="rights-step">
+          <div class="rights-step-check ${s.done ? 'done' : ''}" onclick="toggleRightsStep(${i})">${s.done ? '✓' : ''}</div>
+          <div class="rights-step-info">
+            <div class="rights-step-title">${escapeHtml(s.title)}</div>
+            ${s.note ? `<div class="rights-step-note">${escapeHtml(s.note)}</div>` : ''}
+          </div>
+          <span class="rights-step-del" onclick="deleteRightsStep(${i})">✕</span>
+        </div>`).join('');
+    }
+
     // ===== 每日一语 =====
     const DAILY_QUOTES = [
         '🏗️ 每一砖每一瓦，都是城市的脊梁',
@@ -2713,6 +2891,9 @@
         renderWorkHours();
         loadSafetyTip();
         loadDailyQuote();
+        renderFirstaid();
+        renderTemplates();
+        renderRightsSteps();
         // 设置工时日期默认为今天
         const workDateEl = document.getElementById('workDate');
         if (workDateEl) workDateEl.value = new Date().toISOString().slice(0, 10);
