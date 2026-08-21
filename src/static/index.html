@@ -329,6 +329,7 @@
         .summary-empty { font-size: 12px; color: #9CA3AF; }
         .msg {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
             max-width: 85%;
             animation: msgIn 0.3s ease;
@@ -356,6 +357,24 @@
         }
         .msg.bot .msg-bubble { background: white; color: var(--text); border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .msg.user .msg-bubble { background: linear-gradient(135deg, #4A6CF7, #7C3AED); color: white; border-bottom-right-radius: 4px; }
+        .msg-actions {
+            flex-basis: 100%;
+            margin-left: 46px;
+            margin-top: -6px;
+            display: flex;
+            gap: 8px;
+        }
+        .msg-action-btn {
+            background: none;
+            border: 1px solid #E5E7EB;
+            border-radius: 14px;
+            padding: 3px 10px;
+            font-size: 12px;
+            color: #6B7280;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .msg-action-btn:hover { background: #F3F4F6; color: #4A6CF7; }
 
         .chat-input-area {
             background: white;
@@ -1007,6 +1026,7 @@
             <div class="msg-avatar">${isUser ? '👤' : '🤖'}</div>
             <div class="msg-bubble">${formatContent(content)}</div>
         `;
+        if (!isUser) addMsgActions(div);
         container.appendChild(div);
         scrollChatToBottom();
         const cur = currentSession();
@@ -1065,10 +1085,76 @@
 
     function finalizeStreamingMsg(text) {
         const el = document.getElementById('streamingMsg');
-        if (el) el.id = '';
+        if (el) {
+            el.id = '';
+            addMsgActions(el);
+        }
         currentSession().history.push({ role: 'assistant', content: text });
         saveSessions();
         refreshSidebar();
+    }
+
+    function addMsgActions(msgDiv) {
+        const bar = document.createElement('div');
+        bar.className = 'msg-actions';
+        bar.innerHTML = `
+            <button class="msg-action-btn" onclick="copyMsg(this)">📋 复制</button>
+            <button class="msg-action-btn" onclick="regenerateMsg(this)">🔄 重新生成</button>
+        `;
+        msgDiv.appendChild(bar);
+    }
+
+    function copyMsg(btn) {
+        const msgDiv = btn.closest('.msg');
+        const bubble = msgDiv ? msgDiv.querySelector('.msg-bubble') : null;
+        const text = bubble ? bubble.innerText : '';
+        const done = () => { btn.textContent = '✅ 已复制'; setTimeout(() => btn.textContent = '📋 复制', 1500); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+        } else {
+            fallbackCopy(text, done);
+        }
+    }
+
+    function fallbackCopy(text, done) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        done();
+    }
+
+    function regenerateMsg(btn) {
+        const msgDiv = btn.closest('.msg');
+        if (!msgDiv) return;
+        let prev = msgDiv.previousElementSibling;
+        while (prev) {
+            if (prev.classList.contains('user')) {
+                const bubble = prev.querySelector('.msg-bubble');
+                const text = bubble ? bubble.innerText : '';
+                if (text.trim()) sendMessage(text.trim());
+                return;
+            }
+            prev = prev.previousElementSibling;
+        }
+    }
+
+    function renameSession(id, ev) {
+        if (ev) ev.stopPropagation();
+        const s = sessions.find(x => x.id === id);
+        if (!s) return;
+        const name = prompt('给这个对话起个名字：', s.title || '新对话');
+        if (name && name.trim()) {
+            s.title = name.trim().slice(0, 20);
+            saveSessions();
+            renderSessionList();
+            renderSidebarSessions();
+            refreshSessionTitle();
+        }
     }
 
     // ===== 发送消息 =====
@@ -1314,6 +1400,7 @@
                 const div = document.createElement('div');
                 div.className = 'msg ' + (m.role === 'user' ? 'user' : 'bot');
                 div.innerHTML = `<div class="msg-avatar">${m.role === 'user' ? '👤' : '🤖'}</div><div class="msg-bubble">${formatContent(m.content)}</div>`;
+                if (m.role !== 'user') addMsgActions(div);
                 container.appendChild(div);
             });
         }
@@ -1360,7 +1447,7 @@
             item.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
             const msgs = (s.history || []).filter(m => m.role === 'user').length;
             item.innerHTML = `
-                <div class="si-title">${escapeHtml(s.title || '新对话')}</div>
+                <div class="si-title" ondblclick="renameSession('${s.id}', event)" title="双击重命名">${escapeHtml(s.title || '新对话')}</div>
                 <div class="si-count">${msgs} 问</div>
                 <div class="si-del" onclick="deleteSession('${s.id}', event)">🗑️</div>
             `;
@@ -1378,7 +1465,7 @@
             item.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
             const msgs = (s.history || []).filter(m => m.role === 'user').length;
             item.innerHTML = `
-                <div class="si-title">${escapeHtml(s.title || '新对话')}</div>
+                <div class="si-title" ondblclick="renameSession('${s.id}', event)" title="双击重命名">${escapeHtml(s.title || '新对话')}</div>
                 <div class="si-count">${msgs} 问</div>
                 <div class="si-del" onclick="deleteSession('${s.id}', event)">🗑️</div>
             `;
@@ -1429,6 +1516,20 @@
         saveSessions();
         renderChatMessages();
         closeSessionList();
+    }
+
+    function renameSession(id, ev) {
+        if (ev) ev.stopPropagation();
+        const s = sessions.find(x => x.id === id);
+        if (!s) return;
+        const name = prompt('给这个对话起个名字：', s.title || '新对话');
+        if (name !== null && name.trim()) {
+            s.title = name.trim().slice(0, 20);
+            saveSessions();
+            renderSessionList();
+            renderSidebarSessions();
+            refreshSessionTitle();
+        }
     }
 
     function deleteSession(id, ev) {
