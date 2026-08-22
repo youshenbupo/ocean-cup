@@ -172,10 +172,10 @@
 
         .section-title {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 20px 20px 12px;
+            padding: 24px 20px 14px;
         }
-        .section-title h2 { font-size: 18px; font-weight: 700; }
-        .section-title a { font-size: 13px; color: var(--primary); text-decoration: none; }
+        .section-title h2 { font-size: 19px; font-weight: 700; }
+        .section-title a { font-size: 14px; color: var(--primary); text-decoration: none; }
 
         /* 工作区卡片 */
         .work-grid {
@@ -202,8 +202,8 @@
             font-size: 26px;
             margin: 0 auto 10px;
         }
-        .work-card .card-name { font-size: 13px; font-weight: 600; color: var(--text); }
-        .work-card .card-desc { font-size: 10px; color: var(--text-secondary); margin-top: 4px; }
+        .work-card .card-name { font-size: 14px; font-weight: 600; color: var(--text); }
+        .work-card .card-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 
         .work-card.legal .card-icon { background: #FEF3C7; }
         .work-card.salary .card-icon { background: #DBEAFE; }
@@ -229,8 +229,8 @@
             transition: all 0.2s;
         }
         .tool-item:hover { background: #F0F4FF; }
-        .tool-item .tool-icon { font-size: 24px; margin-bottom: 6px; }
-        .tool-item .tool-name { font-size: 11px; color: var(--text); }
+        .tool-item .tool-icon { font-size: 26px; margin-bottom: 6px; }
+        .tool-item .tool-name { font-size: 13px; color: var(--text); }
 
         /* 快捷入口 */
         .quick-grid {
@@ -646,9 +646,9 @@
             transition: all 0.2s; border: 1px solid transparent;
         }
         .emergency-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .ec-icon { font-size: 28px; }
-        .ec-name { font-size: 13px; font-weight: 600; }
-        .ec-num { font-size: 18px; font-weight: 800; }
+        .ec-icon { font-size: 30px; }
+        .ec-name { font-size: 14px; font-weight: 600; }
+        .ec-num { font-size: 20px; font-weight: 800; }
         .ec-red { background: linear-gradient(135deg,#FEE2E2,#FECACA); color: #DC2626; border-color: #FCA5A5; }
         .ec-blue { background: linear-gradient(135deg,#DBEAFE,#BFDBFE); color: #1D4ED8; border-color: #93C5FD; }
         .ec-orange { background: linear-gradient(135deg,#FFF7ED,#FFEDD5); color: #C2410C; border-color: #FDBA74; }
@@ -660,8 +660,8 @@
             cursor: pointer; transition: all 0.2s; border: 1px solid #FDE68A;
         }
         .firstaid-item:hover { background: linear-gradient(135deg,#FFEDD5,#FEF3C7); border-color: #FCD34D; }
-        .firstaid-item-title { font-size: 13px; font-weight: 700; color: #92400E; margin-bottom: 4px; }
-        .firstaid-item-desc { font-size: 11px; color: #B45309; line-height: 1.4; }
+        .firstaid-item-title { font-size: 14px; font-weight: 700; color: #92400E; margin-bottom: 4px; }
+        .firstaid-item-desc { font-size: 12px; color: #B45309; line-height: 1.5; }
         /* 文书模板 */
         .template-list { display: flex; flex-direction: column; gap: 8px; }
         .template-item {
@@ -975,6 +975,7 @@
         </div>
     </div>
 
+    <!-- 智能体工作区：4个核心功能 -->
     <div class="section-title">
         <h2>🤖 智能体工作区</h2>
         <a href="javascript:void(0)" onclick="switchTab('chat')">进入对话 →</a>
@@ -1000,56 +1001,9 @@
             <div class="card-name">技能提升</div>
             <div class="card-desc">考证·培训·社保</div>
         </div>
-        <div class="work-card life" onclick="quickChat('工地生活方面的问题')">
-            <div class="card-icon">🏠</div>
-            <div class="card-name">生活助手</div>
-            <div class="card-desc">记账·生活指南</div>
-        </div>
-        <div class="work-card community" onclick="quickChat('帮我发个帖子')">
-            <div class="card-icon">👥</div>
-            <div class="card-name">工友社区</div>
-            <div class="card-desc">交流·互助</div>
-        </div>
     </div>
 
-    <div class="section-title">
-        <h2>🔧 实用工具</h2>
-    </div>
-    <div class="tool-grid">
-        <div class="tool-item" onclick="openToolTemplate('iou')">
-            <div class="tool-icon">📄</div>
-            <div class="tool-name">写欠条</div>
-        </div>
-        <div class="tool-item" onclick="openToolTemplate('arbitration')">
-            <div class="tool-icon">📝</div>
-            <div class="tool-name">仲裁申请</div>
-        </div>
-        <div class="tool-item" onclick="openToolTemplate('complaint')">
-            <div class="tool-icon">📋</div>
-            <div class="tool-name">投诉书</div>
-        </div>
-        <div class="tool-item" onclick="quickChat('查看我的证书到期情况')">
-            <div class="tool-icon">🏅</div>
-            <div class="tool-name">证书管理</div>
-        </div>
-        <div class="tool-item" onclick="quickChat('帮我记录今天的开支')">
-            <div class="tool-icon">📊</div>
-            <div class="tool-name">记账本</div>
-        </div>
-        <div class="tool-item" onclick="quickChat('查看本月工资条')">
-            <div class="tool-icon">🧾</div>
-            <div class="tool-name">工资条</div>
-        </div>
-        <div class="tool-item" onclick="quickChat('帮我设置薪资到账提醒')">
-            <div class="tool-icon">🔔</div>
-            <div class="tool-name">薪资提醒</div>
-        </div>
-        <div class="tool-item" onclick="quickChat('查询天气和安全预警')">
-            <div class="tool-icon">🌤️</div>
-            <div class="tool-name">天气预警</div>
-        </div>
-    </div>
-
+    <!-- 紧急求助 -->
     <div class="section-title">
         <h2>🚨 紧急求助</h2>
     </div>
@@ -1076,43 +1030,19 @@
         </a>
     </div>
 
+    <!-- 工伤急救指南 -->
     <div class="section-title">
         <h2>🚑 工伤急救指南</h2>
     </div>
     <div class="firstaid-grid" id="firstaidGrid"></div>
 
+    <!-- 维权进度追踪 -->
     <div class="section-title">
         <h2>📋 维权进度追踪</h2>
     </div>
     <div id="rightsProgressList"></div>
-    <div style="text-align:center;margin-top:10px">
+    <div style="text-align:center;margin-top:10px;padding:0 20px 20px">
         <button class="btn-secondary" onclick="addRightsStep()">＋ 添加维权步骤</button>
-    </div>
-
-    <div class="section-title">
-        <h2>⚡ 快捷入口</h2>
-    </div>
-    <div class="quick-grid">
-        <div class="quick-card qc-urgent" onclick="quickChat('紧急求助！我遇到了劳资纠纷')">
-            <div class="qc-icon">🚨</div>
-            <div class="qc-title">紧急求助</div>
-            <div class="qc-desc">遇到纠纷立即获取帮助</div>
-        </div>
-        <div class="quick-card qc-know" onclick="switchTab('knowledge')">
-            <div class="qc-icon">📖</div>
-            <div class="qc-title">专业知识库</div>
-            <div class="qc-desc">劳动法规政策解读</div>
-        </div>
-        <div class="quick-card qc-cert" onclick="quickChat('我的证书什么时候到期？')">
-            <div class="qc-icon">🏅</div>
-            <div class="qc-title">证书到期提醒</div>
-            <div class="qc-desc">不再错过复审时间</div>
-        </div>
-        <div class="quick-card qc-flow" onclick="quickChat('请告诉我维权服务流程')">
-            <div class="qc-icon">📋</div>
-            <div class="qc-title">服务流程</div>
-            <div class="qc-desc">维权步骤一目了然</div>
-        </div>
     </div>
 </div>
 
@@ -1147,9 +1077,7 @@
         <div class="chat-quick">
             <div class="chat-quick-btn" onclick="quickChatContinue('老板拖欠工资怎么办')">💰 欠薪维权</div>
             <div class="chat-quick-btn" onclick="quickChatContinue('工伤认定流程')">🏥 工伤认定</div>
-            <div class="chat-quick-btn" onclick="quickChatContinue('帮我记今天的工时')">📝 记录工时</div>
             <div class="chat-quick-btn" onclick="quickChatContinue('帮我写一份欠条')">📄 写欠条</div>
-            <div class="chat-quick-btn" onclick="quickChatContinue('今天工地安全注意事项')">🦺 安全提醒</div>
             <div class="chat-quick-btn" onclick="quickChatContinue('紧急求助')">🆘 紧急求助</div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
