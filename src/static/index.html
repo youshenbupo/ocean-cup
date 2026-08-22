@@ -638,15 +638,30 @@
             display: flex; align-items: center; justify-content: center; font-size: 32px;
         }
         .profile-card-info { flex: 1; min-width: 0; }
+        /* 紧急求助 */
+        .emergency-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .emergency-card {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 18px 12px; border-radius: 14px; text-decoration: none;
+            transition: all 0.2s; border: 1px solid transparent;
+        }
+        .emergency-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .ec-icon { font-size: 28px; }
+        .ec-name { font-size: 13px; font-weight: 600; }
+        .ec-num { font-size: 18px; font-weight: 800; }
+        .ec-red { background: linear-gradient(135deg,#FEE2E2,#FECACA); color: #DC2626; border-color: #FCA5A5; }
+        .ec-blue { background: linear-gradient(135deg,#DBEAFE,#BFDBFE); color: #1D4ED8; border-color: #93C5FD; }
+        .ec-orange { background: linear-gradient(135deg,#FFF7ED,#FFEDD5); color: #C2410C; border-color: #FDBA74; }
+        .ec-green { background: linear-gradient(135deg,#D1FAE5,#A7F3D0); color: #047857; border-color: #6EE7B7; }
         /* 工伤急救 */
         .firstaid-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .firstaid-item {
-            background: rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 14px;
-            cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+            background: linear-gradient(135deg,#FFF7ED,#FFFBEB); border-radius: 12px; padding: 12px 14px;
+            cursor: pointer; transition: all 0.2s; border: 1px solid #FDE68A;
         }
-        .firstaid-item:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.25); }
-        .firstaid-item-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-        .firstaid-item-desc { font-size: 11px; color: rgba(255,255,255,0.7); line-height: 1.4; }
+        .firstaid-item:hover { background: linear-gradient(135deg,#FFEDD5,#FEF3C7); border-color: #FCD34D; }
+        .firstaid-item-title { font-size: 13px; font-weight: 700; color: #92400E; margin-bottom: 4px; }
+        .firstaid-item-desc { font-size: 11px; color: #B45309; line-height: 1.4; }
         /* 文书模板 */
         .template-list { display: flex; flex-direction: column; gap: 8px; }
         .template-item {
@@ -1036,6 +1051,45 @@
     </div>
 
     <div class="section-title">
+        <h2>🚨 紧急求助</h2>
+    </div>
+    <div class="emergency-grid">
+        <a class="emergency-card ec-red" href="tel:12333">
+            <div class="ec-icon">📞</div>
+            <div class="ec-name">劳动维权</div>
+            <div class="ec-num">12333</div>
+        </a>
+        <a class="emergency-card ec-blue" href="tel:12348">
+            <div class="ec-icon">⚖️</div>
+            <div class="ec-name">法律援助</div>
+            <div class="ec-num">12348</div>
+        </a>
+        <a class="emergency-card ec-orange" href="tel:120">
+            <div class="ec-icon">🚑</div>
+            <div class="ec-name">急救电话</div>
+            <div class="ec-num">120</div>
+        </a>
+        <a class="emergency-card ec-green" href="tel:12345">
+            <div class="ec-icon">🏛️</div>
+            <div class="ec-name">政务热线</div>
+            <div class="ec-num">12345</div>
+        </a>
+    </div>
+
+    <div class="section-title">
+        <h2>🚑 工伤急救指南</h2>
+    </div>
+    <div class="firstaid-grid" id="firstaidGrid"></div>
+
+    <div class="section-title">
+        <h2>📋 维权进度追踪</h2>
+    </div>
+    <div id="rightsProgressList"></div>
+    <div style="text-align:center;margin-top:10px">
+        <button class="btn-secondary" onclick="addRightsStep()">＋ 添加维权步骤</button>
+    </div>
+
+    <div class="section-title">
         <h2>⚡ 快捷入口</h2>
     </div>
     <div class="quick-grid">
@@ -1091,12 +1145,12 @@
             </div>
         </div>
         <div class="chat-quick">
-            <div class="chat-quick-btn" onclick="quickChat('老板拖欠工资怎么办')">💰 欠薪维权</div>
-            <div class="chat-quick-btn" onclick="quickChat('工伤认定流程')">🏥 工伤认定</div>
-            <div class="chat-quick-btn" onclick="quickChat('帮我记今天的工时')">📝 记录工时</div>
-            <div class="chat-quick-btn" onclick="quickChat('帮我写一份欠条')">📄 写欠条</div>
-            <div class="chat-quick-btn" onclick="quickChat('今天工地安全注意事项')">🦺 安全提醒</div>
-            <div class="chat-quick-btn" onclick="quickChat('紧急求助')">🆘 紧急求助</div>
+            <div class="chat-quick-btn" onclick="quickChatContinue('老板拖欠工资怎么办')">💰 欠薪维权</div>
+            <div class="chat-quick-btn" onclick="quickChatContinue('工伤认定流程')">🏥 工伤认定</div>
+            <div class="chat-quick-btn" onclick="quickChatContinue('帮我记今天的工时')">📝 记录工时</div>
+            <div class="chat-quick-btn" onclick="quickChatContinue('帮我写一份欠条')">📄 写欠条</div>
+            <div class="chat-quick-btn" onclick="quickChatContinue('今天工地安全注意事项')">🦺 安全提醒</div>
+            <div class="chat-quick-btn" onclick="quickChatContinue('紧急求助')">🆘 紧急求助</div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-area">
@@ -1362,25 +1416,10 @@
             </div>
         </div>
 
-        <!-- 工伤急救指南 -->
-        <div class="profile-card" style="margin-top:12px">
-          <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--primary)">🚑 工伤急救指南</div>
-          <div class="firstaid-grid" id="firstaidGrid"></div>
-        </div>
-
         <!-- 合同模板 -->
         <div class="profile-card" style="margin-top:12px">
           <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--primary)">📄 实用文书模板</div>
           <div class="template-list" id="templateList"></div>
-        </div>
-
-        <!-- 维权进度追踪 -->
-        <div class="profile-card" style="margin-top:12px">
-          <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--primary)">📋 维权进度追踪</div>
-          <div id="rightsProgressList"></div>
-          <div class="form-actions" style="margin-top:10px">
-            <button class="btn-secondary" onclick="addRightsStep()">＋ 添加维权步骤</button>
-          </div>
         </div>
 
         <!-- 设置 -->
@@ -1962,12 +2001,26 @@
         setTimeout(() => sendMessage(msg), 200);
     }
 
+    function forceNewSession(title) {
+        sessions.unshift({ id: 'session_' + Date.now(), title: title || '新对话', history: [] });
+        currentSessionId = sessions[0].id;
+        saveSessions();
+        renderChatMessages();
+    }
+
     function quickChat(text) {
+        forceNewSession(text.slice(0, 10));
+        switchTab('chat');
+        setTimeout(() => sendMessage(text), 200);
+    }
+
+    function quickChatContinue(text) {
         switchTab('chat');
         setTimeout(() => sendMessage(text), 200);
     }
 
     function askKnowledge(topic) {
+        forceNewSession(topic);
         switchTab('chat');
         setTimeout(() => sendMessage('请给我讲讲' + topic + '的相关知识'), 200);
     }
@@ -2815,7 +2868,7 @@
         if (avatarData) {
             avatarEl.innerHTML = '<img src="' + avatarData + '" alt="头像"><div class="avatar-upload-hint">📷 换头像</div>';
         } else {
-            avatarEl.innerHTML = '<span id="avatarEmoji">' + (p.name ? escapeHtml(p.name.charAt(0)) : '👷') + '</span><div class="avatar-upload-hint">📷 换头像</div>';
+            avatarEl.innerHTML = '<span>' + (p.name ? escapeHtml(p.name.charAt(0)) : '👷') + '</span><div class="avatar-upload-hint">📷 换头像</div>';
         }
         updateChatProfileHint(p);
     }
