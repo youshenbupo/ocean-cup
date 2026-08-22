@@ -965,6 +965,34 @@
         .extend-panel.open { display: block; }
         .extend-tip { font-size: 12px; color: #B45309; background: #FFF7ED; border: 1px solid #FED7AA; padding: 9px 12px; border-radius: 10px; margin-bottom: 10px; line-height: 1.6; }
 
+        /* ===== 笔记本 ===== */
+        .note-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+        .note-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+        .note-time{font-size:12px;color:var(--text-muted)}
+        .note-delete{background:none;border:none;font-size:16px;cursor:pointer;opacity:0.6;transition:opacity .2s}
+        .note-delete:hover{opacity:1}
+        .note-summary{font-size:14px;line-height:1.6;color:var(--text-primary);margin-bottom:10px}
+        .note-details{font-size:13px;color:var(--text-secondary)}
+        .note-details summary{cursor:pointer;padding:6px 0;color:var(--primary);font-weight:600}
+        .note-original{margin-top:8px;padding:12px;background:#F8FAFC;border-radius:8px;font-size:12px;line-height:1.5;max-height:200px;overflow-y:auto}
+
+        /* ===== 知识库详情 ===== */
+        .knowledge-detail{background:#fff;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+        .knowledge-detail-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:16px;border-bottom:2px solid #F1F5F9}
+        .knowledge-detail-icon{font-size:36px}
+        .knowledge-detail-title{font-size:20px;font-weight:800;color:var(--text-primary)}
+        .knowledge-detail-content{font-size:14px;line-height:1.8;color:var(--text-secondary)}
+        .knowledge-detail-content h4{font-size:15px;font-weight:700;color:var(--primary);margin:14px 0 8px}
+        .knowledge-detail-content ul{margin:8px 0;padding-left:20px}
+        .knowledge-detail-content li{margin-bottom:6px}
+        .knowledge-detail-actions{display:flex;gap:10px;margin-top:20px}
+        .knowledge-detail-actions .btn-primary{flex:1}
+
+        /* ===== 知识库 Tab ===== */
+        .knowledge-tabs{display:flex;gap:8px;margin-bottom:16px;background:#fff;padding:6px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+        .knowledge-tab{flex:1;padding:10px 16px;border:none;background:transparent;border-radius:8px;font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all .2s}
+        .knowledge-tab.active{background:var(--primary);color:#fff}
+
         /* ===== 对话页工具按钮（壁纸/清除） ===== */
         .session-actions, .sidebar-actions { display: flex; align-items: center; gap: 6px; }
         .icon-btn { width: 34px; height: 34px; border: 1px solid var(--border); background: white; border-radius: 9px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; padding: 0; }
@@ -1272,57 +1300,78 @@
 
 <!-- ===== 知识库页 ===== -->
 <div class="page" id="page-knowledge">
-    <div class="section-title"><h2>📚 专业知识库</h2></div>
-    <div class="knowledge-list">
-        <div class="know-card" onclick="askKnowledge('劳动法基础知识')">
-            <div class="know-icon">⚖️</div>
-            <div>
-                <div class="know-title">劳动法基础知识</div>
-                <div class="know-desc">劳动合同、工作时间、休息休假</div>
+    <div class="section-title"><h2>📚 知识中心</h2></div>
+
+    <!-- Tab 切换 -->
+    <div class="knowledge-tabs">
+        <button class="knowledge-tab active" id="tabKnowledge" onclick="switchKnowledgeTab('knowledge')">📖 知识库</button>
+        <button class="knowledge-tab" id="tabNotebook" onclick="switchKnowledgeTab('notebook')">📝 我的笔记本</button>
+    </div>
+
+    <!-- 知识库列表 -->
+    <div id="knowledgeListPanel">
+        <div class="knowledge-list" id="knowledgeList">
+            <div class="know-card" onclick="showKnowledgeDetail('劳动法基础知识')">
+                <div class="know-icon">⚖️</div>
+                <div>
+                    <div class="know-title">劳动法基础知识</div>
+                    <div class="know-desc">劳动合同、工作时间、休息休假</div>
+                </div>
+            </div>
+            <div class="know-card" onclick="showKnowledgeDetail('工资支付保障')">
+                <div class="know-icon">💰</div>
+                <div>
+                    <div class="know-title">工资支付保障</div>
+                    <div class="know-desc">最低工资标准、加班费、拖欠工资</div>
+                </div>
+            </div>
+            <div class="know-card" onclick="showKnowledgeDetail('工伤认定与赔偿')">
+                <div class="know-icon">🏥</div>
+                <div>
+                    <div class="know-title">工伤认定与赔偿</div>
+                    <div class="know-desc">工伤认定流程、赔偿标准、申请时效</div>
+                </div>
+            </div>
+            <div class="know-card" onclick="showKnowledgeDetail('社保医保政策')">
+                <div class="know-icon">🛡️</div>
+                <div>
+                    <div class="know-title">社保医保政策</div>
+                    <div class="know-desc">五险一金、异地就医、社保转移</div>
+                </div>
+            </div>
+            <div class="know-card" onclick="showKnowledgeDetail('安全生产规范')">
+                <div class="know-icon">🦺</div>
+                <div>
+                    <div class="know-title">安全生产规范</div>
+                    <div class="know-desc">安全防护、隐患排查、应急处置</div>
+                </div>
+            </div>
+            <div class="know-card" onclick="showKnowledgeDetail('技能提升与考证')">
+                <div class="know-icon">📚</div>
+                <div>
+                    <div class="know-title">技能提升与考证</div>
+                    <div class="know-desc">职业资格证书、培训补贴、技能等级</div>
+                </div>
+            </div>
+            <div class="know-card" onclick="showKnowledgeDetail('维权途径与流程')">
+                <div class="know-icon">📋</div>
+                <div>
+                    <div class="know-title">维权途径与流程</div>
+                    <div class="know-desc">仲裁、投诉、诉讼、法律援助</div>
+                </div>
             </div>
         </div>
-        <div class="know-card" onclick="askKnowledge('工资支付保障')">
-            <div class="know-icon">💰</div>
-            <div>
-                <div class="know-title">工资支付保障</div>
-                <div class="know-desc">最低工资标准、加班费、拖欠工资</div>
-            </div>
+
+        <!-- 知识详情（默认隐藏） -->
+        <div id="knowledgeDetail" style="display:none">
+            <button class="btn-cancel" onclick="backToKnowledgeList()" style="margin-bottom:12px">← 返回知识库</button>
+            <div class="knowledge-detail" id="knowledgeDetailContent"></div>
         </div>
-        <div class="know-card" onclick="askKnowledge('工伤认定与赔偿')">
-            <div class="know-icon">🏥</div>
-            <div>
-                <div class="know-title">工伤认定与赔偿</div>
-                <div class="know-desc">工伤认定流程、赔偿标准、申请时效</div>
-            </div>
-        </div>
-        <div class="know-card" onclick="askKnowledge('社保医保政策')">
-            <div class="know-icon">🛡️</div>
-            <div>
-                <div class="know-title">社保医保政策</div>
-                <div class="know-desc">五险一金、异地就医、社保转移</div>
-            </div>
-        </div>
-        <div class="know-card" onclick="askKnowledge('安全生产规范')">
-            <div class="know-icon">🦺</div>
-            <div>
-                <div class="know-title">安全生产规范</div>
-                <div class="know-desc">安全防护、隐患排查、应急处置</div>
-            </div>
-        </div>
-        <div class="know-card" onclick="askKnowledge('技能提升与考证')">
-            <div class="know-icon">📚</div>
-            <div>
-                <div class="know-title">技能提升与考证</div>
-                <div class="know-desc">职业资格证书、培训补贴、技能等级</div>
-            </div>
-        </div>
-        <div class="know-card" onclick="askKnowledge('维权途径与流程')">
-            <div class="know-icon">📋</div>
-            <div>
-                <div class="know-title">维权途径与流程</div>
-                <div class="know-desc">仲裁、投诉、诉讼、法律援助</div>
-            </div>
-        </div>
+    </div>
+
+    <!-- 笔记本列表 -->
+    <div id="notebookPanel" style="display:none">
+        <div id="notebookList"></div>
     </div>
 </div>
 
@@ -1829,6 +1878,7 @@
         bar.innerHTML = `
             <button class="msg-action-btn" onclick="copyMsg(this)">📋 复制</button>
             <button class="msg-action-btn" onclick="regenerateMsg(this)">🔄 重新生成</button>
+            <button class="msg-action-btn" onclick="saveToNotebook(this)">📝 记录到笔记本</button>
         `;
         msgDiv.appendChild(bar);
     }
@@ -1870,6 +1920,107 @@
             }
             prev = prev.previousElementSibling;
         }
+    }
+
+    // ===== 笔记本功能 =====
+    function getNotebook() {
+        try { return JSON.parse(localStorage.getItem('gongyou_notebook') || '[]'); } catch(e) { return []; }
+    }
+
+    function saveNotebook(items) {
+        localStorage.setItem('gongyou_notebook', JSON.stringify(items));
+    }
+
+    async function saveToNotebook(btn) {
+        const msgDiv = btn.closest('.msg');
+        const bubble = msgDiv ? msgDiv.querySelector('.msg-bubble') : null;
+        const content = bubble ? bubble.innerText : '';
+        if (!content.trim()) { showToast('没有可记录的内容'); return; }
+
+        btn.textContent = '⏳ 正在总结...';
+        btn.disabled = true;
+
+        try {
+            // 调用 LLM 总结归纳关键知识点
+            const prompt = `请从以下回答中提取最关键的知识点，用简洁的语言总结成3-5条要点，每条要点不超过30字。格式：直接列出要点，每行一条，不要标题和解释。
+
+回答内容：
+${content}`;
+
+            const resp = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: prompt, session_id: 'notebook_' + Date.now() })
+            });
+            const data = await resp.json();
+            let summary = '';
+            if (data.code === 0 && data.data && data.data.answer) {
+                summary = data.data.answer;
+            } else {
+                // 如果 LLM 失败，直接用原文前200字
+                summary = content.slice(0, 200) + (content.length > 200 ? '...' : '');
+            }
+
+            // 保存到笔记本
+            const notebook = getNotebook();
+            notebook.unshift({
+                id: 'note_' + Date.now(),
+                time: new Date().toLocaleString('zh-CN'),
+                summary: summary,
+                original: content.slice(0, 500), // 保存原文前500字
+                category: '对话记录'
+            });
+            saveNotebook(notebook);
+
+            btn.textContent = '✅ 已记录';
+            showToast('已保存到笔记本');
+            setTimeout(() => { btn.textContent = '📝 记录到笔记本'; btn.disabled = false; }, 2000);
+        } catch (e) {
+            console.error('Save to notebook error:', e);
+            // 失败时直接保存原文
+            const notebook = getNotebook();
+            notebook.unshift({
+                id: 'note_' + Date.now(),
+                time: new Date().toLocaleString('zh-CN'),
+                summary: content.slice(0, 200) + (content.length > 200 ? '...' : ''),
+                original: content.slice(0, 500),
+                category: '对话记录'
+            });
+            saveNotebook(notebook);
+            btn.textContent = '✅ 已记录';
+            showToast('已保存到笔记本');
+            setTimeout(() => { btn.textContent = '📝 记录到笔记本'; btn.disabled = false; }, 2000);
+        }
+    }
+
+    function deleteNote(id) {
+        const notebook = getNotebook().filter(n => n.id !== id);
+        saveNotebook(notebook);
+        renderNotebook();
+        showToast('已删除');
+    }
+
+    function renderNotebook() {
+        const container = document.getElementById('notebookList');
+        if (!container) return;
+        const notebook = getNotebook();
+        if (notebook.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">暂无笔记，在对话中点击"记录到笔记本"即可保存知识点</div>';
+            return;
+        }
+        container.innerHTML = notebook.map(n => `
+            <div class="note-card">
+                <div class="note-header">
+                    <span class="note-time">🕐 ${n.time}</span>
+                    <button class="note-delete" onclick="deleteNote('${n.id}')">🗑️</button>
+                </div>
+                <div class="note-summary">${n.summary.replace(/\n/g, '<br>')}</div>
+                <details class="note-details">
+                    <summary>查看原文</summary>
+                    <div class="note-original">${n.original.replace(/\n/g, '<br>')}</div>
+                </details>
+            </div>
+        `).join('');
     }
 
     function renameSession(id, ev) {
@@ -2124,6 +2275,208 @@
         forceNewSession(topic);
         switchTab('chat');
         setTimeout(() => sendMessage('请给我讲讲' + topic + '的相关知识'), 200);
+    }
+
+    // ===== 知识库详情 =====
+    const KNOWLEDGE_DATA = {
+        '劳动法基础知识': {
+            icon: '⚖️',
+            content: `
+                <h4>📋 劳动合同</h4>
+                <ul>
+                    <li>入职1个月内必须签订书面劳动合同</li>
+                    <li>合同要明确工资标准、工作时间、工作地点</li>
+                    <li>不签合同可要求双倍工资（最多11个月）</li>
+                </ul>
+                <h4>⏰ 工作时间</h4>
+                <ul>
+                    <li>每日不超过8小时，每周不超过44小时</li>
+                    <li>加班需支付加班费（平时1.5倍、周末2倍、节假日3倍）</li>
+                    <li>每月加班不得超过36小时</li>
+                </ul>
+                <h4>🛡️ 劳动保护</h4>
+                <ul>
+                    <li>用人单位必须提供安全的工作环境</li>
+                    <li>必须提供必要的劳动防护用品</li>
+                    <li>女工和未成年工有特殊保护</li>
+                </ul>
+            `
+        },
+        '工资支付保障': {
+            icon: '💰',
+            content: `
+                <h4>💵 工资标准</h4>
+                <ul>
+                    <li>工资不得低于当地最低工资标准</li>
+                    <li>工资应以货币形式按月支付</li>
+                    <li>不得克扣或无故拖欠工资</li>
+                </ul>
+                <h4>⏱️ 加班费计算</h4>
+                <ul>
+                    <li>工作日加班：1.5倍工资</li>
+                    <li>周末加班：2倍工资</li>
+                    <li>法定节假日加班：3倍工资</li>
+                </ul>
+                <h4>🚨 拖欠工资怎么办</h4>
+                <ul>
+                    <li>收集证据：工牌、考勤记录、聊天记录</li>
+                    <li>拨打12333投诉</li>
+                    <li>申请劳动仲裁（免费）</li>
+                </ul>
+            `
+        },
+        '工伤认定与赔偿': {
+            icon: '🏥',
+            content: `
+                <h4>🏥 工伤认定条件</h4>
+                <ul>
+                    <li>工作时间和工作场所内因工作原因受伤</li>
+                    <li>上下班途中发生交通事故（非本人主要责任）</li>
+                    <li>患职业病</li>
+                </ul>
+                <h4>📋 申请流程</h4>
+                <ul>
+                    <li>单位应在30天内申请工伤认定</li>
+                    <li>单位不申请，个人可在1年内申请</li>
+                    <li>认定后进行劳动能力鉴定</li>
+                </ul>
+                <h4>💰 赔偿项目</h4>
+                <ul>
+                    <li>医疗费、住院伙食补助费</li>
+                    <li>停工留薪期工资</li>
+                    <li>伤残补助金（按伤残等级）</li>
+                </ul>
+            `
+        },
+        '社保医保政策': {
+            icon: '🛡️',
+            content: `
+                <h4>📊 五险一金</h4>
+                <ul>
+                    <li>养老、医疗、失业、工伤、生育保险</li>
+                    <li>住房公积金</li>
+                    <li>单位必须为员工缴纳</li>
+                </ul>
+                <h4>🏥 医保使用</h4>
+                <ul>
+                    <li>住院可报销70%-90%</li>
+                    <li>异地就医需提前备案</li>
+                    <li>医保卡可在药店买药</li>
+                </ul>
+                <h4>🔄 社保转移</h4>
+                <ul>
+                    <li>换工作城市可办理社保转移</li>
+                    <li>缴费年限累计计算</li>
+                    <li>可通过"掌上12333"APP办理</li>
+                </ul>
+            `
+        },
+        '安全生产规范': {
+            icon: '🦺',
+            content: `
+                <h4>🦺 个人防护</h4>
+                <ul>
+                    <li>进入工地必须戴安全帽</li>
+                    <li>高空作业必须系安全带</li>
+                    <li>电工必须持特种作业操作证</li>
+                </ul>
+                <h4>⚠️ 常见隐患</h4>
+                <ul>
+                    <li>脚手架未经验收不得使用</li>
+                    <li>临边洞口必须有防护</li>
+                    <li>电线不得私拉乱接</li>
+                </ul>
+                <h4>🚨 应急处置</h4>
+                <ul>
+                    <li>发现隐患立即报告</li>
+                    <li>发生事故先救人再报警</li>
+                    <li>保护现场配合调查</li>
+                </ul>
+            `
+        },
+        '技能提升与考证': {
+            icon: '📚',
+            content: `
+                <h4>📜 职业资格证书</h4>
+                <ul>
+                    <li>电工、焊工、架子工等需持证上岗</li>
+                    <li>证书每3年复审一次</li>
+                    <li>可通过培训机构报名考试</li>
+                </ul>
+                <h4>💰 培训补贴</h4>
+                <ul>
+                    <li>参加职业技能培训可申请补贴</li>
+                    <li>取得证书后可申请技能提升补贴</li>
+                    <li>最高可领2000元</li>
+                </ul>
+                <h4>📈 技能等级</h4>
+                <ul>
+                    <li>初级工、中级工、高级工</li>
+                    <li>技师、高级技师</li>
+                    <li>等级越高工资越高</li>
+                </ul>
+            `
+        },
+        '维权途径与流程': {
+            icon: '📋',
+            content: `
+                <h4>📞 维权渠道</h4>
+                <ul>
+                    <li>12333：劳动保障热线</li>
+                    <li>12348：法律援助热线</li>
+                    <li>12345：政务服务热线</li>
+                </ul>
+                <h4>📋 维权流程</h4>
+                <ul>
+                    <li>第一步：收集证据</li>
+                    <li>第二步：向劳动监察投诉</li>
+                    <li>第三步：申请劳动仲裁</li>
+                    <li>第四步：提起诉讼</li>
+                </ul>
+                <h4>⚖️ 法律援助</h4>
+                <ul>
+                    <li>经济困难可申请免费法律援助</li>
+                    <li>拨打12348咨询</li>
+                    <li>当地司法局法律援助中心</li>
+                </ul>
+            `
+        }
+    };
+
+    function switchKnowledgeTab(tab) {
+        document.getElementById('tabKnowledge').classList.toggle('active', tab === 'knowledge');
+        document.getElementById('tabNotebook').classList.toggle('active', tab === 'notebook');
+        document.getElementById('knowledgeListPanel').style.display = tab === 'knowledge' ? 'block' : 'none';
+        document.getElementById('notebookPanel').style.display = tab === 'notebook' ? 'block' : 'none';
+        if (tab === 'notebook') renderNotebook();
+    }
+
+    function showKnowledgeDetail(topic) {
+        const data = KNOWLEDGE_DATA[topic];
+        if (!data) return;
+        document.getElementById('knowledgeList').style.display = 'none';
+        document.getElementById('knowledgeDetail').style.display = 'block';
+        document.getElementById('knowledgeDetailContent').innerHTML = `
+            <div class="knowledge-detail-header">
+                <div class="knowledge-detail-icon">${data.icon}</div>
+                <div class="knowledge-detail-title">${topic}</div>
+            </div>
+            <div class="knowledge-detail-content">${data.content}</div>
+            <div class="knowledge-detail-actions">
+                <button class="btn-primary" onclick="askKnowledgeFromDetail('${topic}')">💬 向智能体提问</button>
+            </div>
+        `;
+    }
+
+    function backToKnowledgeList() {
+        document.getElementById('knowledgeDetail').style.display = 'none';
+        document.getElementById('knowledgeList').style.display = 'block';
+    }
+
+    function askKnowledgeFromDetail(topic) {
+        forceNewSession(topic);
+        switchTab('chat');
+        setTimeout(() => sendMessage('请详细讲解' + topic + '的相关知识'), 200);
     }
 
     function clearChat() {
