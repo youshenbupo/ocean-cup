@@ -117,25 +117,26 @@
             background: white;
             display: flex;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-            z-index: 100;
+            z-index: 1000;
             border-top: 1px solid var(--border);
         }
         .tab-item {
             flex: 1;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            padding: 10px 0;
+            padding: 8px 0;
             cursor: pointer;
-            transition: all 0.25s;
+            transition: all 0.2s;
             border: none; background: none;
             color: var(--text-secondary);
             font-size: 11px;
-            gap: 4px;
+            gap: 2px;
             position: relative;
         }
-        .tab-item .tab-icon { font-size: 22px; transition: all 0.25s; }
+        .tab-item:active { transform: scale(0.92); }
+        .tab-item .tab-icon { font-size: 20px; transition: all 0.2s; }
         .tab-item.active { color: var(--primary); font-weight: 600; }
-        .tab-item.active .tab-icon { transform: scale(1.15); }
+        .tab-item.active .tab-icon { transform: scale(1.1); }
         .tab-item.active::before {
             content: '';
             position: absolute;
@@ -162,12 +163,39 @@
         }
         .page.active { display: block; }
 
+        /* ===== 全局点击动画 ===== */
+        @keyframes clickPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        .clickable {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .clickable:active {
+            animation: clickPulse 0.2s ease;
+        }
+
+        /* ===== 卡片通用样式 ===== */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+        }
+        .card:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
         /* ===== 首页 ===== */
         .hero-section {
             background:
                 linear-gradient(120deg, rgba(11,37,69,0.92) 0%, rgba(19,49,92,0.88) 55%, rgba(29,78,216,0.85) 100%),
                 repeating-linear-gradient(45deg, rgba(249,115,22,0.06) 0 2px, transparent 2px 18px);
-            padding: 30px 20px 40px;
+            padding: 24px 20px 32px;
             color: white;
             position: relative;
             overflow: hidden;
@@ -178,7 +206,7 @@
             content: '';
             position: absolute;
             top: -50%; right: -30%;
-            width: 300px; height: 300px;
+            width: 250px; height: 250px;
             background: rgba(255,255,255,0.08);
             border-radius: 50%;
         }
@@ -186,12 +214,12 @@
             content: '';
             position: absolute;
             bottom: -40%; left: -20%;
-            width: 200px; height: 200px;
+            width: 180px; height: 180px;
             background: rgba(255,255,255,0.06);
             border-radius: 50%;
         }
-        .hero-greeting { font-size: 26px; font-weight: 800; margin-bottom: 8px; position: relative; z-index: 1; }
-        .hero-subtitle { font-size: 14px; opacity: 0.9; margin-bottom: 10px; position: relative; z-index: 1; }
+        .hero-greeting { font-size: 24px; font-weight: 800; margin-bottom: 6px; position: relative; z-index: 1; }
+        .hero-subtitle { font-size: 13px; opacity: 0.9; margin-bottom: 8px; position: relative; z-index: 1; }
         .hero-quote {
             font-size: 12px; opacity: 0.85; margin-bottom: 16px; position: relative; z-index: 1;
             font-style: italic; padding: 8px 14px;
@@ -582,6 +610,7 @@
             white-space: nowrap;
         }
         .session-btn:hover { background: #F0F4FF; border-color: var(--primary-light); color: var(--primary); }
+        .session-btn:active { transform: scale(0.95); }
         .session-title {
             flex: 1; text-align: center;
             font-size: 13px; font-weight: 600;
@@ -905,13 +934,17 @@
             color: white; border: none;
             border-radius: 12px; font-size: 15px;
             font-weight: 600; cursor: pointer;
+            transition: all 0.2s;
         }
+        .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
         .btn-line {
             width: 100%; padding: 12px;
             background: white; color: var(--primary);
             border: 1px solid var(--primary); border-radius: 12px;
             font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s;
         }
+        .btn-line:active { transform: scale(0.97); background: var(--bg); }
         .template-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.6; }
         .template-body {
             width: 100%; height: 48vh; padding: 14px;
@@ -1088,8 +1121,8 @@
 
         /* 核心功能大卡片 */
         .core-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 0 16px 20px; }
-        .core-card { border-radius: 18px; padding: 22px 18px; color: #fff; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
-        .core-card:active { transform: scale(0.97); }
+        .core-card { border-radius: 16px; padding: 18px 16px; color: #fff; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; min-height: 100px; display: flex; flex-direction: column; justify-content: center; }
+        .core-card:active { transform: scale(0.96); }
         .core-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
         .core-card.legal { background: linear-gradient(135deg, #1E3A5F, #2D5A87); }
         .core-card.legal::before { background: #60A5FA; }
@@ -1099,30 +1132,31 @@
         .core-card.salary::before { background: #FB923C; }
         .core-card.emergency { background: linear-gradient(135deg, #7F1D1D, #DC2626); }
         .core-card.emergency::before { background: repeating-linear-gradient(90deg, #F59E0B 0px, #F59E0B 10px, #DC2626 10px, #DC2626 20px); }
-        .core-card-icon { font-size: 36px; margin-bottom: 10px; }
-        .core-card-name { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
-        .core-card-desc { font-size: 12px; opacity: 0.8; }
-        .core-card-arrow { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 20px; opacity: 0.5; }
+        .core-card-icon { font-size: 28px; margin-bottom: 8px; }
+        .core-card-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+        .core-card-desc { font-size: 11px; opacity: 0.8; }
+        .core-card-arrow { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: 0.5; transition: all 0.2s; }
+        .core-card:active .core-card-arrow { transform: translateY(-50%) translateX(3px); }
 
         /* 快速入口小卡片 */
-        .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 0 16px 20px; }
-        .quick-card { background: #fff; border-radius: 14px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--border); }
-        .quick-card:active { transform: scale(0.95); border-color: var(--primary); }
-        .quick-card-icon { font-size: 28px; margin-bottom: 6px; }
-        .quick-card-name { font-size: 12px; font-weight: 600; color: var(--text); }
+        .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 16px 16px; }
+        .quick-card { background: #fff; border-radius: 12px; padding: 12px 6px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--border); }
+        .quick-card:active { transform: scale(0.94); border-color: var(--primary); }
+        .quick-card-icon { font-size: 24px; margin-bottom: 4px; }
+        .quick-card-name { font-size: 11px; font-weight: 600; color: var(--text); }
 
         /* 工具箱页面 */
-        .tools-section { padding: 0 16px 20px; }
-        .tools-section-title { font-size: 15px; font-weight: 700; color: var(--text); margin: 20px 0 12px; padding-left: 12px; border-left: 4px solid var(--primary); }
+        .tools-section { padding: 0 16px 16px; }
+        .tools-section-title { font-size: 14px; font-weight: 700; color: var(--text); margin: 16px 0 10px; padding-left: 10px; border-left: 3px solid var(--primary); }
         .tools-section-title.safety { border-left-color: var(--safety); }
         .tools-section-title.money { border-left-color: var(--success); }
         .tools-section-title.legal { border-left-color: var(--primary); }
         .tools-section-title.emergency { border-left-color: var(--danger); }
-        .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .tool-card { background: #fff; border-radius: 14px; padding: 16px 12px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--border); }
-        .tool-card:active { transform: scale(0.95); }
-        .tool-card-icon { font-size: 32px; margin-bottom: 8px; }
-        .tool-card-name { font-size: 13px; font-weight: 600; color: var(--text); }
+        .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .tool-card { background: #fff; border-radius: 12px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--border); }
+        .tool-card:active { transform: scale(0.94); border-color: var(--primary); }
+        .tool-card-icon { font-size: 28px; margin-bottom: 6px; }
+        .tool-card-name { font-size: 12px; font-weight: 600; color: var(--text); }
         .tool-card-desc { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
         @media (max-width: 768px) {
