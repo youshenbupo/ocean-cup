@@ -762,8 +762,8 @@
         /* 紧急求助 */
         .emergency-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .emergency-card {
-            display: flex; flex-direction: column; align-items: center; gap: 6px;
-            padding: 20px 12px; border-radius: 16px; text-decoration: none;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 16px 12px; border-radius: 16px; text-decoration: none;
             transition: all 0.25s; border: 2px solid transparent;
             position: relative; overflow: hidden;
         }
@@ -776,9 +776,21 @@
             opacity: 0.3;
         }
         .emergency-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
-        .ec-icon { font-size: 32px; }
-        .ec-name { font-size: 14px; font-weight: 600; }
-        .ec-num { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+        .emergency-card:active { transform: scale(0.96); }
+        .emergency-call {
+            display: block; padding: 14px 16px; border-radius: 12px;
+            color: #fff; text-decoration: none; font-size: 15px; font-weight: 600;
+            margin-bottom: 10px; text-align: center;
+            transition: all 0.2s;
+        }
+        .emergency-call:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+        .emergency-call:active { transform: scale(0.97); }
+        .ec-icon { font-size: 28px; }
+        .ec-name { font-size: 13px; font-weight: 600; }
+        .ec-num { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+        .ec-desc { font-size: 10px; opacity: 0.7; }
+        .ec-call-btn { display: inline-block; margin-top: 6px; padding: 4px 14px; background: rgba(255,255,255,0.9); color: inherit; border-radius: 12px; font-size: 11px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+        .ec-call-btn:hover { background: #fff; transform: scale(1.05); }
         .ec-red { background: linear-gradient(135deg,#FEE2E2,#FECACA); color: #DC2626; border-color: #FCA5A5; }
         .ec-blue { background: linear-gradient(135deg,#DBEAFE,#BFDBFE); color: #1D4ED8; border-color: #93C5FD; }
         .ec-orange { background: linear-gradient(135deg,#FFF7ED,#FFEDD5); color: #C2410C; border-color: #FDBA74; }
@@ -792,6 +804,33 @@
         .firstaid-item:hover { background: linear-gradient(135deg,#FFEDD5,#FEF3C7); border-color: #FCD34D; }
         .firstaid-item-title { font-size: 14px; font-weight: 700; color: #92400E; margin-bottom: 4px; }
         .firstaid-item-desc { font-size: 12px; color: #B45309; line-height: 1.5; }
+        .firstaid-detail-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .firstaid-detail-panel {
+            background: #fff; border-radius: 16px; max-width: 400px; width: 100%;
+            max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .firstaid-detail-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; background: linear-gradient(135deg,#FEE2E2,#FECACA);
+            border-bottom: 2px solid #FCA5A5;
+        }
+        .firstaid-detail-title { font-size: 16px; font-weight: 800; color: #DC2626; }
+        .firstaid-detail-close {
+            background: #DC2626; color: #fff; border: none; border-radius: 8px;
+            padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .firstaid-detail-close:hover { background: #B91C1C; transform: scale(1.05); }
+        .firstaid-detail-content {
+            padding: 20px; overflow-y: auto; flex: 1;
+            font-size: 14px; line-height: 1.8; color: #374151;
+        }
         /* 文书模板 */
         .template-list { display: flex; flex-direction: column; gap: 8px; }
         .template-item {
@@ -808,21 +847,22 @@
             padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
             background: var(--accent); color: #fff; border: none; cursor: pointer;
         }
-        /* 维权进度 */
+        /* 维权进度记录 */
         .rights-step {
             display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-            background: rgba(255,255,255,0.08); border-radius: 12px; margin-bottom: 8px;
+            background: #F8FAFC; border-radius: 12px; margin-bottom: 8px;
+            border: 1px solid #E2E8F0;
         }
         .rights-step-check {
-            width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4);
+            width: 22px; height: 22px; border-radius: 50%; border: 2px solid #CBD5E1;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             font-size: 12px; flex-shrink: 0; transition: all 0.2s;
         }
         .rights-step-check.done { background: #27AE60; border-color: #27AE60; color: #fff; }
         .rights-step-info { flex: 1; min-width: 0; }
-        .rights-step-title { font-size: 13px; font-weight: 600; color: #fff; }
-        .rights-step-note { font-size: 11px; color: rgba(255,255,255,0.6); }
-        .rights-step-del { color: rgba(255,255,255,0.5); cursor: pointer; font-size: 14px; padding: 4px; }
+        .rights-step-title { font-size: 13px; font-weight: 600; color: #1E293B; }
+        .rights-step-note { font-size: 11px; color: #64748B; }
+        .rights-step-del { color: #94A3B8; cursor: pointer; font-size: 14px; padding: 4px; }
         .rights-step-del:hover { color: #E74C3C; }
         .profile-name-lg { font-size: 19px; font-weight: 800; letter-spacing: 0.5px; }
         .profile-sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
@@ -1252,26 +1292,62 @@
         <h2>🚨 紧急联系电话</h2>
     </div>
     <div class="emergency-grid">
-        <a class="emergency-card ec-red" href="tel:12333">
+        <div class="emergency-card ec-red">
             <div class="ec-icon">📞</div>
             <div class="ec-name">劳动维权</div>
             <div class="ec-num">12333</div>
-        </a>
-        <a class="emergency-card ec-blue" href="tel:12348">
+            <div class="ec-desc">欠薪/加班费/社保</div>
+            <a class="ec-call-btn" href="tel:12333">拨打</a>
+        </div>
+        <div class="emergency-card ec-blue">
             <div class="ec-icon">⚖️</div>
             <div class="ec-name">法律援助</div>
             <div class="ec-num">12348</div>
-        </a>
-        <a class="emergency-card ec-orange" href="tel:120">
+            <div class="ec-desc">免费律师咨询</div>
+            <a class="ec-call-btn" href="tel:12348">拨打</a>
+        </div>
+        <div class="emergency-card ec-orange">
             <div class="ec-icon">🚑</div>
             <div class="ec-name">急救电话</div>
             <div class="ec-num">120</div>
-        </a>
-        <a class="emergency-card ec-green" href="tel:12345">
+            <div class="ec-desc">医疗急救</div>
+            <a class="ec-call-btn" href="tel:120">拨打</a>
+        </div>
+        <div class="emergency-card ec-green">
             <div class="ec-icon">🏛️</div>
             <div class="ec-name">政务热线</div>
             <div class="ec-num">12345</div>
-        </a>
+            <div class="ec-desc">政府服务投诉</div>
+            <a class="ec-call-btn" href="tel:12345">拨打</a>
+        </div>
+        <div class="emergency-card ec-red">
+            <div class="ec-icon">🔥</div>
+            <div class="ec-name">火警电话</div>
+            <div class="ec-num">119</div>
+            <div class="ec-desc">火灾报警</div>
+            <a class="ec-call-btn" href="tel:119">拨打</a>
+        </div>
+        <div class="emergency-card ec-blue">
+            <div class="ec-icon">🚔</div>
+            <div class="ec-name">报警电话</div>
+            <div class="ec-num">110</div>
+            <div class="ec-desc">治安报警</div>
+            <a class="ec-call-btn" href="tel:110">拨打</a>
+        </div>
+        <div class="emergency-card ec-orange">
+            <div class="ec-icon">🏗️</div>
+            <div class="ec-name">住建部门</div>
+            <div class="ec-num">12319</div>
+            <div class="ec-desc">建筑质量投诉</div>
+            <a class="ec-call-btn" href="tel:12319">拨打</a>
+        </div>
+        <div class="emergency-card ec-green">
+            <div class="ec-icon">💰</div>
+            <div class="ec-name">清欠办</div>
+            <div class="ec-num">12345</div>
+            <div class="ec-desc">农民工欠薪专线</div>
+            <a class="ec-call-btn" href="tel:12345">拨打</a>
+        </div>
     </div>
 
     <!-- 智能问答入口 -->
@@ -1314,11 +1390,12 @@
                 <button class="session-btn" onclick="newChat()">＋</button>
             </div>
         </div>
-        <div class="chat-quick">
+        <div class="chat-quick" id="chatQuickBar">
             <div class="chat-quick-btn" onclick="quickChatContinue('老板拖欠工资怎么办')">💰 欠薪维权</div>
             <div class="chat-quick-btn" onclick="quickChatContinue('工伤认定流程')">🏥 工伤认定</div>
             <div class="chat-quick-btn" onclick="quickChatContinue('帮我写一份欠条')">📄 写欠条</div>
-            <div class="chat-quick-btn" onclick="quickChatContinue('紧急求助')">🆘 紧急求助</div>
+            <div class="chat-quick-btn" onclick="showEmergencyPanel()">🆘 紧急求助</div>
+            <div class="chat-quick-btn chat-quick-edit" onclick="openQuickWordEditor()">⚙️ 编辑</div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-area">
@@ -1521,9 +1598,9 @@
         <div class="firstaid-grid" id="firstaidGrid"></div>
     </div>
 
-    <!-- 维权进度追踪 -->
+    <!-- 维权进度记录 -->
     <div class="tools-section" id="toolsRights">
-        <div class="tools-section-title legal">📋 维权进度追踪</div>
+        <div class="tools-section-title legal">📋 维权进度记录</div>
         <div id="rightsProgressList"></div>
         <div style="text-align:center;margin-top:10px;padding:0 16px 20px">
             <button class="btn-secondary" onclick="addRightsStep()">＋ 添加维权步骤</button>
@@ -1733,13 +1810,13 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 id="templateTitle">📄 文书模板</h3>
-            <button class="modal-close" onclick="closeToolTemplate()">✕</button>
+            <button class="modal-close" onclick="closeTemplate()">✕</button>
         </div>
         <div class="template-desc" id="templateDesc"></div>
         <textarea class="template-body" id="templateBody" readonly></textarea>
         <div class="template-actions">
             <button class="btn-primary" onclick="copyTemplate()">📋 复制模板</button>
-            <button class="btn-line" onclick="useTemplateAsDraft()">✍️ 交给 AI 帮我填写</button>
+            <button class="btn-line" onclick="regenerateTemplate()">✍️ 交给 AI 帮我填写</button>
         </div>
     </div>
 </div>
@@ -2315,23 +2392,191 @@ ${content}`;
     }
 
     function showEmergencyPanel() {
-        const html = '<div style="text-align:center;padding:20px">' +
-            '<div style="font-size:48px;margin-bottom:16px">🚨</div>' +
-            '<div style="font-size:18px;font-weight:700;color:#B91C1C;margin-bottom:8px">紧急求助</div>' +
-            '<div style="font-size:14px;color:#666;margin-bottom:20px">遇到紧急情况，请直接拨打以下电话</div>' +
-            '<a href="tel:12333" style="display:block;background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff;padding:16px;border-radius:12px;text-decoration:none;margin-bottom:12px;font-size:16px;font-weight:700">📞 12333 劳动维权热线</a>' +
-            '<a href="tel:12348" style="display:block;background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff;padding:16px;border-radius:12px;text-decoration:none;margin-bottom:12px;font-size:16px;font-weight:700">⚖️ 12348 法律援助</a>' +
-            '<a href="tel:120" style="display:block;background:linear-gradient(135deg,#10B981,#059669);color:#fff;padding:16px;border-radius:12px;text-decoration:none;margin-bottom:12px;font-size:16px;font-weight:700">🚑 120 急救电话</a>' +
-            '<a href="tel:110" style="display:block;background:linear-gradient(135deg,#6B7280,#4B5563);color:#fff;padding:16px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:700">👮 110 报警电话</a>' +
-            '</div>';
-        showToast('紧急求助电话已显示');
-        // 在对话中显示紧急求助信息
-        forceNewSession('紧急求助');
+        document.getElementById('emergencyModal').classList.add('active');
+    }
+
+    function closeEmergency() {
+        document.getElementById('emergencyModal').classList.remove('active');
+    }
+
+    // ===== 工伤急救详情 =====
+    const FIRSTAID_DETAIL = {
+        '高空坠落': '🚨 高空坠落急救要点\n\n1. 立即拨打 120，说清楚地点和伤情\n2. 不要随意搬动伤者（可能脊柱受伤）\n3. 检查意识和呼吸，如无呼吸立即心肺复苏\n4. 如有出血，用干净布料按压止血\n5. 保持伤者温暖，等待专业救援\n\n⚠️ 禁止事项：\n- 不要喂水或食物\n- 不要拔出插入身体的异物\n- 不要让伤者自己行走',
+        '物体打击': '🚨 物体打击急救要点\n\n1. 立即拨打 120\n2. 检查意识，轻拍肩膀呼唤\n3. 头部受伤：让伤者平躺，头部稍抬高\n4. 如有出血：用干净布料按压止血\n5. 如有呕吐：将头偏向一侧，防止窒息\n\n⚠️ 注意观察：\n- 是否有头痛、恶心、呕吐\n- 是否有意识模糊、嗜睡\n- 如有以上症状，可能是脑震荡或颅内出血',
+        '触电': '🚨 触电急救要点\n\n1. 先断电！拉闸或用干燥木棍挑开电线\n2. 不要徒手接触伤者（可能带电）\n3. 检查呼吸和心跳\n4. 如无呼吸：立即心肺复苏\n5. 如有烧伤：用冷水冲洗，不要涂药膏\n6. 拨打 120\n\n⚠️ 心肺复苏要点：\n- 按压位置：两乳头连线中点\n- 按压深度：5-6厘米\n- 按压频率：每分钟100-120次',
+        '机械伤害': '🚨 机械伤害急救要点\n\n1. 立即停机断电\n2. 拨打 120\n3. 如肢体被卷入：不要强行拉出\n4. 如断肢：用干净布料包裹，放入塑料袋，再放冰上（不要直接接触冰）\n5. 止血：用干净布料按压伤口\n\n⚠️ 断肢保存：\n- 6小时内是再植黄金时间\n- 保持低温（4°C左右）\n- 不要用酒精或消毒液浸泡',
+        '中暑': '🚨 中暑急救要点\n\n1. 立即转移到阴凉通风处\n2. 解开衣领、腰带，帮助散热\n3. 用湿毛巾擦拭身体，或喷洒凉水\n4. 补充含盐分的清凉饮料\n5. 如症状严重（昏迷、抽搐）：立即拨打 120\n\n⚠️ 预防中暑：\n- 避开高温时段（11:00-15:00）\n- 多喝水（每天至少2升）\n- 穿透气、浅色衣服',
+        '烧伤烫伤': '🚨 烧伤烫伤急救要点\n\n1. 立即用流动冷水冲洗 15-20 分钟\n2. 不要撕扯粘在伤口上的衣物\n3. 不要涂牙膏、酱油、药膏等\n4. 用干净纱布覆盖伤口\n5. 如面积大或深度烧伤：立即拨打 120\n\n⚠️ 烧伤分级：\n- 一度：皮肤发红，可自行处理\n- 二度：起水泡，需就医\n- 三度：皮肤发白或焦黑，立即送医',
+        '坍塌埋压': '🚨 坍塌埋压急救要点\n\n1. 立即拨打 119 和 120\n2. 不要贸然挖掘（可能二次坍塌）\n3. 如能听到呼救：保持通话，安抚情绪\n4. 标记被困位置\n5. 等待专业救援\n\n⚠️ 自救要点：\n- 保持冷静，保存体力\n- 用硬物敲击管道或墙壁发出信号\n- 寻找水源和食物',
+        '有毒气体中毒': '🚨 有毒气体中毒急救要点\n\n1. 立即离开有毒环境\n2. 到通风处，解开衣领\n3. 如呼吸困难：保持半坐位\n4. 如昏迷：侧卧位，防止呕吐物窒息\n5. 立即拨打 120\n\n⚠️ 预防措施：\n- 进入密闭空间前先通风\n- 佩戴防毒面具\n- 两人以上同行，互相照应'
+    };
+
+    let currentFirstaidKey = '';
+    function showFirstaidDetail(title, desc) {
+        currentFirstaidKey = title;
+        document.getElementById('firstaidTitle').textContent = title;
+        document.getElementById('firstaidContent').textContent = FIRSTAID_DETAIL[title] || desc;
+        document.getElementById('firstaidModal').classList.add('active');
+    }
+    function closeFirstaid() {
+        document.getElementById('firstaidModal').classList.remove('active');
+    }
+
+    // ===== 文书模板管理 =====
+    const OFFICIAL_TEMPLATES = {
+        '工资欠条': '欠条\n\n今欠到 ________（身份证号：________________）在 ________ 项目工地从事 ________ 工种的工资，共计人民币 ________ 元（大写：________）。\n\n本人承诺于 ________ 年 ____ 月 ____ 日前一次性付清。\n\n如逾期未付，愿意承担法律责任。\n\n欠款人（签字按手印）：________\n身份证号：________________\n联系电话：________________\n日期：________ 年 ____ 月 ____ 日',
+        '劳动合同': '简易劳动合同\n\n甲方（用人单位）：________________\n乙方（劳动者）：________________\n\n一、工作内容：乙方在甲方承建的 ________ 项目从事 ________ 工种。\n二、工作地点：________________\n三、工资标准：________ 元/天（或 ________ 元/月），每月 ____ 日发放。\n四、工作时间：每天 ____ 小时，每月休息 ____ 天。\n五、合同期限：自 ________ 年 ____ 月 ____ 日起至 ________ 年 ____ 月 ____ 日止。\n\n甲方（盖章）：________\n乙方（签字按手印）：________\n日期：________ 年 ____ 月 ____ 日',
+        '工资确认单': '工资确认单\n\n本人 ________（身份证号：________________）确认：\n\n截至 ________ 年 ____ 月 ____ 日，在 ________ 项目工地从事 ________ 工种，共计 ____ 天，应得工资 ________ 元。\n\n已领取 ________ 元，尚欠 ________ 元。\n\n确认人（签字按手印）：________\n日期：________ 年 ____ 月 ____ 日',
+        '工伤事故报告': '工伤事故报告\n\n报告人：________（身份证号：________________）\n工种：________\n\n一、事故时间：________ 年 ____ 月 ____ 日 ____ 时 ____ 分\n二、事故地点：________________\n三、事故经过：\n________________\n四、伤情描述：\n________________\n五、目击证人：\n1. ________ 电话：________________\n2. ________ 电话：________________\n\n报告人（签字按手印）：________\n日期：________ 年 ____ 月 ____ 日',
+        '欠薪投诉书': '欠薪投诉书\n\n投诉人：________（身份证号：________________）\n联系电话：________________\n\n被投诉单位：________________\n地址：________________\n负责人：________ 电话：________________\n\n投诉事项：\n本人自 ________ 年 ____ 月 ____ 日起在被投诉单位承建的 ________ 项目从事 ________ 工种，截至 ________ 年 ____ 月 ____ 日，被拖欠工资共计 ________ 元。\n\n投诉请求：\n1. 责令被投诉单位立即支付拖欠工资\n2. 依法对被投诉单位进行处罚\n\n证据清单：\n1. 工资欠条\n2. 考勤记录\n3. 工友证言\n\n投诉人（签字按手印）：________\n日期：________ 年 ____ 月 ____ 日',
+        '仲裁申请书': '劳动仲裁申请书\n\n申请人：________（身份证号：________________）\n联系电话：________________\n\n被申请人：________________\n地址：________________\n法定代表人：________ 电话：________________\n\n仲裁请求：\n1. 裁决被申请人支付拖欠工资 ________ 元\n2. 裁决被申请人支付经济补偿 ________ 元\n\n事实与理由：\n________________\n\n证据清单：\n1. 劳动合同/工资欠条\n2. 考勤记录\n3. 工友证言\n\n申请人（签字按手印）：________\n日期：________ 年 ____ 月 ____ 日'
+    };
+
+    let userTemplates = JSON.parse(localStorage.getItem('gongyou_templates') || '{}');
+    let currentTemplateKey = '';
+
+    function showTemplateDetail(name) {
+        currentTemplateKey = name;
+        document.getElementById('templateTitle').textContent = name;
+        document.getElementById('templateTextarea').value = userTemplates[name] || OFFICIAL_TEMPLATES[name] || '';
+        document.getElementById('templateModal').classList.add('active');
+    }
+    function closeTemplate() {
+        document.getElementById('templateModal').classList.remove('active');
+    }
+    function saveTemplate() {
+        const content = document.getElementById('templateTextarea').value;
+        userTemplates[currentTemplateKey] = content;
+        localStorage.setItem('gongyou_templates', JSON.stringify(userTemplates));
+        showToast('已保存修改');
+    }
+    function copyTemplate() {
+        const content = document.getElementById('templateTextarea').value;
+        copyText(content);
+    }
+    function resetTemplate() {
+        if (OFFICIAL_TEMPLATES[currentTemplateKey]) {
+            document.getElementById('templateTextarea').value = OFFICIAL_TEMPLATES[currentTemplateKey];
+            delete userTemplates[currentTemplateKey];
+            localStorage.setItem('gongyou_templates', JSON.stringify(userTemplates));
+            showToast('已恢复原版');
+        } else {
+            showToast('该模板无官方版本');
+        }
+    }
+    function regenerateTemplate() {
+        showToast('正在生成新模板...');
+        sendToAPI('请根据以下模板生成一份全新的' + currentTemplateKey + '，内容要完整、专业、实用：\n\n' + document.getElementById('templateTextarea').value)
+            .then(() => showToast('生成完成'))
+            .catch(() => showToast('生成失败'));
+    }
+    function deleteTemplate() {
+        if (confirm('确定删除"' + currentTemplateKey + '"吗？')) {
+            delete userTemplates[currentTemplateKey];
+            localStorage.setItem('gongyou_templates', JSON.stringify(userTemplates));
+            closeTemplate();
+            showToast('已删除');
+        }
+    }
+
+    // 新建模板
+    function openNewTemplate() {
+        document.getElementById('newTemplateModal').classList.add('active');
+    }
+    function closeNewTemplate() {
+        document.getElementById('newTemplateModal').classList.remove('active');
+        document.getElementById('newTemplateName').value = '';
+        document.getElementById('newTemplateDesc').value = '';
+    }
+    function generateNewTemplate() {
+        const name = document.getElementById('newTemplateName').value.trim();
+        const desc = document.getElementById('newTemplateDesc').value.trim();
+        if (!name || !desc) { showToast('请输入模板名称和描述'); return; }
+        showToast('正在生成模板...');
+        sendToAPI('请生成一份"' + name + '"模板，用途：' + desc + '。要求内容完整、专业、实用，适合建筑工人使用。')
+            .then(() => {
+                closeNewTemplate();
+                showToast('生成完成');
+            })
+            .catch(() => showToast('生成失败'));
+    }
+
+    // 清除自定义模板
+    function confirmClearTemplates() {
+        document.getElementById('clearTemplatesModal').classList.add('active');
+    }
+    function closeClearTemplates() {
+        document.getElementById('clearTemplatesModal').classList.remove('active');
+    }
+    function doClearTemplates() {
+        userTemplates = {};
+        localStorage.setItem('gongyou_templates', '{}');
+        closeClearTemplates();
+        showToast('已清除所有自定义模板');
+    }
+
+    // ===== 快捷词管理 =====
+    let quickWords = JSON.parse(localStorage.getItem('gongyou_quickwords') || '[]');
+    if (quickWords.length === 0) {
+        quickWords = ['欠薪维权', '工伤认定', '写欠条', '紧急求助', '记工时', '算工资', '安全知识', '合同模板'];
+        localStorage.setItem('gongyou_quickwords', JSON.stringify(quickWords));
+    }
+
+    function renderQuickWords() {
+        const list = document.getElementById('quickWordsList');
+        if (!list) return;
+        list.innerHTML = quickWords.map(w => 
+            '<div class="quick-word-item">' + escapeHtml(w) + '<span class="quick-word-del" onclick="deleteQuickWord(\'' + escapeHtml(w) + '\')">×</span></div>'
+        ).join('');
+    }
+
+    function openQuickWordEditor() {
+        renderQuickWords();
+        document.getElementById('quickWordModal').classList.add('active');
+    }
+    function closeQuickWordEditor() {
+        document.getElementById('quickWordModal').classList.remove('active');
+        document.getElementById('newQuickWord').value = '';
+    }
+    function addQuickWord() {
+        const word = document.getElementById('newQuickWord').value.trim();
+        if (!word) { showToast('请输入快捷词'); return; }
+        if (quickWords.includes(word)) { showToast('该快捷词已存在'); return; }
+        quickWords.push(word);
+        localStorage.setItem('gongyou_quickwords', JSON.stringify(quickWords));
+        renderQuickWords();
+        document.getElementById('newQuickWord').value = '';
+        showToast('已添加');
+    }
+    function deleteQuickWord(word) {
+        quickWords = quickWords.filter(w => w !== word);
+        localStorage.setItem('gongyou_quickwords', JSON.stringify(quickWords));
+        renderQuickWords();
+        showToast('已删除');
+    }
+    function confirmClearQuickWords() {
+        if (confirm('确定清除所有快捷词吗？')) {
+            quickWords = [];
+            localStorage.setItem('gongyou_quickwords', '[]');
+            renderQuickWords();
+            closeQuickWordEditor();
+            showToast('已清除所有快捷词');
+        }
+    }
+
+    // ===== 更多工具 =====
+    function openMoreTools() {
+        document.getElementById('moreToolsModal').classList.add('active');
+    }
+    function closeMoreTools() {
+        document.getElementById('moreToolsModal').classList.remove('active');
+    }
+
+    // ===== 发送带文本框的消息 =====
+    function sendWithTextarea(title, content) {
+        forceNewSession(title);
         switchTab('chat');
-        setTimeout(() => {
-            addMsg('我需要紧急求助', true);
-            addMsg(html, false);
-        }, 200);
+        setTimeout(() => sendMessage('请帮我' + title + '：\n\n' + content), 200);
     }
 
     function askKnowledge(topic) {
@@ -2746,80 +2991,6 @@ ${content}`;
         setTimeout(() => t.remove(), 2000);
     }
 
-    // ===== 文书模板 =====
-    const TOOL_TEMPLATES = {
-        iou: {
-            title: '📄 工资欠条模板',
-            desc: '被老板/包工头拖欠工资时，让对方当场写欠条是最有力的书面证据，请让对方亲笔填写并签名按手印。',
-            body: '工资欠条\n\n今欠到 ____________（工友姓名，身份证号：__________________）\n工资共计人民币 ____________ 元（大写：____________________）。\n\n该款项为 ____年____月至____年____月在 ____________（工地/项目名称）\n从事 ____________ 岗位的工资。\n\n本人承诺于 ____年____月____日前一次性付清上述款项。\n逾期未付，本人愿承担相应法律责任及逾期利息。\n\n欠款人（签名/按手印）：____________\n身份证号：________________________\n联系电话：________________________\n日期：____年____月____日\n\n【注意事项】\n1. 欠条由欠款人本人亲笔书写并签字、按手印，写清欠款金额（大小写一致）、欠的是哪个时间段、何时还清；\n2. 拍照留存原件，若能录像记录签字过程更好；\n3. 如欠款人是公司，应写公司全称并加盖公章，同时写清负责人姓名。'
-        },
-        arbitration: {
-            title: '📝 劳动仲裁申请书模板',
-            desc: '协商、投诉无果后，可向劳动争议仲裁委员会申请仲裁，全程免费。请按实际情况填写并附证据。',
-            body: '劳动争议仲裁申请书\n\n申请人：姓名______，性别______，身份证号________________，\n住址________________________，联系电话____________。\n\n被申请人：______________________（单位全称）\n法定代表人/负责人：____________\n住所地：________________________\n\n请求事项：\n1. 请求裁决被申请人支付拖欠工资人民币______元；\n2. 请求裁决被申请人支付未签订劳动合同的双倍工资差额______元（如适用）；\n3. 请求裁决被申请人支付经济补偿金______元（如适用）。\n\n事实与理由：\n申请人于____年____月入职被申请人处，从事______工作，\n约定日薪/月薪______元。被申请人自____年____月起拖欠工资，\n至今累计拖欠______元。经多次催要未果，为维护自身合法权益，\n特依法申请仲裁，请求裁决支持申请人的全部请求。\n\n此致\n______劳动争议仲裁委员会\n\n申请人（签名）：____________\n日期：____年____月____日\n\n【注意事项】\n1. 携带身份证、工资条/考勤记录、聊天记录、工友证言等证据；\n2. 劳动合同有争议的，可同时主张未签合同双倍工资（最多11个月）；\n3. 仲裁时效为一年，从知道权利被侵害之日起算，请及时主张。'
-        },
-        complaint: {
-            title: '📋 欠薪投诉书模板',
-            desc: '向项目所在地的区/县劳动保障监察大队投诉，是免费的官方维权渠道，一般15个工作日内答复。',
-            body: '欠薪投诉书\n\n投诉人：姓名______，身份证号________________，联系电话____________。\n\n被投诉单位：______________________（单位全称/老板姓名）\n项目名称：________________________\n工地地址：________________________\n\n投诉事项：\n被投诉单位拖欠本人工资人民币______元（大写：______________）。\n\n事实经过：\n本人于____年____月至____年____月在该项目从事______工作，\n约定日薪/月薪______元。自____年____月起，被投诉单位未按时足额支付工资，\n至今累计拖欠______元。本人多次催要，被投诉单位均以____________为由推脱。\n\n请求事项：\n请贵单位依法责令被投诉单位限期支付拖欠的工资，并对违法行为依法处理。\n\n此致\n______劳动保障监察大队\n\n投诉人（签名）：____________\n日期：____年____月____日\n\n【注意事项】\n1. 拨打 12333 可查询当地劳动监察大队地址并在线登记投诉；\n2. 带上身份证、欠条/工资条、考勤记录、聊天记录等证据；\n3. 留存投诉回执，作为后续仲裁或诉讼的凭证。'
-        }
-    };
-    let currentTemplateKey = '';
-
-    function openToolTemplate(key) {
-        const tpl = TOOL_TEMPLATES[key];
-        if (!tpl) return;
-        currentTemplateKey = key;
-        document.getElementById('templateTitle').textContent = tpl.title;
-        document.getElementById('templateDesc').textContent = tpl.desc;
-        document.getElementById('templateBody').value = tpl.body;
-        document.getElementById('toolTemplateModal').classList.add('active');
-    }
-
-    function closeToolTemplate() {
-        document.getElementById('toolTemplateModal').classList.remove('active');
-    }
-
-    function copyTemplate() {
-        const el = document.getElementById('templateBody');
-        el.focus();
-        el.select();
-        el.setSelectionRange(0, el.value.length);
-        try {
-            if (document.execCommand('copy')) {
-                showToast('模板已复制到剪贴板');
-                return;
-            }
-        } catch (e) { /* 继续尝试现代 API */ }
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(el.value).then(() => showToast('模板已复制')).catch(() => showToast('复制失败，请手动选择复制'));
-        } else {
-            showToast('复制失败，请手动选择复制');
-        }
-    }
-
-    function useTemplateAsDraft() {
-        const map = {
-            iou: '帮我写一份规范的工资欠条',
-            arbitration: '帮我写一份劳动仲裁申请书',
-            complaint: '帮我写一份欠薪投诉书'
-        };
-        closeToolTemplate();
-        switchTab('chat');
-        setTimeout(() => sendMessage(map[currentTemplateKey] || '帮我写一份法律文书'), 200);
-    }
-
-    // 点击弹窗外关闭
-    document.getElementById('settingsModal').addEventListener('click', function(e) {
-        if (e.target === this) closeSettings();
-    });
-    document.getElementById('sessionModal').addEventListener('click', function(e) {
-        if (e.target === this) closeSessionList();
-    });
-    document.getElementById('toolTemplateModal').addEventListener('click', function(e) {
-        if (e.target === this) closeToolTemplate();
-    });
-
     // ===== 语音转文字（浏览器原生 Web Speech API，适合不会打字的工友）=====
     let _recog = null, _recogBtn = null, _recogBase = '';
 
@@ -2963,27 +3134,244 @@ ${content}`;
 
     // ===== 工伤急救指南 =====
     const FIRSTAID_DATA = [
-      { title: '高空坠落', desc: '不要随意搬动伤者，立即拨打120，用硬板固定颈部，防止二次伤害' },
-      { title: '物体打击', desc: '检查意识是否清醒，伤口用干净纱布压迫止血，肿胀处冰敷' },
-      { title: '触电', desc: '先断电再救人，用干燥木棍挑开电线，必要时做心肺复苏' },
-      { title: '机械伤害', desc: '立即停机，不要强行拔出被夹部位，用工具拆解设备后送医' },
-      { title: '中暑', desc: '移到阴凉处，解开衣领，用湿毛巾擦拭降温，补充淡盐水' },
-      { title: '烫伤烧伤', desc: '流动冷水冲15分钟以上，不要撕扯粘连衣物，覆盖干净纱布' },
-      { title: '骨折', desc: '用木板或硬纸板固定骨折部位，不要强行复位，尽快送医' },
-      { title: '化学灼伤', desc: '大量清水冲洗30分钟以上，脱去污染衣物，不要使用中和剂' },
+      {
+        title: '高空坠落',
+        summary: '不要随意搬动伤者，立即拨打120',
+        detail: `【紧急处理步骤】
+
+1. 保持冷静，立即拨打120急救电话，清楚说明事故地点和伤情
+2. 不要随意搬动伤者，尤其是怀疑有脊柱、颈部损伤时
+3. 如果伤者意识清醒，让其保持原位不动，等待专业救援
+4. 如果必须移动（如处于危险区域），用硬板或门板整体搬运，保持头颈身体一条直线
+5. 检查呼吸和意识，如无呼吸立即进行心肺复苏
+
+【注意事项】
+- 不要给伤者喂水或食物
+- 不要试图扶伤者站起来
+- 注意保暖，用衣物或毯子覆盖
+- 记录事故发生时间和经过，为后续工伤认定保留证据
+
+【后续处理】
+- 立即通知工地负责人和家属
+- 保留现场照片和视频证据
+- 24小时内向人社局报告工伤
+- 保存所有医疗记录和费用票据`
+      },
+      {
+        title: '物体打击',
+        summary: '检查意识，压迫止血，冰敷消肿',
+        detail: `【紧急处理步骤】
+
+1. 立即检查伤者意识是否清醒，呼喊并轻拍肩部
+2. 如有伤口出血，用干净纱布或衣物直接压迫止血
+3. 肿胀部位用冰袋或冷毛巾冰敷，每次15-20分钟
+4. 如头部受击，密切观察24小时，警惕颅内出血
+5. 如出现呕吐、意识模糊、瞳孔不等大，立即送医
+
+【注意事项】
+- 不要随意移动头部受击的伤者
+- 不要揉搓肿胀部位
+- 止血带不要绑太紧，每隔30分钟放松一次
+- 记录打击物体的名称和重量
+
+【后续处理】
+- 即使感觉无大碍，也建议去医院检查
+- 保留现场照片和目击证人联系方式
+- 48小时内申请工伤认定`
+      },
+      {
+        title: '触电',
+        summary: '先断电再救人，必要时心肺复苏',
+        detail: `【紧急处理步骤】
+
+1. 首先切断电源（拉闸、拔插头），不要直接接触伤者
+2. 如无法断电，用干燥木棍、塑料棒等绝缘物挑开电线
+3. 将伤者移到安全区域，检查呼吸和心跳
+4. 如无呼吸心跳，立即进行心肺复苏（CPR）
+5. 拨打120，持续心肺复苏直到救援到达
+
+【心肺复苏步骤】
+- 按压位置：两乳头连线中点
+- 按压深度：5-6厘米
+- 按压频率：每分钟100-120次
+- 按压与人工呼吸比例：30:2
+
+【注意事项】
+- 触电后即使感觉正常，也必须去医院检查
+- 电击可能导致内脏损伤，外表看不出
+- 不要给触电者泼水
+- 高压电触电，保持20米以上安全距离
+
+【后续处理】
+- 全面身体检查，特别是心脏
+- 保留事故现场照片
+- 申请工伤认定和赔偿`
+      },
+      {
+        title: '机械伤害',
+        summary: '立即停机，不要强行拔出被夹部位',
+        detail: `【紧急处理步骤】
+
+1. 立即按下急停按钮或关闭设备电源
+2. 不要强行拉出被夹部位，可能造成二次伤害
+3. 用工具小心拆解设备，释放被夹部位
+4. 如肢体完全离断，用干净纱布包裹断肢，放入塑料袋，再放在冰上保存
+5. 拨打120，尽快送医（6小时内是再植黄金时间）
+
+【止血方法】
+- 直接压迫伤口止血
+- 如出血严重，在伤口上方5-10厘米处扎止血带
+- 记录扎止血带时间，每隔30分钟放松1-2分钟
+
+【注意事项】
+- 不要试图自己复位或处理伤口
+- 不要给伤者喝水或吃东西
+- 保持伤者温暖，防止休克
+- 保存被夹时的衣物和物品
+
+【后续处理】
+- 立即通知负责人和家属
+- 保留设备故障照片和维修记录
+- 申请工伤认定，要求单位承担全部责任`
+      },
+      {
+        title: '中暑',
+        summary: '移到阴凉处，降温补水',
+        detail: `【紧急处理步骤】
+
+1. 立即将伤者移到阴凉通风处，平躺休息
+2. 解开衣领、腰带，脱掉多余衣物
+3. 用湿毛巾擦拭全身，或用风扇吹风降温
+4. 补充淡盐水或运动饮料，少量多次
+5. 如体温超过40°C或意识不清，立即送医
+
+【降温方法】
+- 头部、腋下、腹股沟放置冰袋
+- 用温水（不是冷水）擦拭身体
+- 不要用酒精擦拭
+
+【注意事项】
+- 不要给昏迷者喂水
+- 不要一次性大量饮水
+- 不要在高温时段（11:00-15:00）继续作业
+- 中暑后24小时内不要剧烈运动
+
+【预防措施】
+- 高温天每小时喝水500-1000毫升
+- 穿透气、浅色工作服
+- 随身携带藿香正气水等防暑药品
+- 感到头晕、恶心立即停止作业`
+      },
+      {
+        title: '烫伤烧伤',
+        summary: '冷水冲15分钟，不要撕扯衣物',
+        detail: `【紧急处理步骤】
+
+1. 立即用流动冷水冲洗伤口15-30分钟
+2. 小心脱去或剪开衣物，不要强行撕扯粘连部分
+3. 用干净纱布或保鲜膜轻轻覆盖伤口
+4. 不要涂抹牙膏、酱油、紫药水等任何物品
+5. 面积超过手掌大小或深度烧伤，立即送医
+
+【伤情判断】
+- 一度：皮肤发红、疼痛（可自愈）
+- 二度：起水泡、剧烈疼痛（需就医）
+- 三度：皮肤发白或焦黑、无痛感（立即送医）
+
+【注意事项】
+- 不要弄破水泡
+- 不要在伤口上涂任何药物
+- 不要包扎太紧
+- 化学烧伤需持续冲洗30分钟以上
+
+【后续处理】
+- 保留烧伤源（化学品容器等）
+- 记录烧伤时间、原因
+- 申请工伤认定和赔偿`
+      },
+      {
+        title: '骨折',
+        summary: '固定骨折部位，不要强行复位',
+        detail: `【紧急处理步骤】
+
+1. 让伤者保持舒适姿势，不要随意移动
+2. 用木板、硬纸板、杂志等固定骨折部位
+3. 固定范围要超过骨折上下两个关节
+4. 如有伤口，先止血再固定
+5. 拨打120，尽快送医
+
+【固定方法】
+- 上肢骨折：用三角巾悬吊固定
+- 下肢骨折：用木板固定，抬至担架
+- 脊柱骨折：整体搬运，保持头颈身体一条直线
+
+【注意事项】
+- 不要试图复位或矫正畸形
+- 不要给伤者按摩或热敷
+- 开放性骨折（骨头外露）不要塞回伤口
+- 固定不要太紧，以能插入一指为宜
+
+【后续处理】
+- 拍X光片确认骨折类型
+- 保留所有医疗记录
+- 申请工伤认定，主张误工费和护理费`
+      },
+      {
+        title: '化学灼伤',
+        summary: '大量清水冲洗30分钟以上',
+        detail: `【紧急处理步骤】
+
+1. 立即用大量清水冲洗伤口30分钟以上
+2. 脱去被污染的衣物、鞋袜
+3. 不要擦拭或涂抹任何中和剂
+4. 用干净纱布覆盖伤口
+5. 立即送医，带上化学品容器或标签
+
+【冲洗方法】
+- 水流不要太急，避免冲击力伤害皮肤
+- 眼睛灼伤：翻开眼睑，从内眼角向外冲洗
+- 全身灼伤：用淋浴或水管冲洗
+
+【注意事项】
+- 不要用布擦拭伤口
+- 不要使用中和剂（酸碱中和会产热加重伤害）
+- 不要弄破水泡
+- 记录化学品名称和浓度
+
+【后续处理】
+- 保留化学品安全数据表（SDS）
+- 要求进行职业病检查
+- 申请工伤认定和职业病赔偿`
+      },
     ];
 
     function renderFirstaid() {
       const grid = document.getElementById('firstaidGrid');
-      grid.innerHTML = FIRSTAID_DATA.map(item => `
-        <div class="firstaid-item" onclick="showFirstaidDetail('${item.title.replace(/'/g, "\\'")}', \`${item.desc.replace(/`/g, '\\`')}\`)">
+      grid.innerHTML = FIRSTAID_DATA.map((item, idx) => `
+        <div class="firstaid-item" onclick="showFirstaidDetail(${idx})">
           <div class="firstaid-item-title">${item.title}</div>
-          <div class="firstaid-item-desc">${item.desc.substring(0, 20)}...</div>
+          <div class="firstaid-item-desc">${item.summary}</div>
         </div>`).join('');
     }
 
-    function showFirstaidDetail(title, desc) {
-      showToast('🚑 ' + title + '：' + desc);
+    function showFirstaidDetail(idx) {
+      const item = FIRSTAID_DATA[idx];
+      const detailHtml = `
+        <div class="firstaid-detail-overlay" onclick="if(event.target===this)closeFirstaidDetail()">
+          <div class="firstaid-detail-panel">
+            <div class="firstaid-detail-header">
+              <div class="firstaid-detail-title">🚑 ${item.title}</div>
+              <button class="firstaid-detail-close" onclick="closeFirstaidDetail()">✕ 关闭</button>
+            </div>
+            <div class="firstaid-detail-content">${item.detail.replace(/\n/g, '<br>')}</div>
+          </div>
+        </div>`;
+      document.body.insertAdjacentHTML('beforeend', detailHtml);
+    }
+
+    function closeFirstaidDetail() {
+      const overlay = document.querySelector('.firstaid-detail-overlay');
+      if (overlay) overlay.remove();
     }
 
     // ===== 文书模板 =====
@@ -3505,5 +3893,109 @@ ${content}`;
 </div>
 <input type="file" id="wallpaperInput" accept="image/*" style="display:none" onchange="handleWallpaperFile(this.files[0]); this.value='';">
 <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleAvatarFile(this.files[0]); this.value='';">
+
+<!-- 紧急求助电话弹窗 -->
+<div class="modal-overlay" id="emergencyModal">
+    <div class="modal-content" style="max-width:420px;">
+        <div class="modal-header">
+            <h3>🚨 紧急求助电话</h3>
+            <button class="modal-close" onclick="closeEmergency()">✕</button>
+        </div>
+        <div style="padding:16px;">
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;text-align:center;">遇到紧急情况，请直接拨打以下电话</div>
+            <a href="tel:12333" class="emergency-call" style="background:linear-gradient(135deg,#EF4444,#DC2626);">📞 12333 劳动保障热线</a>
+            <a href="tel:12348" class="emergency-call" style="background:linear-gradient(135deg,#3B82F6,#2563EB);">⚖️ 12348 法律援助热线</a>
+            <a href="tel:12345" class="emergency-call" style="background:linear-gradient(135deg,#8B5CF6,#7C3AED);">🏛️ 12345 政务服务热线</a>
+            <a href="tel:12350" class="emergency-call" style="background:linear-gradient(135deg,#F59E0B,#D97706);">🦺 12350 安全生产举报</a>
+            <a href="tel:120" class="emergency-call" style="background:linear-gradient(135deg,#10B981,#059669);">🚑 120 急救电话</a>
+            <a href="tel:110" class="emergency-call" style="background:linear-gradient(135deg,#6B7280,#4B5563);">👮 110 报警电话</a>
+            <a href="tel:119" class="emergency-call" style="background:linear-gradient(135deg,#DC2626,#B91C1C);">🚒 119 火警电话</a>
+            <a href="tel:12338" class="emergency-call" style="background:linear-gradient(135deg,#EC4899,#DB2777);">👩 12338 妇女维权热线</a>
+        </div>
+    </div>
+</div>
+
+<!-- 工伤急救详情弹窗 -->
+<div class="modal-overlay" id="firstaidModal">
+    <div class="modal-content" style="max-width:480px;max-height:85vh;display:flex;flex-direction:column;">
+        <div class="modal-header" style="background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;">
+            <h3 id="firstaidModalTitle">🚑 工伤急救</h3>
+            <button class="modal-close" onclick="closeFirstaid()" style="color:#fff;font-size:20px;">✕</button>
+        </div>
+        <div id="firstaidModalBody" style="padding:20px;overflow-y:auto;flex:1;font-size:14px;line-height:1.8;color:var(--text-primary);"></div>
+        <div style="padding:12px 20px;border-top:1px solid #E2E8F0;">
+            <button class="btn-primary" style="width:100%;" onclick="closeFirstaid()">我知道了，关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 文书模板编辑弹窗 -->
+<div class="modal-overlay" id="templateModal">
+    <div class="modal-content" style="max-width:520px;max-height:88vh;display:flex;flex-direction:column;">
+        <div class="modal-header">
+            <h3 id="templateModalTitle">📄 文书模板</h3>
+            <button class="modal-close" onclick="closeTemplate()">✕</button>
+        </div>
+        <textarea id="templateModalBody" style="flex:1;min-height:300px;padding:16px;border:none;outline:none;resize:none;font-size:14px;line-height:1.8;color:var(--text-primary);font-family:inherit;background:#F8FAFC;"></textarea>
+        <div style="padding:12px 16px;border-top:1px solid #E2E8F0;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-primary" style="flex:1;min-width:100px;" onclick="copyTemplate()">📋 复制</button>
+            <button class="btn-outline" style="flex:1;min-width:100px;" onclick="resetTemplate()">🔄 复原原版</button>
+            <button class="btn-outline" style="flex:1;min-width:100px;" onclick="regenerateTemplate()">✨ AI重写</button>
+        </div>
+        <div style="padding:0 16px 12px;font-size:11px;color:var(--text-muted);">修改内容会自动保存到本设备，下次打开保持修改后的版本</div>
+    </div>
+</div>
+
+<!-- 新建文书模板弹窗 -->
+<div class="modal-overlay" id="newTemplateModal">
+    <div class="modal-content" style="max-width:480px;">
+        <div class="modal-header">
+            <h3>✨ 新建文书模板</h3>
+            <button class="modal-close" onclick="closeNewTemplate()">✕</button>
+        </div>
+        <div style="padding:16px;">
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">用自然语言描述你需要的文书，AI 帮你生成</div>
+            <textarea id="newTemplateDesc" placeholder="例如：帮我写一份工伤赔偿申请书，我在杭州工地受伤..." style="width:100%;min-height:100px;padding:12px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;resize:vertical;"></textarea>
+            <button class="btn-primary" style="width:100%;margin-top:12px;" onclick="generateNewTemplate()">✨ 生成模板</button>
+        </div>
+    </div>
+</div>
+
+<!-- 快捷词管理弹窗 -->
+<div class="modal-overlay" id="quickPhrasesModal">
+    <div class="modal-content" style="max-width:480px;">
+        <div class="modal-header">
+            <h3>⚡ 快捷词管理</h3>
+            <button class="modal-close" onclick="closeQuickWordEditor()">✕</button>
+        </div>
+        <div style="padding:16px;">
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <input id="newQuickPhrase" placeholder="输入新的快捷词..." style="flex:1;padding:10px 14px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;outline:none;">
+                <button class="btn-primary" style="white-space:nowrap;" onclick="addQuickWord()">＋ 添加</button>
+            </div>
+            <div id="quickPhrasesList" style="max-height:300px;overflow-y:auto;"></div>
+            <button class="btn-danger" style="width:100%;margin-top:12px;" onclick="confirmClearQuickWords()">🗑️ 一键清除全部</button>
+        </div>
+    </div>
+</div>
+
+<!-- 清除快捷词确认弹窗 -->
+<div class="modal-overlay" id="clearQuickPhrasesModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🗑️ 清除快捷词</h3>
+            <button class="modal-close" onclick="closeClearTemplates()">✕</button>
+        </div>
+        <div class="confirm-body">
+            <div class="confirm-icon">⚠️</div>
+            <p class="confirm-title-text">确定要清除<b style="color:var(--danger);">所有自定义快捷词</b>吗？</p>
+            <p class="confirm-sub">清除后将恢复默认快捷词。</p>
+        </div>
+        <div class="confirm-actions">
+            <button class="btn-cancel" onclick="closeClearTemplates()">再想想</button>
+            <button class="btn-danger" onclick="doClearTemplates()">确认清除</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
