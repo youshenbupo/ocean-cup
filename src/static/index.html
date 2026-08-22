@@ -1045,6 +1045,63 @@
         .expense-cat-btn.active { border-color: var(--primary); background: #EFF6FF; color: var(--primary); font-weight: 600; }
         .btn-add-expense { width: 100%; padding: 10px; border: none; border-radius: 10px; background: linear-gradient(135deg, #10B981, #059669); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
         .btn-add-expense:active { transform: scale(0.98); }
+
+        /* ===== 工地看板风格 ===== */
+        /* 安全晨会大卡片 */
+        .safety-briefing { margin: 16px; background: linear-gradient(135deg, #1E3A5F 0%, #2D5A87 100%); border-radius: 20px; padding: 24px; color: #fff; position: relative; overflow: hidden; }
+        .safety-briefing::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: repeating-linear-gradient(90deg, #F59E0B 0px, #F59E0B 15px, #1E3A5F 15px, #1E3A5F 30px); }
+        .safety-briefing::after { content: '🦺'; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 64px; opacity: 0.15; }
+        .safety-briefing-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; position: relative; z-index: 1; }
+        .safety-briefing-icon { font-size: 32px; }
+        .safety-briefing-title { font-size: 20px; font-weight: 800; }
+        .safety-briefing-date { font-size: 12px; opacity: 0.7; margin-left: auto; }
+        .safety-briefing-content { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.8; position: relative; z-index: 1; }
+        .safety-briefing-tip { margin-top: 12px; font-size: 12px; opacity: 0.7; position: relative; z-index: 1; }
+
+        /* 核心功能大卡片 */
+        .core-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 0 16px 20px; }
+        .core-card { border-radius: 18px; padding: 22px 18px; color: #fff; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+        .core-card:active { transform: scale(0.97); }
+        .core-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .core-card.legal { background: linear-gradient(135deg, #1E3A5F, #2D5A87); }
+        .core-card.legal::before { background: #60A5FA; }
+        .core-card.hours { background: linear-gradient(135deg, #065F46, #10B981); }
+        .core-card.hours::before { background: #34D399; }
+        .core-card.salary { background: linear-gradient(135deg, #7C2D12, #EA580C); }
+        .core-card.salary::before { background: #FB923C; }
+        .core-card.emergency { background: linear-gradient(135deg, #7F1D1D, #DC2626); }
+        .core-card.emergency::before { background: repeating-linear-gradient(90deg, #F59E0B 0px, #F59E0B 10px, #DC2626 10px, #DC2626 20px); }
+        .core-card-icon { font-size: 36px; margin-bottom: 10px; }
+        .core-card-name { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+        .core-card-desc { font-size: 12px; opacity: 0.8; }
+        .core-card-arrow { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 20px; opacity: 0.5; }
+
+        /* 快速入口小卡片 */
+        .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 0 16px 20px; }
+        .quick-card { background: #fff; border-radius: 14px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--border); }
+        .quick-card:active { transform: scale(0.95); border-color: var(--primary); }
+        .quick-card-icon { font-size: 28px; margin-bottom: 6px; }
+        .quick-card-name { font-size: 12px; font-weight: 600; color: var(--text); }
+
+        /* 工具箱页面 */
+        .tools-section { padding: 0 16px 20px; }
+        .tools-section-title { font-size: 15px; font-weight: 700; color: var(--text); margin: 20px 0 12px; padding-left: 12px; border-left: 4px solid var(--primary); }
+        .tools-section-title.safety { border-left-color: var(--safety); }
+        .tools-section-title.money { border-left-color: var(--success); }
+        .tools-section-title.legal { border-left-color: var(--primary); }
+        .tools-section-title.emergency { border-left-color: var(--danger); }
+        .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .tool-card { background: #fff; border-radius: 14px; padding: 16px 12px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--border); }
+        .tool-card:active { transform: scale(0.95); }
+        .tool-card-icon { font-size: 32px; margin-bottom: 8px; }
+        .tool-card-name { font-size: 13px; font-weight: 600; color: var(--text); }
+        .tool-card-desc { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+        @media (max-width: 768px) {
+            .core-grid { grid-template-columns: repeat(2, 1fr); }
+            .quick-grid { grid-template-columns: repeat(4, 1fr); }
+            .tools-grid { grid-template-columns: repeat(3, 1fr); }
+        }
     </style>
 </head>
 <body>
@@ -1064,49 +1121,73 @@
     </div>
 </div>
 
-<!-- ===== 首页 ===== -->
+<!-- ===== 首页：工地看板 ===== -->
 <div class="page active" id="page-home">
-    <div class="hero-section">
-        <div class="hero-greeting">👋 你好，工友！</div>
-        <div class="hero-subtitle">有啥问题尽管问，我来帮你理一理</div>
-        <div class="hero-quote" id="dailyQuote">🏗️ 每一砖每一瓦，都是城市的脊梁</div>
-        <div class="hero-input-wrap">
-            <input type="text" id="heroInput" placeholder="输入你的问题，如：老板拖欠工资怎么办" onkeypress="if(event.key==='Enter')heroSend()">
-            <button onclick="heroSend()">🔍 提问</button>
+    <!-- 安全晨会大卡片 -->
+    <div class="safety-briefing">
+        <div class="safety-briefing-header">
+            <span class="safety-briefing-icon">🦺</span>
+            <span class="safety-briefing-title">今日安全晨会</span>
+            <span class="safety-briefing-date" id="safetyDate"></span>
+        </div>
+        <div class="safety-briefing-content" id="safetyTipHome">正在加载今日安全提示...</div>
+        <div class="safety-briefing-tip">💡 安全第一，平安回家</div>
+    </div>
+
+    <!-- 核心功能：4大卡片 -->
+    <div class="core-grid">
+        <div class="core-card legal" onclick="quickChat('我想咨询法律问题')">
+            <div class="core-card-icon">⚖️</div>
+            <div class="core-card-name">法律维权</div>
+            <div class="core-card-desc">欠薪·工伤·合同</div>
+            <div class="core-card-arrow">→</div>
+        </div>
+        <div class="core-card hours" onclick="switchTab('tools');setTimeout(()=>document.getElementById('toolsHours')?.scrollIntoView({behavior:'smooth'}),100)">
+            <div class="core-card-icon">📝</div>
+            <div class="core-card-name">记工时</div>
+            <div class="core-card-desc">记录每日工时</div>
+            <div class="core-card-arrow">→</div>
+        </div>
+        <div class="core-card salary" onclick="switchTab('tools');setTimeout(()=>document.getElementById('toolsSalary')?.scrollIntoView({behavior:'smooth'}),100)">
+            <div class="core-card-icon">💰</div>
+            <div class="core-card-name">算工资</div>
+            <div class="core-card-desc">工资计算器</div>
+            <div class="core-card-arrow">→</div>
+        </div>
+        <div class="core-card emergency" onclick="quickChat('紧急求助')">
+            <div class="core-card-icon">🚨</div>
+            <div class="core-card-name">紧急求助</div>
+            <div class="core-card-desc">一键获取帮助</div>
+            <div class="core-card-arrow">→</div>
         </div>
     </div>
 
-    <!-- 智能体工作区：4个核心功能 -->
-    <div class="section-title section-accent">
-        <h2>🤖 智能体工作区</h2>
-        <a href="javascript:void(0)" onclick="switchTab('chat')">进入对话 →</a>
+    <!-- 快速入口 -->
+    <div class="section-title">
+        <h2>⚡ 快速入口</h2>
     </div>
-    <div class="work-grid">
-        <div class="work-card legal" onclick="quickChat('我想咨询法律问题')">
-            <div class="card-icon">⚖️</div>
-            <div class="card-name">法律维权</div>
-            <div class="card-desc">欠薪·工伤·合同</div>
+    <div class="quick-grid">
+        <div class="quick-card" onclick="switchTab('tools');setTimeout(()=>document.getElementById('toolsFirstaid')?.scrollIntoView({behavior:'smooth'}),100)">
+            <div class="quick-card-icon">🚑</div>
+            <div class="quick-card-name">工伤急救</div>
         </div>
-        <div class="work-card salary" onclick="quickChat('帮我记录今天的工时')">
-            <div class="card-icon">💰</div>
-            <div class="card-name">薪资管理</div>
-            <div class="card-desc">记工时·算工资</div>
+        <div class="quick-card" onclick="switchTab('tools');setTimeout(()=>document.getElementById('toolsRights')?.scrollIntoView({behavior:'smooth'}),100)">
+            <div class="quick-card-icon">📋</div>
+            <div class="quick-card-name">维权进度</div>
         </div>
-        <div class="work-card safety" onclick="quickChat('今天工地安全注意事项')">
-            <div class="card-icon">🦺</div>
-            <div class="card-name">安全预警</div>
-            <div class="card-desc">天气·隐患识别</div>
+        <div class="quick-card" onclick="switchTab('tools');setTimeout(()=>document.getElementById('toolsTemplates')?.scrollIntoView({behavior:'smooth'}),100)">
+            <div class="quick-card-icon">📄</div>
+            <div class="quick-card-name">合同模板</div>
         </div>
-        <div class="work-card skill" onclick="quickChat('我想了解技能考证信息')">
-            <div class="card-icon">📚</div>
-            <div class="card-name">技能提升</div>
-            <div class="card-desc">考证·培训·社保</div>
+        <div class="quick-card" onclick="switchTab('tools');setTimeout(()=>document.getElementById('toolsExpense')?.scrollIntoView({behavior:'smooth'}),100)">
+            <div class="quick-card-icon">💰</div>
+            <div class="quick-card-name">记账本</div>
         </div>
     </div>
 
-    <!-- 紧急求助 -->
+    <!-- 紧急联系电话 -->
     <div class="section-title section-danger">
-        <h2>🚨 紧急求助</h2>
+        <h2>🚨 紧急联系电话</h2>
     </div>
     <div class="emergency-grid">
         <a class="emergency-card ec-red" href="tel:12333">
@@ -1131,19 +1212,14 @@
         </a>
     </div>
 
-    <!-- 工伤急救指南 -->
-    <div class="section-title section-safety">
-        <h2>🚑 工伤急救指南</h2>
+    <!-- 智能问答入口 -->
+    <div class="section-title section-accent">
+        <h2>🤖 智能问答</h2>
+        <a href="javascript:void(0)" onclick="switchTab('chat')">进入对话 →</a>
     </div>
-    <div class="firstaid-grid" id="firstaidGrid"></div>
-
-    <!-- 维权进度追踪 -->
-    <div class="section-title section-success">
-        <h2>📋 维权进度追踪</h2>
-    </div>
-    <div id="rightsProgressList"></div>
-    <div style="text-align:center;margin-top:10px;padding:0 20px 20px">
-        <button class="btn-secondary" onclick="addRightsStep()">＋ 添加维权步骤</button>
+    <div class="hero-input-wrap" style="margin: 0 16px 20px;">
+        <input type="text" id="heroInput" placeholder="输入你的问题，如：老板拖欠工资怎么办" onkeypress="if(event.key==='Enter')heroSend()">
+        <button onclick="heroSend()">🔍 提问</button>
     </div>
 </div>
 
@@ -1250,6 +1326,137 @@
     </div>
 </div>
 
+<!-- ===== 工具箱页 ===== -->
+<div class="page" id="page-tools">
+    <!-- 工时记录 -->
+    <div class="tools-section" id="toolsHours">
+        <div class="tools-section-title money">📝 工时记录</div>
+        <div class="profile-panel">
+            <div class="expense-summary">
+                <div class="expense-summary-item" style="background:linear-gradient(135deg,#1E40AF,#3B82F6)">
+                    <div class="expense-summary-label">本月工时</div>
+                    <div class="expense-summary-value" id="workHoursMonth">0h</div>
+                </div>
+                <div class="expense-summary-item" style="background:linear-gradient(135deg,#7C2D12,#EA580C)">
+                    <div class="expense-summary-label">本月工天</div>
+                    <div class="expense-summary-value" id="workDaysMonth">0天</div>
+                </div>
+            </div>
+            <div class="expense-form">
+                <div class="expense-form-row">
+                    <input type="date" id="workDate" style="flex:1">
+                    <input type="number" id="workHours" placeholder="工时（小时）" min="0.5" max="24" step="0.5" style="flex:1">
+                </div>
+                <div class="expense-form-row">
+                    <input type="text" id="workNote" placeholder="备注（如：3号楼钢筋绑扎）">
+                </div>
+                <button class="btn-add-expense" style="background:linear-gradient(135deg,#3B82F6,#2563EB)" onclick="addWorkHour()">✚ 记录工时</button>
+            </div>
+            <div class="expense-list" id="workHourList">
+                <div class="expense-empty">还没有工时记录，记一笔吧～</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 工资计算器 -->
+    <div class="tools-section" id="toolsSalary">
+        <div class="tools-section-title money">🧮 工资计算器</div>
+        <div class="profile-panel">
+            <div class="expense-form">
+                <div class="expense-form-row">
+                    <select id="calcMode" onchange="toggleCalcMode()">
+                        <option value="day">按天计算</option>
+                        <option value="hour">按小时计算</option>
+                        <option value="month">按月计算</option>
+                    </select>
+                    <input type="number" id="calcRate" placeholder="日薪/时薪/月薪" min="0">
+                </div>
+                <div class="expense-form-row" id="calcDaysRow">
+                    <input type="number" id="calcDays" placeholder="工作天数" min="0" step="0.5">
+                    <input type="number" id="calcOvertime" placeholder="加班小时" min="0" step="0.5">
+                </div>
+                <div class="expense-form-row" id="calcOvertimeRateRow">
+                    <input type="number" id="calcOvertimeRate" placeholder="加班时薪（默认1.5倍）" min="0" step="0.1">
+                </div>
+                <button class="btn-add-expense" style="background:linear-gradient(135deg,#F59E0B,#D97706)" onclick="calcSalary()">🧮 计算应得工资</button>
+            </div>
+            <div id="calcResult" style="display:none;text-align:center;padding:16px;background:#F0F9FF;border-radius:10px;border:1px solid #BAE6FD;">
+                <div style="font-size:12px;color:#0369A1;margin-bottom:4px">应得工资</div>
+                <div id="calcResultValue" style="font-size:28px;font-weight:800;color:#0C4A6E">¥0</div>
+                <div id="calcResultDetail" style="font-size:12px;color:#0369A1;margin-top:6px;line-height:1.6"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 记账功能 -->
+    <div class="tools-section" id="toolsExpense">
+        <div class="tools-section-title money">💰 工友记账</div>
+        <div class="profile-panel">
+            <div class="expense-summary">
+                <div class="expense-summary-item expense-in">
+                    <div class="expense-summary-label">本月收入</div>
+                    <div class="expense-summary-value" id="expenseTotalIn">¥0</div>
+                </div>
+                <div class="expense-summary-item expense-out">
+                    <div class="expense-summary-label">本月支出</div>
+                    <div class="expense-summary-value" id="expenseTotalOut">¥0</div>
+                </div>
+            </div>
+            <div class="expense-form">
+                <div class="expense-form-row">
+                    <div class="expense-type-toggle">
+                        <div class="expense-type-btn active-out" id="expTypeOut" onclick="setExpenseType('out')">支出</div>
+                        <div class="expense-type-btn" id="expTypeIn" onclick="setExpenseType('in')">收入</div>
+                    </div>
+                    <input type="number" id="expAmount" placeholder="金额" min="0" step="0.01">
+                </div>
+                <div class="expense-cat-grid" id="expCatGrid"></div>
+                <div class="expense-form-row">
+                    <input type="text" id="expNote" placeholder="备注（如：买盒饭、打车）">
+                </div>
+                <button class="btn-add-expense" onclick="addExpense()">✚ 记一笔</button>
+            </div>
+            <div class="expense-list" id="expenseList">
+                <div class="expense-empty">还没有记录，记一笔吧～</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 合同模板 -->
+    <div class="tools-section" id="toolsTemplates">
+        <div class="tools-section-title legal">📄 实用文书模板</div>
+        <div class="profile-card" style="margin:0 16px">
+            <div class="template-list" id="templateList"></div>
+        </div>
+    </div>
+
+    <!-- 工伤急救指南 -->
+    <div class="tools-section" id="toolsFirstaid">
+        <div class="tools-section-title emergency">🚑 工伤急救指南</div>
+        <div class="firstaid-grid" id="firstaidGrid"></div>
+    </div>
+
+    <!-- 维权进度追踪 -->
+    <div class="tools-section" id="toolsRights">
+        <div class="tools-section-title legal">📋 维权进度追踪</div>
+        <div id="rightsProgressList"></div>
+        <div style="text-align:center;margin-top:10px;padding:0 16px 20px">
+            <button class="btn-secondary" onclick="addRightsStep()">＋ 添加维权步骤</button>
+        </div>
+    </div>
+
+    <!-- 扩展功能 -->
+    <div class="tools-section">
+        <div class="tools-section-title">🧩 扩展功能</div>
+        <div class="extend-toggle" onclick="toggleExtend()">
+            <div class="extend-toggle-left">
+                <span class="extend-icon">🗂️</span>
+                <div class="extend-txt">
+                    <div class="extend-title">更多实用工具</div>
+                    <div class="extend-sub">工时 · 工资条 · 证书 · 记账 · 社区</div>
+                </div>
+            </div>
+
 <!-- ===== 我的页面 ===== -->
 <div class="page" id="page-profile">
     <div class="page-content">
@@ -1346,94 +1553,6 @@
             </div>
         </div>
 
-        <!-- 记账功能 -->
-        <div class="section-subtitle ss-success">💰 工友记账</div>
-        <div class="profile-panel">
-            <div class="expense-summary">
-                <div class="expense-summary-item expense-in">
-                    <div class="expense-summary-label">本月收入</div>
-                    <div class="expense-summary-value" id="expenseTotalIn">¥0</div>
-                </div>
-                <div class="expense-summary-item expense-out">
-                    <div class="expense-summary-label">本月支出</div>
-                    <div class="expense-summary-value" id="expenseTotalOut">¥0</div>
-                </div>
-            </div>
-            <div class="expense-form">
-                <div class="expense-form-row">
-                    <div class="expense-type-toggle">
-                        <div class="expense-type-btn active-out" id="expTypeOut" onclick="setExpenseType('out')">支出</div>
-                        <div class="expense-type-btn" id="expTypeIn" onclick="setExpenseType('in')">收入</div>
-                    </div>
-                    <input type="number" id="expAmount" placeholder="金额" min="0" step="0.01">
-                </div>
-                <div class="expense-cat-grid" id="expCatGrid"></div>
-                <div class="expense-form-row">
-                    <input type="text" id="expNote" placeholder="备注（如：买盒饭、打车）">
-                </div>
-                <button class="btn-add-expense" onclick="addExpense()">✚ 记一笔</button>
-            </div>
-            <div class="expense-list" id="expenseList">
-                <div class="expense-empty">还没有记录，记一笔吧～</div>
-            </div>
-        </div>
-
-        <!-- 工时记录 -->
-        <div class="section-subtitle ss-accent">📝 工时记录</div>
-        <div class="profile-panel">
-            <div class="expense-summary">
-                <div class="expense-summary-item" style="background:linear-gradient(135deg,#1E40AF,#3B82F6)">
-                    <div class="expense-summary-label">本月工时</div>
-                    <div class="expense-summary-value" id="workHoursMonth">0h</div>
-                </div>
-                <div class="expense-summary-item" style="background:linear-gradient(135deg,#7C2D12,#EA580C)">
-                    <div class="expense-summary-label">本月工天</div>
-                    <div class="expense-summary-value" id="workDaysMonth">0天</div>
-                </div>
-            </div>
-            <div class="expense-form">
-                <div class="expense-form-row">
-                    <input type="date" id="workDate" style="flex:1">
-                    <input type="number" id="workHours" placeholder="工时（小时）" min="0.5" max="24" step="0.5" style="flex:1">
-                </div>
-                <div class="expense-form-row">
-                    <input type="text" id="workNote" placeholder="备注（如：3号楼钢筋绑扎）">
-                </div>
-                <button class="btn-add-expense" style="background:linear-gradient(135deg,#3B82F6,#2563EB)" onclick="addWorkHour()">✚ 记录工时</button>
-            </div>
-            <div class="expense-list" id="workHourList">
-                <div class="expense-empty">还没有工时记录，记一笔吧～</div>
-            </div>
-        </div>
-
-        <!-- 工资计算器 -->
-        <div class="section-subtitle ss-steel">🧮 工资计算器</div>
-        <div class="profile-panel">
-            <div class="expense-form">
-                <div class="expense-form-row">
-                    <select id="calcMode" onchange="toggleCalcMode()">
-                        <option value="day">按天计算</option>
-                        <option value="hour">按小时计算</option>
-                        <option value="month">按月计算</option>
-                    </select>
-                    <input type="number" id="calcRate" placeholder="日薪/时薪/月薪" min="0">
-                </div>
-                <div class="expense-form-row" id="calcDaysRow">
-                    <input type="number" id="calcDays" placeholder="工作天数" min="0" step="0.5">
-                    <input type="number" id="calcOvertime" placeholder="加班小时" min="0" step="0.5">
-                </div>
-                <div class="expense-form-row" id="calcOvertimeRateRow">
-                    <input type="number" id="calcOvertimeRate" placeholder="加班时薪（默认1.5倍）" min="0" step="0.1">
-                </div>
-                <button class="btn-add-expense" style="background:linear-gradient(135deg,#F59E0B,#D97706)" onclick="calcSalary()">🧮 计算应得工资</button>
-            </div>
-            <div id="calcResult" style="display:none;text-align:center;padding:16px;background:#F0F9FF;border-radius:10px;border:1px solid #BAE6FD;">
-                <div style="font-size:12px;color:#0369A1;margin-bottom:4px">应得工资</div>
-                <div id="calcResultValue" style="font-size:28px;font-weight:800;color:#0C4A6E">¥0</div>
-                <div id="calcResultDetail" style="font-size:12px;color:#0369A1;margin-top:6px;line-height:1.6"></div>
-            </div>
-        </div>
-
         <!-- 安全晨会 -->
         <div class="section-subtitle ss-safety">🦺 安全晨会</div>
         <div class="profile-panel" style="background:linear-gradient(135deg,#FFF7ED,#FFFBEB);border-color:#FDE68A">
@@ -1445,12 +1564,6 @@
             </div>
         </div>
 
-        <!-- 合同模板 -->
-        <div class="profile-card" style="margin-top:12px">
-          <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--primary)">📄 实用文书模板</div>
-          <div class="template-list" id="templateList"></div>
-        </div>
-
         <!-- 设置 -->
         <div class="section-subtitle ss-steel">⚙️ 设置</div>
         <div class="profile-menu">
@@ -1458,49 +1571,6 @@
                 <div class="menu-icon">🔑</div>
                 <div class="menu-label">API 设置</div>
                 <div class="menu-arrow">›</div>
-            </div>
-        </div>
-
-        <!-- 扩展功能（默认折叠，点击才展开） -->
-        <div class="section-subtitle ss-accent">🧩 扩展功能</div>
-        <div class="extend-toggle" onclick="toggleExtend()">
-            <div class="extend-toggle-left">
-                <span class="extend-icon">🗂️</span>
-                <div class="extend-txt">
-                    <div class="extend-title">更多实用工具</div>
-                    <div class="extend-sub">工时 · 工资条 · 证书 · 记账 · 社区</div>
-                </div>
-            </div>
-            <span class="extend-arrow" id="extendArrow">▼</span>
-        </div>
-        <div class="extend-panel" id="extendPanel">
-            <div class="extend-tip">💡 这些功能需要对接工地 / 公司数据后正式开放，现在可以先咨询了解</div>
-            <div class="profile-menu">
-                <div class="menu-item" onclick="quickChat('查看我的工时记录')">
-                    <div class="menu-icon">📝</div>
-                    <div class="menu-label">我的工时记录</div>
-                    <div class="menu-arrow">›</div>
-                </div>
-                <div class="menu-item" onclick="quickChat('查看我的工资条')">
-                    <div class="menu-icon">💰</div>
-                    <div class="menu-label">我的工资条</div>
-                    <div class="menu-arrow">›</div>
-                </div>
-                <div class="menu-item" onclick="quickChat('查看我的证书')">
-                    <div class="menu-icon">🏅</div>
-                    <div class="menu-label">我的证书</div>
-                    <div class="menu-arrow">›</div>
-                </div>
-                <div class="menu-item" onclick="quickChat('查看我的记账明细')">
-                    <div class="menu-icon">📊</div>
-                    <div class="menu-label">我的记账本</div>
-                    <div class="menu-arrow">›</div>
-                </div>
-                <div class="menu-item" onclick="quickChat('查看我发的帖子')">
-                    <div class="menu-icon">👥</div>
-                    <div class="menu-label">我的社区帖子</div>
-                    <div class="menu-arrow">›</div>
-                </div>
             </div>
         </div>
     </div>
@@ -1524,9 +1594,9 @@
         <span class="tab-icon">💬</span>
         <span>对话</span>
     </button>
-    <button class="tab-item" onclick="switchTab('knowledge')">
-        <span class="tab-icon">📚</span>
-        <span>知识库</span>
+    <button class="tab-item" onclick="switchTab('tools')">
+        <span class="tab-icon">🧰</span>
+        <span>工具箱</span>
     </button>
     <button class="tab-item" onclick="switchTab('profile')">
         <span class="tab-icon">👷</span>
@@ -1617,7 +1687,7 @@
         document.getElementById('page-' + name).classList.add('active');
         // 激活对应 tab
         const tabs = document.querySelectorAll('.tab-item');
-        const tabMap = { home: 0, chat: 1, knowledge: 2, profile: 3 };
+        const tabMap = { home: 0, chat: 1, tools: 2, profile: 3 };
         if (tabMap[name] !== undefined) tabs[tabMap[name]].classList.add('active');
         // 切到聊天页时滚动到底部
         if (name === 'chat') {
