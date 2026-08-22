@@ -6,17 +6,34 @@
     <title>工友权益明白人 - AI智能助手</title>
     <style>
         :root {
+            /* ===== 建筑行业主题色 ===== */
+            /* 主色：工程蓝 */
             --primary: #2563EB;
             --primary-dark: #1D4ED8;
             --primary-light: #60A5FA;
+            /* 强调色：安全橙 */
             --accent: #F97316;
             --accent-dark: #EA580C;
             --accent-light: #FDBA74;
+            /* 安全黄：警示 */
+            --safety: #F59E0B;
+            --safety-light: #FCD34D;
+            /* 砖红：建筑 */
+            --brick: #C0392B;
+            --brick-light: #E74C3C;
+            /* 混凝土灰 */
+            --concrete: #95A5A6;
+            --concrete-light: #BDC3C7;
+            /* 钢铁灰 */
+            --steel: #7F8C8D;
+            --steel-light: #95A5A6;
+            /* 安全绿 */
             --success: #10B981;
             --danger: #EF4444;
-            --warning: #F59E0B;
+            /* 深蓝 */
             --navy: #0B2545;
             --navy-2: #13315C;
+            /* 背景 */
             --bg: #EEF2F8;
             --card: #FFFFFF;
             --text: #1E293B;
@@ -25,7 +42,7 @@
             --shadow: 0 6px 24px rgba(11, 37, 69, 0.10);
             --shadow-lg: 0 12px 40px rgba(11, 37, 69, 0.16);
             --radius: 16px;
-            /* 别名与渐变（补齐缺失引用，修复气泡白字看不清问题） */
+            /* 别名与渐变 */
             --text-primary: #1E293B;
             --text-muted: #94A3B8;
             --text-light: #CBD5E1;
@@ -34,11 +51,22 @@
             --grad-warm: linear-gradient(135deg, #13315C 0%, #1D4ED8 100%);
             --grad-hot: linear-gradient(135deg, #0B2545 0%, #1D4ED8 60%, #2563EB 100%);
             --grad-accent: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+            --grad-safety: linear-gradient(135deg, #F59E0B 0%, #F97316 100%);
+            --grad-brick: linear-gradient(135deg, #C0392B 0%, #E74C3C 100%);
+            --grad-steel: linear-gradient(135deg, #7F8C8D 0%, #95A5A6 100%);
+            /* 警示条纹图案 */
+            --hazard-stripes: repeating-linear-gradient(45deg, #F59E0B 0px, #F59E0B 10px, #0B2545 10px, #0B2545 20px);
+            --blueprint-grid:
+                linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37, 99, 235, 0.05) 1px, transparent 1px);
+            --blueprint-grid-size: 20px 20px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
+            background-image: var(--blueprint-grid);
+            background-size: var(--blueprint-grid-size);
             min-height: 100vh;
             color: var(--text);
             overflow-x: hidden;
@@ -56,6 +84,8 @@
             top: 0;
             z-index: 100;
             box-shadow: 0 6px 24px rgba(11, 37, 69, 0.35);
+            border-bottom: 4px solid transparent;
+            border-image: var(--hazard-stripes) 1;
         }
         .top-nav .nav-left { display: flex; align-items: center; gap: 12px; }
         .top-nav .logo {
@@ -94,17 +124,35 @@
             flex: 1;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            padding: 8px 0;
+            padding: 10px 0;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s;
             border: none; background: none;
             color: var(--text-secondary);
-            font-size: 10px;
+            font-size: 11px;
             gap: 4px;
+            position: relative;
         }
-        .tab-item .tab-icon { font-size: 22px; }
-        .tab-item.active { color: var(--primary); }
-        .tab-item.active .tab-icon { transform: scale(1.1); }
+        .tab-item .tab-icon { font-size: 22px; transition: all 0.25s; }
+        .tab-item.active { color: var(--primary); font-weight: 600; }
+        .tab-item.active .tab-icon { transform: scale(1.15); }
+        .tab-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 32px; height: 3px;
+            background: var(--primary);
+            border-radius: 0 0 3px 3px;
+        }
+        .tab-item:nth-child(1).active { color: var(--primary); }
+        .tab-item:nth-child(1).active::before { background: var(--primary); }
+        .tab-item:nth-child(2).active { color: var(--accent); }
+        .tab-item:nth-child(2).active::before { background: var(--accent); }
+        .tab-item:nth-child(3).active { color: var(--safety); }
+        .tab-item:nth-child(3).active::before { background: var(--safety); }
+        .tab-item:nth-child(4).active { color: var(--success); }
+        .tab-item:nth-child(4).active::before { background: var(--success); }
 
         /* ===== 页面容器 ===== */
         .page {
@@ -123,6 +171,8 @@
             color: white;
             position: relative;
             overflow: hidden;
+            border-bottom: 6px solid transparent;
+            border-image: var(--hazard-stripes) 1;
         }
         .hero-section::before {
             content: '';
@@ -142,7 +192,14 @@
         }
         .hero-greeting { font-size: 26px; font-weight: 800; margin-bottom: 8px; position: relative; z-index: 1; }
         .hero-subtitle { font-size: 14px; opacity: 0.9; margin-bottom: 10px; position: relative; z-index: 1; }
-        .hero-quote { font-size: 12px; opacity: 0.75; margin-bottom: 16px; position: relative; z-index: 1; font-style: italic; padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 8px; display: inline-block; }
+        .hero-quote {
+            font-size: 12px; opacity: 0.85; margin-bottom: 16px; position: relative; z-index: 1;
+            font-style: italic; padding: 8px 14px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 8px; display: inline-block;
+            border-left: 3px solid var(--accent);
+            backdrop-filter: blur(4px);
+        }
         .hero-input-wrap {
             display: flex; gap: 10px;
             background: rgba(255,255,255,0.2);
@@ -174,7 +231,26 @@
             display: flex; align-items: center; justify-content: space-between;
             padding: 24px 20px 14px;
         }
-        .section-title h2 { font-size: 19px; font-weight: 700; }
+        .section-title h2 {
+            font-size: 19px; font-weight: 700;
+            padding-left: 12px;
+            position: relative;
+        }
+        .section-title h2::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 4px; height: 20px;
+            border-radius: 2px;
+            background: var(--primary);
+        }
+        /* 不同类型 section 用不同颜色 */
+        .section-title.section-safety h2::before { background: var(--safety); }
+        .section-title.section-accent h2::before { background: var(--accent); }
+        .section-title.section-success h2::before { background: var(--success); }
+        .section-title.section-danger h2::before { background: var(--danger); }
+        .section-title.section-brick h2::before { background: var(--brick); }
         .section-title a { font-size: 14px; color: var(--primary); text-decoration: none; }
 
         /* 工作区卡片 */
@@ -205,12 +281,13 @@
         .work-card .card-name { font-size: 14px; font-weight: 600; color: var(--text); }
         .work-card .card-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 
-        .work-card.legal .card-icon { background: #FEF3C7; }
-        .work-card.salary .card-icon { background: #DBEAFE; }
-        .work-card.safety .card-icon { background: #D1FAE5; }
-        .work-card.skill .card-icon { background: #EDE9FE; }
-        .work-card.life .card-icon { background: #FCE7F3; }
-        .work-card.community .card-icon { background: #FEE2E2; }
+        /* 建筑行业主题色卡片图标 */
+        .work-card.legal .card-icon { background: linear-gradient(135deg, #FEF3C7, #FDE68A); }
+        .work-card.salary .card-icon { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
+        .work-card.safety .card-icon { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); }
+        .work-card.skill .card-icon { background: linear-gradient(135deg, #EDE9FE, #DDD6FE); }
+        .work-card.life .card-icon { background: linear-gradient(135deg, #FCE7F3, #FBCFE8); }
+        .work-card.community .card-icon { background: linear-gradient(135deg, #FEE2E2, #FECACA); }
 
         /* 工具面板 */
         .tool-grid {
@@ -622,7 +699,22 @@
         .section-subtitle {
             font-size: 14px; font-weight: 700; color: var(--text-primary);
             margin: 18px 2px 10px; display: flex; align-items: center; gap: 6px;
+            padding-left: 10px;
+            position: relative;
         }
+        .section-subtitle::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 3px; height: 14px;
+            border-radius: 2px;
+            background: var(--primary);
+        }
+        .section-subtitle.ss-safety::before { background: var(--safety); }
+        .section-subtitle.ss-accent::before { background: var(--accent); }
+        .section-subtitle.ss-success::before { background: var(--success); }
+        .section-subtitle.ss-steel::before { background: var(--steel); }
         .profile-card {
             background: var(--bg-dark);
             background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
@@ -641,14 +733,23 @@
         /* 紧急求助 */
         .emergency-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .emergency-card {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-            padding: 18px 12px; border-radius: 14px; text-decoration: none;
-            transition: all 0.2s; border: 1px solid transparent;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 20px 12px; border-radius: 16px; text-decoration: none;
+            transition: all 0.25s; border: 2px solid transparent;
+            position: relative; overflow: hidden;
         }
-        .emergency-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .ec-icon { font-size: 30px; }
+        .emergency-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--hazard-stripes);
+            opacity: 0.3;
+        }
+        .emergency-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+        .ec-icon { font-size: 32px; }
         .ec-name { font-size: 14px; font-weight: 600; }
-        .ec-num { font-size: 20px; font-weight: 800; }
+        .ec-num { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
         .ec-red { background: linear-gradient(135deg,#FEE2E2,#FECACA); color: #DC2626; border-color: #FCA5A5; }
         .ec-blue { background: linear-gradient(135deg,#DBEAFE,#BFDBFE); color: #1D4ED8; border-color: #93C5FD; }
         .ec-orange { background: linear-gradient(135deg,#FFF7ED,#FFEDD5); color: #C2410C; border-color: #FDBA74; }
@@ -971,12 +1072,12 @@
         <div class="hero-quote" id="dailyQuote">🏗️ 每一砖每一瓦，都是城市的脊梁</div>
         <div class="hero-input-wrap">
             <input type="text" id="heroInput" placeholder="输入你的问题，如：老板拖欠工资怎么办" onkeypress="if(event.key==='Enter')heroSend()">
-            <button onclick="heroSend()">提问</button>
+            <button onclick="heroSend()">🔍 提问</button>
         </div>
     </div>
 
     <!-- 智能体工作区：4个核心功能 -->
-    <div class="section-title">
+    <div class="section-title section-accent">
         <h2>🤖 智能体工作区</h2>
         <a href="javascript:void(0)" onclick="switchTab('chat')">进入对话 →</a>
     </div>
@@ -1004,7 +1105,7 @@
     </div>
 
     <!-- 紧急求助 -->
-    <div class="section-title">
+    <div class="section-title section-danger">
         <h2>🚨 紧急求助</h2>
     </div>
     <div class="emergency-grid">
@@ -1031,13 +1132,13 @@
     </div>
 
     <!-- 工伤急救指南 -->
-    <div class="section-title">
+    <div class="section-title section-safety">
         <h2>🚑 工伤急救指南</h2>
     </div>
     <div class="firstaid-grid" id="firstaidGrid"></div>
 
     <!-- 维权进度追踪 -->
-    <div class="section-title">
+    <div class="section-title section-success">
         <h2>📋 维权进度追踪</h2>
     </div>
     <div id="rightsProgressList"></div>
@@ -1246,7 +1347,7 @@
         </div>
 
         <!-- 记账功能 -->
-        <div class="section-subtitle">💰 工友记账</div>
+        <div class="section-subtitle ss-success">💰 工友记账</div>
         <div class="profile-panel">
             <div class="expense-summary">
                 <div class="expense-summary-item expense-in">
@@ -1278,7 +1379,7 @@
         </div>
 
         <!-- 工时记录 -->
-        <div class="section-subtitle">📝 工时记录</div>
+        <div class="section-subtitle ss-accent">📝 工时记录</div>
         <div class="profile-panel">
             <div class="expense-summary">
                 <div class="expense-summary-item" style="background:linear-gradient(135deg,#1E40AF,#3B82F6)">
@@ -1306,7 +1407,7 @@
         </div>
 
         <!-- 工资计算器 -->
-        <div class="section-subtitle">🧮 工资计算器</div>
+        <div class="section-subtitle ss-steel">🧮 工资计算器</div>
         <div class="profile-panel">
             <div class="expense-form">
                 <div class="expense-form-row">
@@ -1334,7 +1435,7 @@
         </div>
 
         <!-- 安全晨会 -->
-        <div class="section-subtitle">🦺 安全晨会</div>
+        <div class="section-subtitle ss-safety">🦺 安全晨会</div>
         <div class="profile-panel" style="background:linear-gradient(135deg,#FFF7ED,#FFFBEB);border-color:#FDE68A">
             <div id="safetyTipContent" style="font-size:14px;line-height:1.8;color:#78350F">
                 <div style="text-align:center;padding:20px;color:#B45309">加载中...</div>
@@ -1351,7 +1452,7 @@
         </div>
 
         <!-- 设置 -->
-        <div class="section-subtitle">⚙️ 设置</div>
+        <div class="section-subtitle ss-steel">⚙️ 设置</div>
         <div class="profile-menu">
             <div class="menu-item" onclick="openSettings()">
                 <div class="menu-icon">🔑</div>
@@ -1361,7 +1462,7 @@
         </div>
 
         <!-- 扩展功能（默认折叠，点击才展开） -->
-        <div class="section-subtitle">🧩 扩展功能</div>
+        <div class="section-subtitle ss-accent">🧩 扩展功能</div>
         <div class="extend-toggle" onclick="toggleExtend()">
             <div class="extend-toggle-left">
                 <span class="extend-icon">🗂️</span>
@@ -1406,15 +1507,17 @@
 </div>
 
 <!-- ===== 页脚 ===== -->
-<div style="text-align:center;padding:20px;font-size:11px;color:var(--text-secondary);opacity:0.6">
-    <div>🏗️ 工友权益明白人 · 为人民建好房，为工友谋幸福</div>
-    <div style="margin-top:4px">AI智能助手 · 权益保障 · 安全守护 · 技能提升</div>
+<div style="text-align:center;padding:24px 20px;font-size:11px;color:var(--text-secondary);opacity:0.7;background:linear-gradient(135deg,#F8FAFC,#F1F5F9);border-top:3px solid transparent;border-image:var(--hazard-stripes) 1;margin-top:20px">
+    <div style="font-size:20px;margin-bottom:8px">🏗️ 👷 🦺 ⚖️ 💰</div>
+    <div style="font-weight:600;color:var(--text-primary)">工友权益明白人</div>
+    <div style="margin-top:4px">为人民建好房，为工友谋幸福</div>
+    <div style="margin-top:8px;font-size:10px;opacity:0.6">AI智能助手 · 权益保障 · 安全守护 · 技能提升</div>
 </div>
 
 <!-- ===== 底部标签栏 ===== -->
 <div class="tab-bar">
     <button class="tab-item active" onclick="switchTab('home')">
-        <span class="tab-icon">🏠</span>
+        <span class="tab-icon">🏗️</span>
         <span>首页</span>
     </button>
     <button class="tab-item" onclick="switchTab('chat')">
@@ -1426,7 +1529,7 @@
         <span>知识库</span>
     </button>
     <button class="tab-item" onclick="switchTab('profile')">
-        <span class="tab-icon">👤</span>
+        <span class="tab-icon">👷</span>
         <span>我的</span>
     </button>
 </div>
