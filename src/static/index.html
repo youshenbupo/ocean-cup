@@ -1182,10 +1182,10 @@
             <div class="core-card-desc">工资计算器</div>
             <div class="core-card-arrow">→</div>
         </div>
-        <div class="core-card emergency" onclick="quickChat('紧急求助')">
+        <div class="core-card emergency" onclick="showEmergencyPanel()">
             <div class="core-card-icon">🚨</div>
             <div class="core-card-name">紧急求助</div>
-            <div class="core-card-desc">一键获取帮助</div>
+            <div class="core-card-desc">一键拨打电话</div>
             <div class="core-card-arrow">→</div>
         </div>
     </div>
@@ -1255,7 +1255,7 @@
 <div class="page" id="page-chat">
     <aside class="chat-sidebar">
         <div class="sidebar-header">
-            <h3>💬 历史对话</h3>
+            <h3>历史对话</h3>
             <div class="sidebar-actions">
                 <button class="icon-btn" title="聊天壁纸" onclick="openWallpaper()">🎨</button>
                 <button class="icon-btn" title="清除全部对话" onclick="confirmClearAll()">🗑️</button>
@@ -1270,6 +1270,7 @@
     </aside>
     <div class="chat-main">
         <div class="chat-session-bar">
+            <button class="session-btn" onclick="switchTab('home')" title="返回首页">🏠</button>
             <button class="session-btn" onclick="openSessionList()">📋 历史</button>
             <span class="session-title" id="sessionTitle">新对话</span>
             <span class="chat-profile-hint" id="chatProfileHint" onclick="switchTab('profile')" title="点击完善个人信息"></span>
@@ -1377,62 +1378,63 @@
 
 <!-- ===== 工具箱页 ===== -->
 <div class="page" id="page-tools">
-    <!-- 工时记录 -->
+    <!-- 工时工资 -->
     <div class="tools-section" id="toolsHours">
-        <div class="tools-section-title money">📝 工时记录</div>
+        <div class="tools-section-title work">📝 工时工资</div>
         <div class="profile-panel">
-            <div class="expense-summary">
-                <div class="expense-summary-item" style="background:linear-gradient(135deg,#1E40AF,#3B82F6)">
-                    <div class="expense-summary-label">本月工时</div>
-                    <div class="expense-summary-value" id="workHoursMonth">0h</div>
+            <!-- 工时记录 -->
+            <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #E2E8F0">
+                <div style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:12px">📝 记工时</div>
+                <div class="expense-summary">
+                    <div class="expense-summary-item" style="background:linear-gradient(135deg,#1E40AF,#3B82F6)">
+                        <div class="expense-summary-label">本月工时</div>
+                        <div class="expense-summary-value" id="workHoursMonth">0h</div>
+                    </div>
+                    <div class="expense-summary-item" style="background:linear-gradient(135deg,#7C2D12,#EA580C)">
+                        <div class="expense-summary-label">本月工天</div>
+                        <div class="expense-summary-value" id="workDaysMonth">0天</div>
+                    </div>
                 </div>
-                <div class="expense-summary-item" style="background:linear-gradient(135deg,#7C2D12,#EA580C)">
-                    <div class="expense-summary-label">本月工天</div>
-                    <div class="expense-summary-value" id="workDaysMonth">0天</div>
+                <div class="expense-form">
+                    <div class="expense-form-row">
+                        <input type="date" id="workDate" style="flex:1">
+                        <input type="number" id="workHours" placeholder="工时（小时）" min="0.5" max="24" step="0.5" style="flex:1">
+                    </div>
+                    <div class="expense-form-row">
+                        <input type="text" id="workNote" placeholder="备注（如：3号楼钢筋绑扎）">
+                    </div>
+                    <button class="btn-add-expense" style="background:linear-gradient(135deg,#3B82F6,#2563EB)" onclick="addWorkHour()">✚ 记录工时</button>
+                </div>
+                <div class="expense-list" id="workHourList">
+                    <div class="expense-empty">还没有工时记录，记一笔吧～</div>
                 </div>
             </div>
-            <div class="expense-form">
-                <div class="expense-form-row">
-                    <input type="date" id="workDate" style="flex:1">
-                    <input type="number" id="workHours" placeholder="工时（小时）" min="0.5" max="24" step="0.5" style="flex:1">
+            <!-- 工资计算 -->
+            <div>
+                <div style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:12px">🧮 算工资</div>
+                <div class="expense-form">
+                    <div class="expense-form-row">
+                        <select id="calcMode" onchange="toggleCalcMode()">
+                            <option value="day">按天计算</option>
+                            <option value="hour">按小时计算</option>
+                            <option value="month">按月计算</option>
+                        </select>
+                        <input type="number" id="calcRate" placeholder="日薪/时薪/月薪" min="0">
+                    </div>
+                    <div class="expense-form-row" id="calcDaysRow">
+                        <input type="number" id="calcDays" placeholder="工作天数" min="0" step="0.5">
+                        <input type="number" id="calcOvertime" placeholder="加班小时" min="0" step="0.5">
+                    </div>
+                    <div class="expense-form-row" id="calcOvertimeRateRow">
+                        <input type="number" id="calcOvertimeRate" placeholder="加班时薪（默认1.5倍）" min="0" step="0.1">
+                    </div>
+                    <button class="btn-add-expense" style="background:linear-gradient(135deg,#F59E0B,#D97706)" onclick="calcSalary()">🧮 计算应得工资</button>
                 </div>
-                <div class="expense-form-row">
-                    <input type="text" id="workNote" placeholder="备注（如：3号楼钢筋绑扎）">
+                <div id="calcResult" style="display:none;text-align:center;padding:16px;background:#F0F9FF;border-radius:10px;border:1px solid #BAE6FD;margin-top:12px">
+                    <div style="font-size:12px;color:#0369A1;margin-bottom:4px">应得工资</div>
+                    <div id="calcResultValue" style="font-size:28px;font-weight:800;color:#0C4A6E">¥0</div>
+                    <div id="calcResultDetail" style="font-size:12px;color:#0369A1;margin-top:6px;line-height:1.6"></div>
                 </div>
-                <button class="btn-add-expense" style="background:linear-gradient(135deg,#3B82F6,#2563EB)" onclick="addWorkHour()">✚ 记录工时</button>
-            </div>
-            <div class="expense-list" id="workHourList">
-                <div class="expense-empty">还没有工时记录，记一笔吧～</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 工资计算器 -->
-    <div class="tools-section" id="toolsSalary">
-        <div class="tools-section-title money">🧮 工资计算器</div>
-        <div class="profile-panel">
-            <div class="expense-form">
-                <div class="expense-form-row">
-                    <select id="calcMode" onchange="toggleCalcMode()">
-                        <option value="day">按天计算</option>
-                        <option value="hour">按小时计算</option>
-                        <option value="month">按月计算</option>
-                    </select>
-                    <input type="number" id="calcRate" placeholder="日薪/时薪/月薪" min="0">
-                </div>
-                <div class="expense-form-row" id="calcDaysRow">
-                    <input type="number" id="calcDays" placeholder="工作天数" min="0" step="0.5">
-                    <input type="number" id="calcOvertime" placeholder="加班小时" min="0" step="0.5">
-                </div>
-                <div class="expense-form-row" id="calcOvertimeRateRow">
-                    <input type="number" id="calcOvertimeRate" placeholder="加班时薪（默认1.5倍）" min="0" step="0.1">
-                </div>
-                <button class="btn-add-expense" style="background:linear-gradient(135deg,#F59E0B,#D97706)" onclick="calcSalary()">🧮 计算应得工资</button>
-            </div>
-            <div id="calcResult" style="display:none;text-align:center;padding:16px;background:#F0F9FF;border-radius:10px;border:1px solid #BAE6FD;">
-                <div style="font-size:12px;color:#0369A1;margin-bottom:4px">应得工资</div>
-                <div id="calcResultValue" style="font-size:28px;font-weight:800;color:#0C4A6E">¥0</div>
-                <div id="calcResultDetail" style="font-size:12px;color:#0369A1;margin-top:6px;line-height:1.6"></div>
             </div>
         </div>
     </div>
@@ -2269,6 +2271,26 @@ ${content}`;
     function quickChatContinue(text) {
         switchTab('chat');
         setTimeout(() => sendMessage(text), 200);
+    }
+
+    function showEmergencyPanel() {
+        const html = '<div style="text-align:center;padding:20px">' +
+            '<div style="font-size:48px;margin-bottom:16px">🚨</div>' +
+            '<div style="font-size:18px;font-weight:700;color:#B91C1C;margin-bottom:8px">紧急求助</div>' +
+            '<div style="font-size:14px;color:#666;margin-bottom:20px">遇到紧急情况，请直接拨打以下电话</div>' +
+            '<a href="tel:12333" style="display:block;background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff;padding:16px;border-radius:12px;text-decoration:none;margin-bottom:12px;font-size:16px;font-weight:700">📞 12333 劳动维权热线</a>' +
+            '<a href="tel:12348" style="display:block;background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff;padding:16px;border-radius:12px;text-decoration:none;margin-bottom:12px;font-size:16px;font-weight:700">⚖️ 12348 法律援助</a>' +
+            '<a href="tel:120" style="display:block;background:linear-gradient(135deg,#10B981,#059669);color:#fff;padding:16px;border-radius:12px;text-decoration:none;margin-bottom:12px;font-size:16px;font-weight:700">🚑 120 急救电话</a>' +
+            '<a href="tel:110" style="display:block;background:linear-gradient(135deg,#6B7280,#4B5563);color:#fff;padding:16px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:700">👮 110 报警电话</a>' +
+            '</div>';
+        showToast('紧急求助电话已显示');
+        // 在对话中显示紧急求助信息
+        forceNewSession('紧急求助');
+        switchTab('chat');
+        setTimeout(() => {
+            addMsg('我需要紧急求助', true);
+            addMsg(html, false);
+        }, 200);
     }
 
     function askKnowledge(topic) {
